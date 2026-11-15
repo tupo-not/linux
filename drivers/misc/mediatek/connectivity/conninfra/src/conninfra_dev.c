@@ -149,6 +149,14 @@ static int conninfra_dev_resume_cb(void);
 static int conninfra_dev_pmic_event_cb(unsigned int, unsigned int);
 
 static int conninfra_dev_do_drv_init(void);
+static int conninfra_dev_init_result;
+
+static void conninfra_dev_init_work_handler(struct work_struct *work)
+{
+	conninfra_dev_init_result = conninfra_dev_do_drv_init();
+}
+
+static DECLARE_WORK(conninfra_dev_init_work, conninfra_dev_init_work_handler);
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -282,8 +290,9 @@ static long conninfra_dev_unlocked_ioctl(struct file *filp, unsigned int cmd, un
 	/* Special process for module init command */
 	if (cmd == CONNINFRA_IOCTL_DO_MODULE_INIT) {
 	#ifdef MTK_WCN_REMOVE_KERNEL_MODULE
-		retval = conninfra_dev_do_drv_init();
-		return retval;
+		schedule_work(&conninfra_dev_init_work);
+		flush_work(&conninfra_dev_init_work);
+		return conninfra_dev_init_result;
 	#else
 		pr_info("[%s] KO mode", __func__);
 		return 0;
@@ -739,11 +748,13 @@ static int conninfra_dev_init(void)
 						PTR_ERR(pConninfraDev));
 		goto err2;
 	}
-	iret = conninfra_dev_do_drv_init();
-	if (iret) {
-		pr_err("conninfra_do_drv_init fail, iret = %d", iret);
-		return iret;
-	}
+	/*
+	 * Bring the hardware up asynchronously: consys_hw_init() waits for the
+	 * consys platform device to probe (up to 30 s), which must not stall
+	 * the initcall path.  CONNINFRA_IOCTL_DO_MODULE_INIT flushes the same
+	 * work item if userspace needs it synchronously.
+	 */
+	schedule_work(&conninfra_dev_init_work);
 	return 0;
 err2:
 
@@ -771,6 +782,7 @@ static void conninfra_dev_deinit(void)
 	dev_t dev = MKDEV(gConnInfraMajor, 0);
 	int iret = 0;
 
+	cancel_work_sync(&conninfra_dev_init_work);
 	g_conninfra_init_status = CONNINFRA_INIT_NOT_START;
 
 	conn_pwr_deinit();
