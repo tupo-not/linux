@@ -188,6 +188,16 @@ config ARCH_MEDIATEK
 	  This enables support for MediaTek MT27xx, MT65xx, MT76xx
 	  & MT81xx ARMv8 SoCs
 
+config MTK_CHOPIN_EMBEDDED_DTB
+	bool "Embed the Xiaomi Chopin board DTB"
+	depends on ARCH_MEDIATEK
+	default n
+	help
+	  Link the Xiaomi Chopin board tree into the kernel and replace the FDT
+	  supplied by LK during setup_arch().  This is a Chopin bootloader
+	  workaround and must not be enabled for other MT6893 boards.  In
+	  particular, uniLoader already supplies the correct Infinix X6710 DTB.
+
 config ARCH_MESON
 	bool "Amlogic Platforms"
 	help

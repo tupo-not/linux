@@ -83,9 +83,15 @@ struct sram_log_header {
 #define LOGSTORE_SIZE		0x40000		/* 256 KiB */
 #define LOGSTORE_SRAM_HEADER_PA	0x11df00	/* only with the Kconfig below */
 
+#ifdef CONFIG_MTK_LOGSTORE_CONSOLE
 void mtk_logstore_printk(const char *s, unsigned int n);
 void __init mtk_logstore_breadcrumb(const char *what);
 void __init mtk_logstore_breadcrumb_early(const char *what);
 void __init mtk_logstore_attach_early(void);
+#else
+static inline void mtk_logstore_breadcrumb(const char *what) { }
+static inline void mtk_logstore_breadcrumb_early(const char *what) { }
+static inline void mtk_logstore_attach_early(void) { }
+#endif
 
 #endif /* _LINUX_MTK_LOGSTORE_H */

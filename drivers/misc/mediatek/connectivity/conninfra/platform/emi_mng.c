@@ -224,6 +224,7 @@ int emi_mng_init(struct platform_device *pdev, const struct conninfra_plat_data*
 		connsys_emi_addr_info.emi_size = gConEmiSize;
 	} else {
 		pr_err("consys emi memory address gConEmiPhyBase invalid\n");
+		return -1;
 	}
 
 	if (consys_platform_emi_ops &&
@@ -246,4 +247,3 @@ int emi_mng_deinit(void)
 	consys_platform_emi_ops = NULL;
 	return 0;
 }
-

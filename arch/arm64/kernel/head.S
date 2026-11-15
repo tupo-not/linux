@@ -210,7 +210,9 @@
 	.endm
 
 SYM_CODE_START(primary_entry)
+#ifdef CONFIG_MTK_LOGSTORE_CONSOLE
 	bc_tag	0x0030304b, 0x3e000, 0	// "K00" entry
+#endif
 	bl	record_mmu_state
 	bl	preserve_boot_args
 
@@ -247,7 +249,9 @@ SYM_CODE_START(primary_entry)
 1:	mov	x0, x19
 	bl	init_kernel_el			// w0=cpu_boot_mode
 	mov	x20, x0
+#ifdef CONFIG_MTK_LOGSTORE_CONSOLE
 	bc_tag	0x0031304b, 0x3e010, 1	// "K01" EL init done
+#endif
 
 	/*
 	 * The following calls CPU setup code, see arch/arm64/mm/proc.S for
@@ -628,7 +632,9 @@ SYM_FUNC_START_LOCAL(__no_granule_support)
 	/* Indicate that this CPU can't boot and is stuck in the kernel */
 	update_early_cpu_boot_status \
 		CPU_STUCK_IN_KERNEL | CPU_STUCK_REASON_NO_GRAN, x1, x2
+#ifdef CONFIG_MTK_LOGSTORE_CONSOLE
 	bc_stuck 0x0039304b		// "K09" stuck in __enable_mmu
+#endif
 1:
 	wfe
 	wfi
@@ -636,10 +642,14 @@ SYM_FUNC_START_LOCAL(__no_granule_support)
 SYM_FUNC_END(__no_granule_support)
 
 SYM_FUNC_START_LOCAL(__primary_switch)
+#ifdef CONFIG_MTK_LOGSTORE_CONSOLE
 	bc_tag	0x0032304b, 0x3e020, 2	// "K02" entered __primary_switch
+#endif
 	adrp	x1, reserved_pg_dir
 	adrp	x2, __pi_init_idmap_pg_dir
+#ifdef CONFIG_MTK_LOGSTORE_CONSOLE
 	bc_tag	0x0033304b, 0x3e030, 3	// "K03" page tables ready
+#endif
 	bl	__enable_mmu
 
 	adrp	x1, early_init_stack

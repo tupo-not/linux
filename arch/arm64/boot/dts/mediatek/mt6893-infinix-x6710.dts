@@ -1,0 +1,735 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Infinix Note 30 VIP (X6710)
+ *
+ * MediaTek MT6893Z/CZA handset.  The SoC side lives in mt6893.dtsi; this
+ * file carries the board wiring: memory map, simplefb hand-off, PMIC,
+ * UFS, USB, display, touch and the handful of I2C/SPI peripherals that
+ * are populated on this board.
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/clock/mediatek,mt6893-clk.h>
+#include <dt-bindings/phy/phy.h>
+#include <dt-bindings/reset/mediatek,mt6893-resets.h>
+#include "mt6893.dtsi"
+
+/ {
+	model = "Infinix Note 30 VIP";
+	chassis-type = "handset";
+	compatible = "infinix,x6710", "mediatek,mt6893";
+
+	interrupt-parent = <&gic>;
+	#address-cells = <0x02>;
+	#size-cells = <0x02>;
+
+	aliases {
+		serial0 = &apuart0;
+
+		/* The downstream DRM stack uses these IDs to identify blocks. */
+		ovl0 = &disp_ovl0;
+		ovl3 = &disp_ovl0_2l;
+		rdma0 = &disp_rdma0;
+		wdma0 = &disp_wdma0;
+		color0 = &disp_color0;
+		ccorr0 = &disp_ccorr0;
+		aal0 = &disp_aal0;
+		gamma0 = &disp_gamma0;
+		dither0 = &disp_dither0;
+		rsz0 = &disp_rsz0;
+		postmask0 = &disp_postmask0;
+		dsi0 = &dsi0;
+	};
+
+	chosen {
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
+
+		stdout-path = "serial0:921600n8";
+
+		bootargs = "console=tty0 console=ttyS0,921600n8 clk_ignore_unused regulator_ignore_unused pd_ignore_unused loglevel=7 debug";
+
+		framebuffer@76a10000 {
+			compatible = "simple-framebuffer";
+			reg = <0 0x76a10000 0 0x1df0000>;
+			width = <1080>;
+			height = <2400>;
+			stride = <((1080 + 8) * 4)>;
+			format = "a8r8g8b8";
+			status = "okay";
+		};
+	};
+
+	firmware {
+		android {
+			compatible = "android,firmware";
+			hardware = "mt6893";
+			mode = "normal";
+		};
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0 0x40000000 0x3 0>;
+	};
+
+	reserved-memory {
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
+
+		/* ATF / secure monitor log */
+		memory@ffe60000 {
+			reg = <0 0xffe60000 0 0x190000>;
+			no-map;
+		};
+
+		memory@74000000 {
+			reg = <0 0x74000000 0 0xe30000>;
+			no-map;
+		};
+
+		memory@88000000 {
+			reg = <0 0x88000000 0 0x5560000>;
+			no-map;
+		};
+
+		memory@8e000000 {
+			reg = <0 0x8e000000 0 0x910000>;
+			no-map;
+		};
+
+		memory@fa850000 {
+			reg = <0 0xfa850000 0 0x37b0000>;
+			no-map;
+		};
+
+		memory@e4000000 {
+			reg = <0 0xe4000000 0 0x7eb0000>;
+			no-map;
+		};
+
+		memory@e3000000 {
+			reg = <0 0xe3000000 0 0xf0000>;
+			no-map;
+		};
+
+		memory@e0000000 {
+			reg = <0 0xe0000000 0 0x2080000>;
+			no-map;
+		};
+
+		memory@bff70000 {
+			reg = <0 0xbff70000 0 0x10000>;
+			no-map;
+		};
+
+		memory@9fb00000 {
+			reg = <0 0x9fb00000 0 0x400000>;
+			no-map;
+		};
+
+		memory@75000000 {
+			reg = <0 0x75000000 0 0x10000>;
+			no-map;
+		};
+
+		memory@be510000 {
+			reg = <0 0xbe510000 0 0x18f0000>;
+			no-map;
+		};
+
+		/* framebuffer handed over by uniLoader */
+		memory@76a10000 {
+			reg = <0 0x76a10000 0 0x1df0000>;
+			no-map;
+		};
+
+		memory@7ffa0000 {
+			reg = <0 0x7ffa0000 0 0x8000>;
+			no-map;
+		};
+
+		memory@48170000 {
+			reg = <0 0x48170000 0 0x10000>;
+			no-map;
+		};
+
+		/* ramoops (see ramoops.mem_address=0x48090000) */
+		memory@48090000 {
+			reg = <0 0x48090000 0 0xe0000>;
+			no-map;
+		};
+
+		memory@48080000 {
+			reg = <0 0x48080000 0 0x10000>;
+			no-map;
+		};
+
+		memory@5ff00000 {
+			reg = <0 0x5ff00000 0 0x80000>;
+			no-map;
+		};
+
+		memory@7ed00000 {
+			reg = <0 0x7ed00000 0 0x100000>;
+			no-map;
+		};
+
+		memory@78800000 {
+			reg = <0 0x78800000 0 0x6000000>;
+			no-map;
+		};
+
+		memory@7fea0000 {
+			reg = <0 0x7fea0000 0 0x100000>;
+			no-map;
+		};
+
+		memory@7e800000 {
+			reg = <0 0x7e800000 0 0x400000>;
+			no-map;
+		};
+
+		memory@bfe00000 {
+			reg = <0 0xbfe00000 0 0x40000>;
+			no-map;
+		};
+
+		memory@bff80000 {
+			reg = <0 0xbff80000 0 0x80000>;
+			no-map;
+		};
+
+		memory@48c00000 {
+			reg = <0 0x48c00000 0 0x200000>;
+			no-map;
+		};
+
+		memory@7ffaf000 {
+			reg = <0 0x7ffaf000 0 0x10000>;
+		};
+
+		memory@7ffbf000 {
+			reg = <0 0x7ffbf000 0 0x40000>;
+		};
+
+		memory@7ec00000 {
+			reg = <0 0x7ec00000 0 0x41000>;
+		};
+
+		memory@7ee00000 {
+			reg = <0 0x7ee00000 0 0x1000000>;
+			no-map;
+		};
+
+		memory@7ffff000 {
+			reg = <0 0x7ffff000 0 0x1000>;
+			no-map;
+		};
+
+		/* Connectivity firmware/coredump EMI, allocated below 0x90000000. */
+		consys_mem: consys-reserve-memory {
+			compatible = "mediatek,consys-reserve-memory";
+			no-map;
+			size = <0x0 0x450000>;
+			alignment = <0x0 0x1000000>;
+			alloc-ranges = <0x0 0x50000000 0x0 0x40000000>;
+		};
+
+		wifi_mem: wifi-reserve-memory {
+			compatible = "shared-dma-pool";
+			no-map;
+			size = <0x0 0xf20000>;
+			alignment = <0x0 0x1000000>;
+			alloc-ranges = <0x0 0x40000000 0x0 0x80000000>;
+		};
+
+		gps_mem: gps-reserve-memory {
+			compatible = "mediatek,gps-reserve-memory";
+			no-map;
+			size = <0x0 0x100000>;
+			alignment = <0x0 0x100000>;
+			alloc-ranges = <0x0 0x40000000 0x0 0x80000000>;
+		};
+	};
+
+	/* GIC lives in the board file for this SoC family. */
+	gic: interrupt-controller@c000000 {
+		compatible = "arm,gic-v3";
+		#interrupt-cells = <0x03>;
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		#redistributor-regions = <0x01>;
+		interrupt-parent = <&gic>;
+		interrupt-controller;
+		reg = <0x0 0xc000000 0x0 0x40000 0x0 0xc040000 0x0 0x200000>;
+		interrupts = <0x01 0x09 0x04>;
+	};
+
+	clocks {
+		clk_null: clk_null {
+			compatible = "fixed-clock";
+			#clock-cells = <0x00>;
+			clock-frequency = <0x0>;
+		};
+
+		clk26m: clk26m {
+			compatible = "fixed-clock";
+			#clock-cells = <0x00>;
+			clock-frequency = <0x18cba80>;
+		};
+
+		clk12m: clk12m {
+			compatible = "fixed-clock";
+			#clock-cells = <0x00>;
+			clock-frequency = <0xb71b00>;
+		};
+
+		clk32k: clk32k {
+			compatible = "fixed-clock";
+			#clock-cells = <0x00>;
+			clock-frequency = <0x7d00>;
+		};
+	};
+
+	/* UFS VCC (always-on 2.9V rail). */
+	ufs_fixed_vcc: regulator-ufs-vcc {
+		compatible = "regulator-fixed";
+		regulator-name = "vreg_ufs_vcc";
+		regulator-min-microvolt = <0x2dc6c0>;
+		regulator-max-microvolt = <0x2dc6c0>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	/* USB PHY 3.3V rail. */
+	vusb33: regulator-vusb33 {
+		compatible = "regulator-fixed";
+		regulator-name = "vusb33";
+		regulator-min-microvolt = <0x325aa0>;
+		regulator-max-microvolt = <0x325aa0>;
+		regulator-always-on;
+	};
+
+	/* eMMC / SD rails (the SoC msdc blocks refer to these). */
+	mmc_fixed_3v3: regulator-mmc-power {
+		compatible = "regulator-fixed";
+		regulator-name = "mmc_power";
+		regulator-min-microvolt = <0x325aa0>;
+		regulator-max-microvolt = <0x325aa0>;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+	mmc_fixed_1v8_io: regulator-mmc-io {
+		compatible = "regulator-fixed";
+		regulator-name = "mmc_io";
+		regulator-min-microvolt = <0x1b7740>;
+		regulator-max-microvolt = <0x1b7740>;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+	extcon_usb: extcon_usb {
+		compatible = "mediatek,extcon-usb";
+	};
+
+	usb_boost_manager {
+		compatible = "mediatek,usb_boost";
+		boost_period = <0x00>;
+	};
+
+	tphy: t-phy@11e40000 {
+		compatible = "mediatek,mt6785-tphy", "mediatek,generic-tphy-v2";
+		#address-cells = <0x01>;
+		#size-cells = <0x01>;
+		ranges = <0x0 0x0 0x11e40000 0x1000>;
+		status = "okay";
+
+		u2port: usb-phy@0 {
+			reg = <0x0 0x1000>;
+			clocks = <&clk26m>;
+			clock-names = "ref";
+			#phy-cells = <0x01>;
+			mediatek,eye-vrt = <0x04>;
+			mediatek,eye-term = <0x04>;
+			mediatek,intr = <0x1e>;
+			mediatek,discth = <0x07>;
+			mediatek,force-session-valid;
+			status = "okay";
+		};
+	};
+
+};
+
+/* ------------------------------------------------------------------ */
+/* UART                                                                */
+/* ------------------------------------------------------------------ */
+
+&apuart0 {
+	status = "okay";
+};
+
+/* Downstream conninfra requires its private EMI carveout. */
+&consys {
+	#thermal-sensor-cells = <0x00>;
+	memory-region = <&consys_mem>;
+};
+
+&gps {
+	memory-region = <&gps_mem>;
+};
+
+/*
+ * X6710's vendor tree exposes only the HCI, UniPro and crypto resets.
+ * Do not reset the MPHY: this device's ATF does not implement the
+ * UFS_MPHY_BACKUP/RESTORE SMC needed to preserve its state across reset.
+ */
+&ufshci {
+	resets = <&infracfg_ao MT6893_INFRA_RST1_UFSHCI_SW_RST>,
+		 <&infracfg_ao MT6893_INFRA_RST2_UNIPRO_SW_RST>,
+		 <&infracfg_ao MT6893_INFRA_RST3_UFSCPT_SW_RST>;
+	reset-names = "hci_rst", "unipro_rst", "crypto_rst";
+};
+
+/* The generic T-PHY binding requires a PHY type argument. */
+&{/usb@11201000} {
+	phys = <&u2port PHY_TYPE_USB2>;
+};
+
+/* ------------------------------------------------------------------ */
+/* Display                                                             */
+/* ------------------------------------------------------------------ */
+
+/* Match the two top clocks and component identities in the vendor DT. */
+&dispsys_config {
+	clocks = <&dispsys_config CLK_MM_CK_26_MHZ>,
+		 <&dispsys_config CLK_MM_DISP_MUTEX>;
+	clock-num = <0x02>;
+};
+
+&disp_mutex0 {
+	compatible = "mediatek,disp_mutex0", "mediatek,mt6885-disp-mutex";
+};
+
+&disp_ovl0 {
+	compatible = "mediatek,disp_ovl0", "mediatek,mt6885-disp-ovl";
+};
+
+&disp_ovl0_2l {
+	compatible = "mediatek,disp_ovl0_2l", "mediatek,mt6885-disp-ovl";
+};
+
+&disp_rdma0 {
+	compatible = "mediatek,disp_rdma0", "mediatek,mt6885-disp-rdma";
+};
+
+&disp_wdma0 {
+	compatible = "mediatek,disp_wdma0", "mediatek,mt6885-disp-wdma";
+	clocks = <&dispsys_config CLK_MM_DISP_WDMA0>;
+};
+
+&disp_color0 {
+	compatible = "mediatek,disp_color0", "mediatek,mt6885-disp-color";
+};
+
+&disp_ccorr0 {
+	compatible = "mediatek,disp_ccorr0", "mediatek,mt6885-disp-ccorr";
+	ccorr_bit = <0x0c>;
+	ccorr_num_per_pipe = <0x01>;
+	ccorr_linear_per_pipe = <0x01>;
+	ccorr_prim_force_linear = <0x00>;
+	ccorr_linear = <0x00>;
+};
+
+&disp_aal0 {
+	compatible = "mediatek,disp_aal0", "mediatek,mt6885-disp-aal";
+	mtk_aal_support = <0x01>;
+	mtk_dre30_support = <0x00>;
+};
+
+&disp_gamma0 {
+	compatible = "mediatek,disp_gamma0", "mediatek,mt6885-disp-gamma";
+	gamma_data_mode = <0x00>;
+	color_protect_red = <0x00>;
+	color_protect_green = <0x00>;
+	color_protect_blue = <0x00>;
+	color_protect_white = <0x00>;
+	color_protect_black = <0x00>;
+	color_protect_lsb = <0x00>;
+};
+
+&disp_dither0 {
+	compatible = "mediatek,disp_dither0", "mediatek,mt6885-disp-dither";
+	pure_clr_det = <0x00>;
+	pure_clr_num = <0x07>;
+	pure_clr_rgb = <0xff 0x00 0x00 0x00 0xff 0x00 0x00 0x00 0xff
+			0xff 0xff 0x00 0xff 0x00 0xff 0x00 0xff 0xff 0xff
+			0xff 0xff>;
+};
+
+&disp_postmask0 {
+	compatible = "mediatek,disp_postmask0", "mediatek,mt6885-disp-postmask";
+};
+
+&dsi0 {
+	compatible = "mediatek,dsi0", "mediatek,mt6885-dsi";
+	status = "okay";
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+
+	panel@0 {
+		compatible = "nt37703,fhdp,dsi,vdo,tm,panda,x6710";
+		reg = <0x00>;
+		reset-gpios = <&pio 0x2a 0x00>;
+		vci-supply = <&mt_pmic_vio28_ldo_reg>;
+		dvdd-supply = <&et5904_ldo14>;
+		dvdd2-supply = <&et5904_ldo24>;
+		status = "okay";
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+
+	ports {
+		port {
+			dsi_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	};
+};
+
+/* ------------------------------------------------------------------ */
+/* I2C buses                                                           */
+/* ------------------------------------------------------------------ */
+
+/* i2c0: FocalTech FT3681 touch panel */
+&i2c0 {
+	status = "okay";
+
+	touchscreen@38 {
+		compatible = "focaltech,fts";
+		reg = <0x38>;
+		interrupt-parent = <&pio>;
+		interrupts = <0x15 0x02>;
+		reset-gpios = <&pio 0x14 0x00>;
+		focaltech,max-touch-number = <0x0a>;
+		focaltech,display-coords = <0x00 0x00 0x438 0x960>;
+		status = "okay";
+	};
+};
+
+/* i2c3: NFC and charger companions */
+&i2c3 {
+	status = "okay";
+};
+
+/* i2c4: ET5904 camera/display bias regulators */
+&i2c4 {
+	status = "okay";
+
+	et5904: et5904@28 {
+		compatible = "tran,et5904";
+		reg = <0x28>;
+
+		regulators {
+			et5904_ldo14: ET5904LDO14 {
+				regulator-name = "ET5904LDO14";
+				regulator-min-microvolt = <0x927c0>;
+				regulator-max-microvolt = <0x1b7740>;
+			};
+
+			et5904_ldo24: ET5904LDO24 {
+				regulator-name = "ET5904LDO24";
+				regulator-min-microvolt = <0x927c0>;
+				regulator-max-microvolt = <0x1b7740>;
+			};
+
+			et5904_ldo34: ET5904LDO34 {
+				regulator-name = "ET5904LDO34";
+				regulator-min-microvolt = <0x124f80>;
+				regulator-max-microvolt = <0x325aa0>;
+			};
+
+			et5904_ldo44: ET5904LDO44 {
+				regulator-name = "ET5904LDO44";
+				regulator-min-microvolt = <0x124f80>;
+				regulator-max-microvolt = <0x325aa0>;
+			};
+		};
+	};
+};
+
+/* i2c5: MT6360 PMIC / charger / Type-C */
+&i2c5 {
+	status = "okay";
+
+	mt6360_pmu: pmic@34 {
+		compatible = "mediatek,mt6360";
+		reg = <0x34>;
+		interrupt-parent = <&pio>;
+		interrupts = <0x18 0x02>;
+		interrupt-names = "IRQB";
+		interrupt-controller;
+		#interrupt-cells = <0x01>;
+		wakeup-source;
+		status = "okay";
+
+		charger {
+			compatible = "mediatek,mt6360-chg";
+			richtek,vinovp-microvolt = <0xdd40a0>;
+			status = "okay";
+
+			otg_vbus: usb-otg-vbus-regulator {
+				regulator-name = "usb-otg-vbus";
+				regulator-min-microvolt = <0x438528>;
+				regulator-max-microvolt = <0x58e1e8>;
+			};
+		};
+
+		mt6360_adc: adc {
+			compatible = "mediatek,mt6360-adc";
+			#io-channel-cells = <0x01>;
+		};
+
+		tcpc {
+			compatible = "mediatek,mt6360-tcpc";
+			interrupt-parent = <&pio>;
+			interrupts = <0x19 0x08>;
+			interrupt-names = "PD_IRQB";
+			status = "okay";
+
+			connector {
+				compatible = "usb-c-connector";
+				label = "USB-C";
+				data-role = "dual";
+				power-role = "dual";
+				try-power-role = "sink";
+				op-sink-microwatt = <0x19bfcc0>;
+				source-pdos = <0x4019064>;
+				sink-pdos = <0x401912c 0x402d12c 0x403c0e1>;
+			};
+		};
+
+		/* The driver looks this node up by name "regulator". */
+		regulator {
+			compatible = "mediatek,mt6360-regulator";
+
+			buck1 {
+				regulator-name = "VMDLA";
+				regulator-min-microvolt = <0x493e0>;
+				regulator-max-microvolt = <0x13d620>;
+				regulator-always-on;
+			};
+
+			buck2 {
+				regulator-name = "VDRAM1";
+				regulator-min-microvolt = <0x493e0>;
+				regulator-max-microvolt = <0x13d620>;
+				regulator-always-on;
+			};
+
+			mt_pmic_vfp_ldo_reg: ldo1 {
+				regulator-name = "VFP";
+				regulator-min-microvolt = <0x124f80>;
+				regulator-max-microvolt = <0x36ee80>;
+			};
+
+			mt_pmic_vtp_ldo_reg: ldo2 {
+				regulator-name = "vtp";
+				regulator-min-microvolt = <0x124f80>;
+				regulator-max-microvolt = <0x36ee80>;
+			};
+
+			ldo3 {
+				regulator-name = "VMC";
+				regulator-min-microvolt = <0x124f80>;
+				regulator-max-microvolt = <0x36ee80>;
+			};
+
+			mt_pmic_vmch_ldo_reg: ldo5 {
+				regulator-name = "VMCH";
+				regulator-min-microvolt = <0x2932e0>;
+				regulator-max-microvolt = <0x36ee80>;
+			};
+
+			ldo6 {
+				regulator-name = "VMDDR";
+				regulator-min-microvolt = <0x7a120>;
+				regulator-max-microvolt = <0x200b20>;
+			};
+
+			ldo7 {
+				regulator-name = "VDRAM2";
+				regulator-min-microvolt = <0x7a120>;
+				regulator-max-microvolt = <0x200b20>;
+			};
+		};
+	};
+};
+
+/* i2c6: display bias, speaker amplifier and misc companions */
+&i2c6 {
+	status = "okay";
+
+	i2c_lcd_bias@3e {
+		compatible = "mediatek,i2c_lcd_bias";
+		reg = <0x3e>;
+		status = "okay";
+	};
+
+	aw87xxx_pa@58 {
+		compatible = "awinic,aw87xxx_pa";
+		reg = <0x58>;
+		dev_index = <0x00>;
+		status = "okay";
+	};
+
+	aw87xxx_pa@59 {
+		compatible = "awinic,aw87xxx_pa";
+		reg = <0x59>;
+		dev_index = <0x01>;
+		status = "okay";
+	};
+};
+
+/* i2c7: AW8622X haptics */
+&i2c7 {
+	status = "okay";
+
+	haptic@58 {
+		compatible = "awinic,haptic_nv";
+		reg = <0x58>;
+		reset-gpios = <&pio 0x62 0x00>;
+		irq-gpios = <&pio 0x00 0x00>;
+		aw862xx_i2c_addr = <0x58>;
+		aw8622x_vib_mode = <0x00>;
+		aw8622x_vib_f0_pre = <0x92e>;
+		status = "okay";
+	};
+};
+
+/* ------------------------------------------------------------------ */
+/* SPI                                                                 */
+/* ------------------------------------------------------------------ */
+
+/* spi5: fingerprint sensor */
+&spi5 {
+	status = "okay";
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+
+	fingerprint@0 {
+		compatible = "tran_fp";
+		reg = <0x00>;
+		spi-max-frequency = <0x989680>;
+		status = "okay";
+	};
+};

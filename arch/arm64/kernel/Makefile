@@ -91,9 +91,11 @@ endif
 # for cleaning
 subdir- += vdso vdso32
 
-# The board device tree, embedded in the kernel image (see chopin-dtb.S).
-obj-y += chopin-dtb.o
+# The Chopin board device tree, embedded only for the Chopin workaround.
+obj-$(CONFIG_MTK_CHOPIN_EMBEDDED_DTB) += chopin-dtb.o
+ifeq ($(CONFIG_MTK_CHOPIN_EMBEDDED_DTB),y)
 # Build a private copy via the standard DTC rules, including DTS dependencies.
 # This also keeps parallel Image and dtbs builds from writing the same file.
 targets += chopin-board.dtb
 $(obj)/chopin-dtb.o: $(obj)/chopin-board.dtb
+endif

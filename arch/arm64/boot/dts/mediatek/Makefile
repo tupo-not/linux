@@ -2,6 +2,7 @@
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt2712-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6755-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6893-xiaomi-chopin.dtb
+dtb-$(CONFIG_ARCH_MEDIATEK) += mt6893-infinix-x6710.dtb
 
 # Compile this board's DTB with symbols (-@), i.e. keep the __symbols__ node.
 #
@@ -15,6 +16,7 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += mt6893-xiaomi-chopin.dtb
 #
 # and then never jumps to the kernel at all.
 DTC_FLAGS_mt6893-xiaomi-chopin += -@
+DTC_FLAGS_mt6893-infinix-x6710 += -@
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6779-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6795-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6795-sony-xperia-m5.dtb

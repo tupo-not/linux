@@ -1625,6 +1625,16 @@ void* connsys_coredump_init(
 	conninfra_get_emi_phy_addr(CONNSYS_EMI_FW, &emi_base, &emi_size);
 	conninfra_get_emi_phy_addr(CONNSYS_EMI_MCIF, NULL, &mcif_emi_size);
 	pr_info("conn_type=%d Get emi_base=0x%llx emi_size=%d\n", conn_type, emi_base, emi_size);
+	if (!emi_base || !emi_size) {
+		pr_err("Connectivity EMI is unavailable; disable coredump\n");
+		goto error_exit;
+	}
+	if (config->start_offset >= emi_size ||
+	    config->size > emi_size - config->start_offset) {
+		pr_err("Coredump range 0x%llx+0x%x exceeds EMI size 0x%x\n",
+		       (u64)config->start_offset, config->size, emi_size);
+		goto error_exit;
+	}
 	ctx->full_emi_size = emi_size;
 	ctx->emi_phy_addr_base = config->start_offset + emi_base;
 	ctx->emi_size = config->size;

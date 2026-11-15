@@ -1941,6 +1941,7 @@ CONFIG_MEMTEST=y
 
 # MT6893/chopin bring-up: the kernel-side log relay and its on-panel
 # boot-progress stripes.  Built in, because the initramfs has no modules.
+CONFIG_MTK_CHOPIN_EMBEDDED_DTB=y
 CONFIG_MTK_LOGSTORE_CONSOLE=y
 CONFIG_MTK_BOOT_PROGRESS_FB=y
 # UFS M-PHY; the host driver may select it, but state it explicitly.

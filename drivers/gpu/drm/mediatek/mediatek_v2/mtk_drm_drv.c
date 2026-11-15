@@ -5016,6 +5016,11 @@ static int mtk_drm_bind(struct device *dev)
 	if (ret < 0)
 		goto err_free;
 
+	/* Keep the boot framebuffer until the complete KMS stack is usable. */
+	ret = aperture_remove_all_conflicting_devices("mediatekdrmfb");
+	if (ret)
+		dev_warn(dev, "Failed to remove conflicting framebuffers: %d\n", ret);
+
 	ret = drm_dev_register(drm, 0);
 	if (ret < 0)
 		goto err_deinit;
@@ -5790,11 +5795,6 @@ SKIP_SIDE_DISP:
 	}
 
 	platform_set_drvdata(pdev, private);
-
-	ret = aperture_remove_all_conflicting_devices("mediatekdrmfb");
-	if (ret)
-		dev_warn(dev, "Failed to remove conflicting framebuffers: %d\n", ret);
-
 
 	ret = component_master_add_with_match(dev, &mtk_drm_ops, match);
 	DDPINFO("%s- ret:%d\n", __func__, ret);

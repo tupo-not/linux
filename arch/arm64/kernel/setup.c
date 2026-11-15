@@ -318,6 +318,7 @@ void __init __no_sanitize_address setup_arch(char **cmdline_p)
 	 * unflatten_device_tree() - works off OUR tree.  Re-reading
 	 * /chosen/bootargs is what makes the cmdline in our DTS take effect.
 	 */
+#ifdef CONFIG_MTK_CHOPIN_EMBEDDED_DTB
 	{
 		extern char _binary_chopin_board_dtb_start[];
 		extern char _binary_chopin_board_dtb_end[];
@@ -337,6 +338,7 @@ void __init __no_sanitize_address setup_arch(char **cmdline_p)
 				     __pa(_binary_chopin_board_dtb_start));
 		early_init_dt_scan_chosen(boot_command_line);
 	}
+#endif
 	mtk_logstore_breadcrumb_early("setup_machine_fdt done");
 
 	/*
@@ -402,6 +404,7 @@ void __init __no_sanitize_address setup_arch(char **cmdline_p)
 	kasan_init();
 
 	request_standard_resources();
+	early_ioremap_reset();
 
 	if (acpi_disabled)
 		psci_dt_init();

@@ -244,8 +244,14 @@ static void ufs_mtk_init_reset(struct ufs_hba *hba)
 				   "unipro_rst");
 	ufs_mtk_init_reset_control(hba, &host->crypto_reset,
 				   "crypto_rst");
-	ufs_mtk_init_reset_control(hba, &host->mphy_reset,
-				   "mphy_rst");
+	host->mphy_reset = devm_reset_control_get_optional(hba->dev,
+							     "mphy_rst");
+	if (IS_ERR(host->mphy_reset)) {
+		dev_info(hba->dev,
+			 "Failed to get optional reset control mphy_rst: %ld\n",
+			 PTR_ERR(host->mphy_reset));
+		host->mphy_reset = NULL;
+	}
 }
 
 static int ufs_mtk_hce_enable_notify(struct ufs_hba *hba,
@@ -1011,9 +1017,8 @@ static void ufs_mtk_init_clocks(struct ufs_hba *hba)
 		}
 	}
 
-	list_for_each_entry(clki, head, list) {
+	list_for_each_entry(clki, head, list)
 		dev_info(hba->dev, "clk \"%s\" present", clki->name);
-	}
 
 	if (!ufs_mtk_is_clk_scale_ready(hba)) {
 		hba->caps &= ~UFSHCD_CAP_CLK_SCALING;

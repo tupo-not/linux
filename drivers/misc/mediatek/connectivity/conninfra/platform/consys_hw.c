@@ -33,6 +33,15 @@
 ********************************************************************************
 */
 
+#ifdef CONFIG_MTK_CHOPIN_EMBEDDED_DTB
+#define CHOPIN_CONSYS_DEV_INFO(dev, fmt, ...) \
+	dev_info(dev, "CHOPIN-CONSYS: " fmt, ##__VA_ARGS__)
+#define CHOPIN_CONSYS_INFO(fmt, ...) \
+	pr_info("CHOPIN-CONSYS: " fmt, ##__VA_ARGS__)
+#else
+#define CHOPIN_CONSYS_DEV_INFO(dev, fmt, ...) do { } while (0)
+#define CHOPIN_CONSYS_INFO(fmt, ...) do { } while (0)
+#endif
 
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
@@ -739,20 +748,20 @@ int mtk_conninfra_probe(struct platform_device *pdev)
 		return -1;
 	}
 
-	dev_info(&pdev->dev, "CHOPIN-CONSYS: probe enter\n");
+	CHOPIN_CONSYS_DEV_INFO(&pdev->dev, "probe enter\n");
 	ret = get_consys_platform_ops(pdev);
 	if (ret) {
 		pr_err("[%s] get platform ops fail", __func__);
 		return -2;
 	}
-	dev_info(&pdev->dev, "CHOPIN-CONSYS: platform ops ok\n");
+	CHOPIN_CONSYS_DEV_INFO(&pdev->dev, "platform ops ok\n");
 
 	/* Read device node */
 	if (consys_reg_mng_init(pdev, g_conninfra_plat_data) != 0) {
 		pr_err("consys_plt_read_reg_from_dts fail");
 		return -3;
 	}
-	dev_info(&pdev->dev, "CHOPIN-CONSYS: reg mng ok\n");
+	CHOPIN_CONSYS_DEV_INFO(&pdev->dev, "reg mng ok\n");
 
 	if (consys_hw_ops->consys_plt_clk_get_from_dts)
 		consys_hw_ops->consys_plt_clk_get_from_dts(pdev);
@@ -760,7 +769,7 @@ int mtk_conninfra_probe(struct platform_device *pdev)
 		pr_err("consys_plt_clk_get_from_dtsfail");
 		return -4;
 	}
-	dev_info(&pdev->dev, "CHOPIN-CONSYS: clk ok\n");
+	CHOPIN_CONSYS_DEV_INFO(&pdev->dev, "clk ok\n");
 
 	/* emi mng init */
 	ret = emi_mng_init(pdev, g_conninfra_plat_data);
@@ -768,14 +777,14 @@ int mtk_conninfra_probe(struct platform_device *pdev)
 		pr_err("emi_mng init fail, %d\n", ret);
 		return -5;
 	}
-	dev_info(&pdev->dev, "CHOPIN-CONSYS: emi ok\n");
+	CHOPIN_CONSYS_DEV_INFO(&pdev->dev, "emi ok\n");
 
 	ret = pmic_mng_init(pdev, g_conninfra_dev_cb, g_conninfra_plat_data);
 	if (ret) {
 		pr_err("pmic_mng init fail, %d\n", ret);
 		return -6;
 	}
-	dev_info(&pdev->dev, "CHOPIN-CONSYS: pmic ok\n");
+	CHOPIN_CONSYS_DEV_INFO(&pdev->dev, "pmic ok\n");
 
 	/* Setup connsys log emi base */
 	emi_info = emi_mng_get_phy_addr();
@@ -794,7 +803,7 @@ int mtk_conninfra_probe(struct platform_device *pdev)
 	osal_sleepable_lock_init(&g_adie_chipid_lock);
 
 	atomic_set(&g_hw_init_done, 1);
-	dev_info(&pdev->dev, "CHOPIN-CONSYS: probe done\n");
+	CHOPIN_CONSYS_DEV_INFO(&pdev->dev, "probe done\n");
 	return 0;
 }
 
@@ -893,7 +902,7 @@ int consys_hw_init(struct conninfra_dev_cb *dev_cb)
 	clock_mng_register_device();
 
 	iRet = platform_driver_register(&mtk_conninfra_dev_drv);
-	pr_info("CHOPIN-CONSYS: platform_driver_register iRet=%d\n", iRet);
+	CHOPIN_CONSYS_INFO("platform_driver_register iRet=%d\n", iRet);
 	if (iRet)
 		pr_err("Conninfra platform driver registered failed(%d)\n", iRet);
 	else {
