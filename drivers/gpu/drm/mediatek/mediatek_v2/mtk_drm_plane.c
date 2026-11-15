@@ -5,6 +5,7 @@
 
 #include <drm/drm_atomic.h>
 #include <drm/drm_atomic_helper.h>
+#include <drm/drm_blend.h>
 #include <drm/drm_plane_helper.h>
 #include <drm/drm_fourcc.h>
 #include <drm/drm_framebuffer.h>
@@ -479,6 +480,14 @@ static void mtk_plane_atomic_update(struct drm_plane *plane,
 	for (i = 0; i < PLANE_PROP_MAX; i++)
 		state->pending.prop_val[i] = state->prop_val[i];
 
+	/*
+	 * Honour the standard "pixel blend mode" property for the one case the
+	 * vendor alpha property cannot express: when userspace asks us to
+	 * ignore the pixel alpha, disable the overlay alpha stage.
+	 */
+	if (new_state->pixel_blend_mode == DRM_MODE_BLEND_PIXEL_NONE)
+		state->pending.prop_val[PLANE_PROP_ALPHA_CON] = 0;
+
 	wmb(); /* Make sure the above parameters are set before update */
 	state->pending.dirty = true;
 
@@ -646,6 +655,19 @@ int mtk_plane_init(struct drm_device *dev, struct mtk_drm_plane *plane,
 			  __LINE__);
 		return err;
 	}
+
+	/*
+	 * The plane advertises alpha-capable formats, so DRM expects a
+	 * "pixel blend mode" property to go with them.  The hardware blends
+	 * premultiplied or straight alpha depending on the buffer modifier,
+	 * and can also ignore the pixel alpha entirely.
+	 */
+	err = drm_plane_create_blend_mode_property(&plane->base,
+			BIT(DRM_MODE_BLEND_PREMULTI) |
+			BIT(DRM_MODE_BLEND_COVERAGE) |
+			BIT(DRM_MODE_BLEND_PIXEL_NONE));
+	if (err)
+		DDPPR_ERR("failed to create blend mode property: %d\n", err);
 
 	drm_plane_helper_add(&plane->base, &mtk_plane_helper_funcs);
 
