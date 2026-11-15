@@ -11,7 +11,9 @@
 /dts-v1/;
 
 #include <dt-bindings/clock/mediatek,mt6893-clk.h>
+#include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/phy/phy.h>
+#include <dt-bindings/pinctrl/mt65xx.h>
 #include <dt-bindings/reset/mediatek,mt6893-resets.h>
 #include "mt6893.dtsi"
 
@@ -401,6 +403,93 @@
 };
 
 /* ------------------------------------------------------------------ */
+/* SD card (MSDC1)                                                     */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The SoC dtsi describes msdc1 with the downstream binding.  Reuse the
+ * node but bind it to the mainline mtk-sd driver, using the MT6360 LDO5
+ * (VMCH) as card power and LDO3 (VMC) as switchable I/O supply.
+ */
+&msdc1 {
+	compatible = "mediatek,mt8183-mmc";
+	reg = <0x00 0x11240000 0x00 0x1000>, <0x00 0x11e10000 0x00 0x1000>;
+	clocks = <&topckgen CLK_TOP_MSDC30_1_SEL>,
+		 <&infracfg_ao CLK_INFRA_AO_MSDC1>,
+		 <&infracfg_ao CLK_INFRA_AO_MSDC1_SRC>;
+	clock-names = "source", "hclk", "source_cg";
+	assigned-clocks = <&topckgen CLK_TOP_MSDC30_1_SEL>;
+	assigned-clock-parents = <&topckgen CLK_TOP_MSDCPLL_D2>;
+	pinctrl-names = "default", "state_uhs";
+	pinctrl-0 = <&sd_pins_default>;
+	pinctrl-1 = <&sd_pins_uhs>;
+	bus-width = <0x04>;
+	max-frequency = <0xbebc200>;
+	cap-sd-highspeed;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	sd-uhs-ddr50;
+	no-mmc;
+	no-sdio;
+	cd-gpios = <&pio 0x17 GPIO_ACTIVE_HIGH>;
+	vmmc-supply = <&mt_pmic_vmch_ldo_reg>;
+	vqmmc-supply = <&mt_pmic_vmc_ldo_reg>;
+	status = "okay";
+};
+
+&pio {
+	/*
+	 * MSDC1: CLK on GPIO51, CMD on GPIO52, DAT0..3 on GPIO54/56/55/53.
+	 * CD stays a plain GPIO input (GPIO23) with a pull-up.
+	 */
+	sd_pins_default: sd-default-pins {
+		pins-cmd-dat {
+			pinmux = <0x3401 0x3601 0x3801 0x3701 0x3501>;
+			input-enable;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+			drive-strength = <0x08>;
+		};
+
+		pins-clk {
+			pinmux = <0x3301>;
+			input-enable;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+			drive-strength = <0x08>;
+		};
+
+		pins-cd {
+			pinmux = <0x1700>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+
+	sd_pins_uhs: sd-uhs-pins {
+		pins-cmd-dat {
+			pinmux = <0x3401 0x3601 0x3801 0x3701 0x3501>;
+			input-enable;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+			drive-strength = <0x08>;
+		};
+
+		pins-clk {
+			pinmux = <0x3301>;
+			input-enable;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+			drive-strength = <0x08>;
+		};
+
+		pins-cd {
+			pinmux = <0x1700>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+};
+
+/* ------------------------------------------------------------------ */
 /* Display                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -409,26 +498,44 @@
 	clocks = <&dispsys_config CLK_MM_CK_26_MHZ>,
 		 <&dispsys_config CLK_MM_DISP_MUTEX>;
 	clock-num = <0x02>;
+	/*
+	 * mmsys is the clock supplier for iommu0, which in turn is this
+	 * node's IOMMU.  The mutual probe dependency can never resolve and
+	 * both devices wait for the deferred-probe timeout.  mmsys does no
+	 * DMA of its own, so drop the link.
+	 */
+	/delete-property/ iommus;
 };
 
 &disp_mutex0 {
 	compatible = "mediatek,disp_mutex0", "mediatek,mt6885-disp-mutex";
 };
 
+/*
+ * iommu0 (m4u@1411a000) uses the downstream "mediatek,iommu_v0" binding,
+ * for which this kernel has no driver.  Listing it in "iommus" makes each
+ * display component return -EPROBE_DEFER until the deferred-probe timeout
+ * expires, which delays panel probe by a couple of seconds.  The IOMMU was
+ * never actually attached, so drop the references.
+ */
 &disp_ovl0 {
 	compatible = "mediatek,disp_ovl0", "mediatek,mt6885-disp-ovl";
+	/delete-property/ iommus;
 };
 
 &disp_ovl0_2l {
 	compatible = "mediatek,disp_ovl0_2l", "mediatek,mt6885-disp-ovl";
+	/delete-property/ iommus;
 };
 
 &disp_rdma0 {
 	compatible = "mediatek,disp_rdma0", "mediatek,mt6885-disp-rdma";
+	/delete-property/ iommus;
 };
 
 &disp_wdma0 {
 	compatible = "mediatek,disp_wdma0", "mediatek,mt6885-disp-wdma";
+	/delete-property/ iommus;
 	clocks = <&dispsys_config CLK_MM_DISP_WDMA0>;
 };
 
@@ -473,6 +580,7 @@
 
 &disp_postmask0 {
 	compatible = "mediatek,disp_postmask0", "mediatek,mt6885-disp-postmask";
+	/delete-property/ iommus;
 };
 
 &mt_pmic_vio28_ldo_reg {
@@ -658,7 +766,7 @@
 				regulator-max-microvolt = <0x36ee80>;
 			};
 
-			ldo3 {
+			mt_pmic_vmc_ldo_reg: ldo3 {
 				regulator-name = "VMC";
 				regulator-min-microvolt = <0x124f80>;
 				regulator-max-microvolt = <0x36ee80>;
