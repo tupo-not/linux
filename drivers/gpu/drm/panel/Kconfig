@@ -717,6 +717,16 @@ config DRM_PANEL_NOVATEK_NT37700F
 	  Say Y here if you want to enable support for Novatek NT37700F DSI
 	  panel module. The panel has a resolution of 1080x2160.
 
+config DRM_PANEL_NOVATEK_NT37703
+	tristate "Novatek NT37703 AMOLED panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on DRM_MEDIATEK_V2
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here to enable Novatek NT37703-based AMOLED panels.  The
+	  currently supported Panda variant is a 1080x2400 120 Hz DSC panel.
+
 config DRM_PANEL_NOVATEK_NT37801
 	tristate "Novatek NT37801/NT37810 AMOLED DSI panel"
 	depends on OF

@@ -1858,6 +1858,14 @@ config REGULATOR_VQMMC_IPQ4019
 	  This driver provides support for the VQMMC LDO I/0
 	  voltage regulator of the IPQ4019 SD/EMMC controller.
 
+config REGULATOR_ET5904
+	tristate "ET5904 four-channel LDO regulator"
+	depends on I2C
+	select REGMAP_I2C
+	help
+	  Enable support for the ET5904 camera/display regulator used by
+	  Transsion MT6893 devices, including the Infinix X6710.
+
 
 config REGULATOR_WL2866D
 	tristate "WILL Semi WL2866D LDO regulators"

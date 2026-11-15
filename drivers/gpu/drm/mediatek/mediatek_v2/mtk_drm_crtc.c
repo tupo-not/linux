@@ -5842,7 +5842,7 @@ static void mtk_crtc_all_layer_off(struct mtk_drm_crtc *mtk_crtc,
 	int i, j, keep_first_layer;
 	struct mtk_ddp_comp *comp;
 
-	keep_first_layer = true;
+	keep_first_layer = false;
 	for_each_comp_in_cur_crtc_path(comp, mtk_crtc, i, j)
 		mtk_ddp_comp_io_cmd(comp, cmdq_handle,
 			OVL_ALL_LAYER_OFF, &keep_first_layer);
@@ -6135,6 +6135,20 @@ void mtk_drm_crtc_enable(struct drm_crtc *crtc)
 	CRTC_MMP_MARK(crtc_id, enable, 1, 2);
 	/* 5. connect path */
 	mtk_crtc_connect_default_path(mtk_crtc);
+
+#ifndef DRM_CMDQ_DISABLE
+	{
+		struct cmdq_pkt *cmdq_handle;
+
+		cmdq_handle = cmdq_pkt_create(
+			mtk_crtc->gce_obj.client[CLIENT_CFG]);
+		if (cmdq_handle) {
+			mtk_crtc_all_layer_off(mtk_crtc, cmdq_handle);
+			cmdq_pkt_flush(cmdq_handle);
+			cmdq_pkt_destroy(cmdq_handle);
+		}
+	}
+#endif
 
 	if (!crtc_id)
 		mtk_crtc->qos_ctx->last_hrt_req = 0;
@@ -6578,7 +6592,7 @@ void mtk_crtc_first_enable_ddp_config(struct mtk_drm_crtc *mtk_crtc)
 			     mtk_crtc->gce_obj.event[EVENT_VDO_EOF]);
 	mtk_crtc_wait_frame_done(mtk_crtc, cmdq_handle, DDP_FIRST_PATH, 0);
 
-	/*1. Show LK logo only */
+	/*1. Clear all OVL layers, including the LK logo */
 	mtk_crtc_all_layer_off(mtk_crtc, cmdq_handle);
 
 	/*2. Load Round Corner */

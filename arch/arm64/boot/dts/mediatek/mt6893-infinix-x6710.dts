@@ -475,6 +475,13 @@
 	compatible = "mediatek,disp_postmask0", "mediatek,mt6885-disp-postmask";
 };
 
+&mt_pmic_vio28_ldo_reg {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+	regulator-always-on;
+	regulator-boot-on;
+};
+
 &dsi0 {
 	compatible = "mediatek,dsi0", "mediatek,mt6885-dsi";
 	status = "okay";
@@ -484,6 +491,7 @@
 	panel@0 {
 		compatible = "nt37703,fhdp,dsi,vdo,tm,panda,x6710";
 		reg = <0x00>;
+		panel-boot-on;
 		reset-gpios = <&pio 0x2a 0x00>;
 		vci-supply = <&mt_pmic_vio28_ldo_reg>;
 		dvdd-supply = <&et5904_ldo14>;
@@ -542,14 +550,16 @@
 		regulators {
 			et5904_ldo14: ET5904LDO14 {
 				regulator-name = "ET5904LDO14";
-				regulator-min-microvolt = <0x927c0>;
+				regulator-min-microvolt = <0x1b7740>;
 				regulator-max-microvolt = <0x1b7740>;
+				regulator-boot-on;
 			};
 
 			et5904_ldo24: ET5904LDO24 {
 				regulator-name = "ET5904LDO24";
-				regulator-min-microvolt = <0x927c0>;
-				regulator-max-microvolt = <0x1b7740>;
+				regulator-min-microvolt = <0x149970>;
+				regulator-max-microvolt = <0x149970>;
+				regulator-boot-on;
 			};
 
 			et5904_ldo34: ET5904LDO34 {
