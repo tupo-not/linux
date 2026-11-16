@@ -12,7 +12,10 @@
 
 #include <dt-bindings/clock/mediatek,mt6893-clk.h>
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/phy/phy.h>
+#include <dt-bindings/thermal/mediatek,lvts-thermal.h>
+#include <dt-bindings/thermal/thermal.h>
 #include <dt-bindings/pinctrl/mt65xx.h>
 #include <dt-bindings/reset/mediatek,mt6893-resets.h>
 #include "mt6893.dtsi"
@@ -365,6 +368,201 @@
 		};
 	};
 
+	/* LVTS calibration eFuse (stock data1 @0x1d0/0x10, data2 @0x2f8/0x48). */
+	efuse: efuse@11c10000 {
+		compatible = "mediatek,mt6893-efuse", "mediatek,efuse";
+		reg = <0 0x11c10000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		lvts_efuse_data1: lvts-calib@1d0 {
+			reg = <0x1d0 0x10>;
+		};
+		lvts_efuse_data2: lvts-calib@2f8 {
+			reg = <0x2f8 0x48>;
+		};
+	};
+
+	/* Fuel gauge stand-in: OCV from the MT6360 VBAT ADC, mapped through the
+	 * stock battery0_profile_t1 curve.  No vendor gauge driver upstream. */
+	battery {
+		compatible = "chopin,adc-battery";
+		io-channels = <&mt6360_adc 4>;
+		io-channel-names = "vbat";
+		power-supplies = <&mt6360_chg>;
+	};
+
+	lvts: thermal-sensor@1100b000 {
+		compatible = "mediatek,mt6893-lvts";
+		reg = <0 0x1100b000 0 0x1000>;
+		interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&infracfg_ao CLK_INFRA_AO_THERM>;
+		clock-names = "lvts_clk";
+		nvmem-cells = <&lvts_efuse_data1>, <&lvts_efuse_data2>;
+		nvmem-cell-names = "lvts-calib-data-1", "lvts-calib-data-2";
+		#thermal-sensor-cells = <1>;
+		status = "okay";
+	};
+
+	thermal-zones {
+		lvts-ts8 {
+			polling-delay = <1000>;
+			polling-delay-passive = <250>;
+			thermal-sensors = <&lvts MT6893_LVTS_TS8>;
+
+			trips {
+				ts8_alert: trip-alert {
+					temperature = <70000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				trip-crit {
+					temperature = <95000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map {
+					trip = <&ts8_alert>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+
+		lvts-ts10 {
+			polling-delay = <1000>;
+			polling-delay-passive = <250>;
+			thermal-sensors = <&lvts MT6893_LVTS_TS10>;
+
+			trips {
+				ts10_alert: trip-alert {
+					temperature = <70000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				trip-crit {
+					temperature = <95000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map {
+					trip = <&ts10_alert>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+
+		lvts-ts12 {
+			polling-delay = <1000>;
+			polling-delay-passive = <250>;
+			thermal-sensors = <&lvts MT6893_LVTS_TS12>;
+
+			trips {
+				ts12_alert: trip-alert {
+					temperature = <70000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				trip-crit {
+					temperature = <95000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map {
+					trip = <&ts12_alert>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+
+		lvts-ts13 {
+			polling-delay = <1000>;
+			polling-delay-passive = <250>;
+			thermal-sensors = <&lvts MT6893_LVTS_TS13>;
+
+			trips {
+				ts13_alert: trip-alert {
+					temperature = <70000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				trip-crit {
+					temperature = <95000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map {
+					trip = <&ts13_alert>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+	};
+};
+
+/* LVTS trips drive cpufreq cooling; every CPU must be a cooling device. */
+&cpu0 {
+	#cooling-cells = <2>;
+};
+&cpu1 {
+	#cooling-cells = <2>;
+};
+&cpu2 {
+	#cooling-cells = <2>;
+};
+&cpu3 {
+	#cooling-cells = <2>;
+};
+&cpu4 {
+	#cooling-cells = <2>;
+};
+&cpu5 {
+	#cooling-cells = <2>;
+};
+&cpu6 {
+	#cooling-cells = <2>;
+};
+&cpu7 {
+	#cooling-cells = <2>;
 };
 
 /* ------------------------------------------------------------------ */
@@ -642,13 +840,19 @@
 /* i2c0: FocalTech FT3681 touch panel */
 &i2c0 {
 	status = "okay";
+	/* Match the vendor touch bus: open-drain, 400 kHz. */
+	mediatek,use-open-drain;
+	clock-frequency = <400000>;
 
 	touchscreen@38 {
 		compatible = "focaltech,fts";
 		reg = <0x38>;
+		/* vtouch is MT6360 LDO2 ("vtp") in the stock design. */
+		vtouch-supply = <&mt_pmic_vtp_ldo_reg>;
 		interrupt-parent = <&pio>;
 		interrupts = <0x15 0x02>;
-		reset-gpios = <&pio 0x14 0x00>;
+		/* FT3681 reset is active low (vendor drives 0 then 1). */
+		reset-gpios = <&pio 0x14 GPIO_ACTIVE_LOW>;
 		focaltech,max-touch-number = <0x0a>;
 		focaltech,display-coords = <0x00 0x00 0x438 0x960>;
 		status = "okay";
@@ -723,7 +927,7 @@
 		wakeup-source;
 		status = "okay";
 
-		charger {
+		mt6360_chg: charger {
 			compatible = "mediatek,mt6360-chg";
 			richtek,vinovp-microvolt = <0xdd40a0>;
 			status = "okay";
