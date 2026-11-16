@@ -38,12 +38,21 @@ struct chopin_bat {
 	bool cap_valid;
 };
 
-/* Open-circuit voltage -> capacity, for a 5 Ah cell (see simple-battery node). */
+/* Open-circuit voltage -> capacity, derived from the stock
+ * battery0_profile_t1 (25 C) table in the vendor DT: column 1 is OCV in
+ * 0.1 mV units, column 0 is used charge out of 50855 (0.1 mAh).  Every third
+ * row is kept plus the endpoints; the curve is monotonically descending.
+ */
 static const struct { int mv; int pct; } chopin_curve[] = {
-	{ 4450, 100 }, { 4300, 95 }, { 4200, 88 }, { 4100, 78 },
-	{ 4000, 66 },  { 3900, 53 }, { 3800, 40 }, { 3720, 30 },
-	{ 3650, 21 },  { 3550, 12 }, { 3450, 5 },  { 3350, 1 },
-	{ 3200, 0 },
+	{ 4438, 100 }, { 4402,  97 }, { 4371,  94 }, { 4339,  91 },
+	{ 4304,  88 }, { 4267,  85 }, { 4230,  82 }, { 4192,  79 },
+	{ 4156,  76 }, { 4121,  73 }, { 4087,  70 }, { 4055,  67 },
+	{ 4025,  64 }, { 3996,  61 }, { 3965,  58 }, { 3921,  55 },
+	{ 3894,  52 }, { 3874,  48 }, { 3857,  45 }, { 3842,  42 },
+	{ 3828,  39 }, { 3816,  36 }, { 3806,  33 }, { 3796,  30 },
+	{ 3781,  27 }, { 3766,  24 }, { 3752,  21 }, { 3737,  18 },
+	{ 3718,  15 }, { 3699,  12 }, { 3695,   9 }, { 3667,   6 },
+	{ 3499,   3 }, { 2836,   0 },
 };
 
 static int chopin_vbat_to_capacity(int mv)
@@ -154,7 +163,7 @@ static enum power_supply_property chopin_bat_props[] = {
 };
 
 static const struct power_supply_desc chopin_bat_desc = {
-	.name		= "chopin-battery",
+	.name		= "BAT0",
 	.type		= POWER_SUPPLY_TYPE_BATTERY,
 	.properties	= chopin_bat_props,
 	.num_properties	= ARRAY_SIZE(chopin_bat_props),
