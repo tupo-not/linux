@@ -165,9 +165,12 @@ struct xhci_hcd_mtk {
 	int u3p_dis_msk;
 	struct clk_bulk_data clks[BULK_CLKS_NUM];
 	struct regulator_bulk_data supplies[BULK_VREGS_NUM];
+	int irq;
 	unsigned int has_ippc:1;
 	unsigned int lpm_support:1;
 	unsigned int u2_lpm_disable:1;
+	unsigned int hcd_added:1;
+	unsigned int setup_done:1;
 	/* usb remote wakeup */
 	unsigned int uwk_en:1;
 	struct regmap *uwk;
@@ -184,6 +187,7 @@ static inline struct xhci_hcd_mtk *hcd_to_mtk(struct usb_hcd *hcd)
 
 int xhci_mtk_sch_init(struct xhci_hcd_mtk *mtk);
 void xhci_mtk_sch_exit(struct xhci_hcd_mtk *mtk);
+int xhci_mtk_set_host_role(struct device *dev, bool host);
 int xhci_mtk_add_ep(struct usb_hcd *hcd, struct usb_device *udev,
 		    struct usb_host_endpoint *ep);
 int xhci_mtk_drop_ep(struct usb_hcd *hcd, struct usb_device *udev,

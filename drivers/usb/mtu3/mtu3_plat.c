@@ -289,10 +289,14 @@ static int get_ssusb_rscs(struct platform_device *pdev, struct ssusb_mtk *ssusb)
 	of_property_read_u32(node, "mediatek,u2p-dis-msk",
 			     &ssusb->u2p_dis_msk);
 
-	otg_sx->vbus = devm_regulator_get(dev, "vbus");
+	otg_sx->vbus = devm_regulator_get_optional(dev, "vbus");
 	if (IS_ERR(otg_sx->vbus)) {
-		dev_err(dev, "failed to get vbus\n");
-		return PTR_ERR(otg_sx->vbus);
+		if (PTR_ERR(otg_sx->vbus) != -ENODEV) {
+			dev_err(dev, "failed to get vbus\n");
+			return PTR_ERR(otg_sx->vbus);
+		}
+		/* OTG VBUS is driven by the charger/TCPM on this board. */
+		otg_sx->vbus = NULL;
 	}
 
 	if (ssusb->dr_mode == USB_DR_MODE_HOST)

@@ -453,6 +453,11 @@ static int ssusb_vbus_show(struct seq_file *sf, void *unused)
 	struct ssusb_mtk *ssusb = sf->private;
 	struct otg_switch_mtk *otg_sx = &ssusb->otg_switch;
 
+	if (!otg_sx->vbus) {
+		seq_puts(sf, "vbus state: managed by charger\n");
+		return 0;
+	}
+
 	seq_printf(sf, "vbus state: %s\n(echo on/off)\n",
 		   str_on_off(regulator_is_enabled(otg_sx->vbus)));
 

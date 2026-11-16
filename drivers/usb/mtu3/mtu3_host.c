@@ -13,6 +13,7 @@
 #include <linux/mfd/syscon.h>
 #include <linux/of.h>
 #include <linux/of_platform.h>
+#include <linux/platform_device.h>
 #include <linux/regmap.h>
 
 #include "mtu3.h"
@@ -349,13 +350,18 @@ static void ssusb_host_setup(struct ssusb_mtk *ssusb)
 	ssusb_host_enable(ssusb);
 	ssusb_set_force_mode(ssusb, MTU3_DR_FORCE_HOST);
 
-	/* if port0 supports dual-role, works as host mode by default */
-	ssusb_set_vbus(&ssusb->otg_switch, 1);
+	/*
+	 * When a role switch is present VBUS belongs to the Type-C port
+	 * manager (and, here, the charger's OTG boost); forcing it on at
+	 * probe would source 5V before any role was requested.
+	 */
+	if (!ssusb->otg_switch.role_sw_used)
+		ssusb_set_vbus(&ssusb->otg_switch, 1);
 }
 
 static void ssusb_host_cleanup(struct ssusb_mtk *ssusb)
 {
-	if (ssusb->is_host)
+	if (!ssusb->otg_switch.role_sw_used && ssusb->is_host)
 		ssusb_set_vbus(&ssusb->otg_switch, 0);
 
 	ssusb_host_disable(ssusb);
@@ -390,4 +396,35 @@ void ssusb_host_exit(struct ssusb_mtk *ssusb)
 {
 	of_platform_depopulate(ssusb->dev);
 	ssusb_host_cleanup(ssusb);
+}
+
+/*
+ * The xHCI is a child platform device of the OTG controller.  It must be
+ * stopped before port0 is muxed to the device controller, and restarted
+ * after it is muxed back to the host, otherwise it keeps touching a
+ * controller whose port has been taken away and the HC eventually dies.
+ */
+int ssusb_host_role_switch(struct ssusb_mtk *ssusb, bool to_host)
+{
+	struct platform_device *xhci_pdev;
+	struct device_node *np;
+	int ret;
+
+	np = of_get_compatible_child(ssusb->dev->of_node, "mediatek,mtk-xhci");
+	if (!np)
+		return 0;
+
+	xhci_pdev = of_find_device_by_node(np);
+	of_node_put(np);
+	if (!xhci_pdev)
+		return 0;
+
+	ret = xhci_mtk_set_host_role(&xhci_pdev->dev, to_host);
+	platform_device_put(xhci_pdev);
+
+	/* The child may not have probed yet during the initial role setup. */
+	if (ret == -ENODEV)
+		ret = 0;
+
+	return ret;
 }

@@ -131,56 +131,114 @@ static void ssusb_mode_sw_work(struct work_struct *work)
 		container_of(work, struct otg_switch_mtk, dr_work);
 	struct ssusb_mtk *ssusb = otg_sx_to_ssusb(otg_sx);
 	struct mtu3 *mtu = ssusb->u3d;
-	enum usb_role desired_role = otg_sx->desired_role;
-	enum usb_role current_role;
+	unsigned long flags;
+	int ret;
 
-	current_role = ssusb->is_host ? USB_ROLE_HOST : USB_ROLE_DEVICE;
-
-	if (desired_role == USB_ROLE_NONE) {
-		/* the default mode is host as probe does */
-		desired_role = USB_ROLE_HOST;
-		if (otg_sx->default_role == USB_ROLE_DEVICE)
-			desired_role = USB_ROLE_DEVICE;
-	}
-
-	if (current_role == desired_role)
-		return;
-
-	dev_dbg(ssusb->dev, "set role : %s\n", usb_role_string(desired_role));
-	mtu3_dbg_trace(ssusb->dev, "set role : %s", usb_role_string(desired_role));
 	pm_runtime_get_sync(ssusb->dev);
 
-	switch (desired_role) {
-	case USB_ROLE_HOST:
-		ssusb_set_force_mode(ssusb, MTU3_DR_FORCE_HOST);
-		mtu3_stop(mtu);
-		switch_port_to_host(ssusb);
-		ssusb_set_vbus(otg_sx, 1);
-		ssusb->is_host = true;
-		break;
-	case USB_ROLE_DEVICE:
-		ssusb_set_force_mode(ssusb, MTU3_DR_FORCE_DEVICE);
-		ssusb->is_host = false;
-		ssusb_set_vbus(otg_sx, 0);
-		switch_port_to_device(ssusb);
-		mtu3_start(mtu);
-		break;
-	case USB_ROLE_NONE:
-	default:
-		dev_err(ssusb->dev, "invalid role\n");
+	/*
+	 * A new role may be requested while a transition is still running
+	 * (e.g. plugging an OTG adapter right after the previous unplug).
+	 * queue_work() would then return without scheduling anything because
+	 * the work is already running, and the port would be left in the old
+	 * role until the next plug event.  Re-evaluate the latest request
+	 * after every transition and keep switching until it is satisfied.
+	 */
+	for (;;) {
+		enum usb_role desired_role, current_role;
+
+		spin_lock_irqsave(&otg_sx->dr_lock, flags);
+		desired_role = otg_sx->desired_role;
+		current_role = ssusb->is_host ?
+			USB_ROLE_HOST : USB_ROLE_DEVICE;
+		if (desired_role == USB_ROLE_NONE) {
+			/* the default mode is host as probe does */
+			desired_role = USB_ROLE_HOST;
+			if (otg_sx->default_role == USB_ROLE_DEVICE)
+				desired_role = USB_ROLE_DEVICE;
+		}
+		if (current_role == desired_role) {
+			otg_sx->dr_scheduled = false;
+			spin_unlock_irqrestore(&otg_sx->dr_lock, flags);
+			break;
+		}
+		spin_unlock_irqrestore(&otg_sx->dr_lock, flags);
+
+		dev_dbg(ssusb->dev, "set role : %s\n",
+			usb_role_string(desired_role));
+		mtu3_dbg_trace(ssusb->dev, "set role : %s",
+			       usb_role_string(desired_role));
+
+		switch (desired_role) {
+		case USB_ROLE_HOST:
+			/*
+			 * Routing port0 to the host controller is a VBUS session
+			 * drop for the device controller.  Notify the gadget
+			 * driver while the device IP is still powered so it
+			 * disables its endpoints and flushes the QMU; otherwise
+			 * stale active QMU state is carried into the next device
+			 * session and the data path stalls.
+			 */
+			spin_lock_irqsave(&mtu->lock, flags);
+			mtu->connected = false;
+			mtu3_gadget_disconnect(mtu);
+			spin_unlock_irqrestore(&mtu->lock, flags);
+			ssusb_set_force_mode(ssusb, MTU3_DR_FORCE_HOST);
+			mtu3_stop(mtu);
+			switch_port_to_host(ssusb);
+			if (!otg_sx->role_sw_used)
+				ssusb_set_vbus(otg_sx, 1);
+			ssusb->is_host = true;
+			ret = ssusb_host_role_switch(ssusb, true);
+			if (ret)
+				dev_warn(ssusb->dev,
+					 "failed to start xHCI: %d\n", ret);
+			break;
+		case USB_ROLE_DEVICE:
+			ret = ssusb_host_role_switch(ssusb, false);
+			if (ret)
+				dev_warn(ssusb->dev,
+					 "failed to stop xHCI: %d\n", ret);
+			ssusb_set_force_mode(ssusb, MTU3_DR_FORCE_DEVICE);
+			ssusb->is_host = false;
+			if (!otg_sx->role_sw_used)
+				ssusb_set_vbus(otg_sx, 0);
+			switch_port_to_device(ssusb);
+			mtu3_start(mtu);
+			break;
+		case USB_ROLE_NONE:
+		default:
+			dev_err(ssusb->dev, "invalid role\n");
+			spin_lock_irqsave(&otg_sx->dr_lock, flags);
+			otg_sx->dr_scheduled = false;
+			spin_unlock_irqrestore(&otg_sx->dr_lock, flags);
+			pm_runtime_put(ssusb->dev);
+			return;
+		}
 	}
+
 	pm_runtime_put(ssusb->dev);
 }
 
 static void ssusb_set_mode(struct otg_switch_mtk *otg_sx, enum usb_role role)
 {
 	struct ssusb_mtk *ssusb = otg_sx_to_ssusb(otg_sx);
+	unsigned long flags;
+	bool kick = false;
 
 	if (ssusb->dr_mode != USB_DR_MODE_OTG)
 		return;
 
+	spin_lock_irqsave(&otg_sx->dr_lock, flags);
 	otg_sx->desired_role = role;
-	queue_work(system_freezable_wq, &otg_sx->dr_work);
+	if (!otg_sx->dr_scheduled) {
+		otg_sx->dr_scheduled = true;
+		kick = true;
+	}
+	spin_unlock_irqrestore(&otg_sx->dr_lock, flags);
+
+	if (kick)
+		queue_work(system_freezable_wq, &otg_sx->dr_work);
 }
 
 static int ssusb_id_notifier(struct notifier_block *nb,
@@ -311,6 +369,7 @@ int ssusb_otg_switch_init(struct ssusb_mtk *ssusb)
 	int ret = 0;
 
 	INIT_WORK(&otg_sx->dr_work, ssusb_mode_sw_work);
+	spin_lock_init(&otg_sx->dr_lock);
 
 	if (otg_sx->manual_drd_enabled)
 		ssusb_dr_debugfs_init(ssusb);

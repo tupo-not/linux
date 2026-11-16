@@ -380,12 +380,22 @@ void mtu3_start(struct mtu3 *mtu)
 
 void mtu3_stop(struct mtu3 *mtu)
 {
+	bool softconnect = mtu->softconnect;
+
 	dev_dbg(mtu->dev, "%s\n", __func__);
 
 	mtu3_intr_disable(mtu);
 
 	if (mtu->softconnect)
 		mtu3_dev_on_off(mtu, 0);
+
+	/*
+	 * mtu3_dev_on_off() keeps softconnect in sync with the hardware, but
+	 * here the pullup is only dropped because port0 is being handed over
+	 * to the host controller.  Keep the gadget driver's request so that
+	 * mtu3_start() reconnects when the port is muxed back to device mode.
+	 */
+	mtu->softconnect = softconnect;
 
 	mtu->is_active = 0;
 	mtu3_dev_power_down(mtu);

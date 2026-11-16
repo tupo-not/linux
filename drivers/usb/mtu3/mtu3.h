@@ -205,6 +205,8 @@ struct mtu3_gpd_ring {
 * @edev: external connector used to detect vbus and iddig changes
 * @id_nb : notifier for iddig(idpin) detection
 * @dr_work : work for drd mode switch, used to avoid sleep in atomic context
+* @dr_lock : protects @desired_role and @dr_scheduled
+* @dr_scheduled : true while @dr_work is queued or running
 * @desired_role : role desired to switch
 * @default_role : default mode while usb role is USB_ROLE_NONE
 * @role_sw : use USB Role Switch to support dual-role switch, can't use
@@ -219,6 +221,8 @@ struct otg_switch_mtk {
 	struct extcon_dev *edev;
 	struct notifier_block id_nb;
 	struct work_struct dr_work;
+	spinlock_t dr_lock;
+	bool dr_scheduled;
 	enum usb_role desired_role;
 	enum usb_role default_role;
 	struct usb_role_switch *role_sw;

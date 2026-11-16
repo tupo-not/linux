@@ -483,7 +483,10 @@ static int xhci_mtk_setup(struct usb_hcd *hcd)
 		if (ret)
 			return ret;
 
-		xhci_mtk_init_quirk(mtk);
+		if (!mtk->setup_done) {
+			xhci_mtk_init_quirk(mtk);
+			mtk->setup_done = 1;
+		}
 	}
 
 	ret = xhci_gen_setup(hcd, xhci_mtk_quirks);
@@ -548,6 +551,8 @@ static int xhci_mtk_probe(struct platform_device *pdev)
 		if (irq < 0)
 			return irq;
 	}
+
+	mtk->irq = irq;
 
 	wakeup_irq = platform_get_irq_byname_optional(pdev, "wakeup");
 	if (wakeup_irq == -EPROBE_DEFER)
@@ -673,6 +678,8 @@ static int xhci_mtk_probe(struct platform_device *pdev)
 	pm_runtime_put_autosuspend(dev);
 	pm_runtime_forbid(dev);
 
+	mtk->hcd_added = 1;
+
 	return 0;
 
 dealloc_usb3_hcd:
@@ -743,6 +750,13 @@ static int __maybe_unused xhci_mtk_suspend(struct device *dev)
 	struct usb_hcd *shared_hcd = xhci->shared_hcd;
 	int ret;
 
+	/*
+	 * The OTG port is muxed to the device controller and the HCD is gone;
+	 * the IPPC is owned by mtu3 in this state, leave it alone.
+	 */
+	if (!mtk->hcd_added)
+		return 0;
+
 	xhci_dbg(xhci, "%s: stop port polling\n", __func__);
 	clear_bit(HCD_FLAG_POLL_RH, &hcd->flags);
 	timer_delete_sync(&hcd->rh_timer);
@@ -777,6 +791,9 @@ static int __maybe_unused xhci_mtk_resume(struct device *dev)
 	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
 	struct usb_hcd *shared_hcd = xhci->shared_hcd;
 	int ret;
+
+	if (!mtk->hcd_added)
+		return 0;
 
 	usb_wakeup_set(mtk, false);
 	ret = clk_bulk_prepare_enable(BULK_CLKS_NUM, mtk->clks);
@@ -859,6 +876,66 @@ static struct platform_driver mtk_xhci_driver = {
 		.of_match_table = mtk_xhci_of_match,
 	},
 };
+
+/*
+ * xhci_mtk_set_host_role - quiesce or restart the host controller
+ * @dev: the xHCI platform device
+ * @host: true to (re)start host mode, false to stop it
+ *
+ * The MediaTek OTG glue (mtu3) owns the port0 mux.  When it routes port0 to
+ * the device controller the xHCI must be stopped first, otherwise it keeps
+ * touching a controller whose port has been taken away and eventually dies.
+ * Routing the port back to the host requires a full HCD re-init.
+ *
+ * Called with the xHCI platform device held by the caller (of_find_device).
+ */
+int xhci_mtk_set_host_role(struct device *dev, bool host)
+{
+	struct xhci_hcd_mtk *mtk;
+	struct usb_hcd *hcd;
+	struct xhci_hcd *xhci;
+	int ret = 0;
+
+	device_lock(dev);
+	if (dev->driver != &mtk_xhci_driver.driver) {
+		ret = -ENODEV;
+		goto out;
+	}
+
+	mtk = dev_get_drvdata(dev);
+	hcd = mtk->hcd;
+	xhci = hcd_to_xhci(hcd);
+
+	if (host == !!mtk->hcd_added)
+		goto out;
+
+	if (host) {
+		ret = usb_add_hcd(hcd, mtk->irq, IRQF_SHARED);
+		if (ret)
+			goto out;
+
+		if (xhci->shared_hcd) {
+			ret = usb_add_hcd(xhci->shared_hcd, mtk->irq,
+					  IRQF_SHARED);
+			if (ret) {
+				usb_remove_hcd(hcd);
+				goto out;
+			}
+		}
+
+		mtk->hcd_added = 1;
+	} else {
+		if (xhci->shared_hcd)
+			usb_remove_hcd(xhci->shared_hcd);
+		usb_remove_hcd(hcd);
+		mtk->hcd_added = 0;
+	}
+
+out:
+	device_unlock(dev);
+	return ret;
+}
+EXPORT_SYMBOL_GPL(xhci_mtk_set_host_role);
 
 static int __init xhci_mtk_init(void)
 {

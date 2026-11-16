@@ -14,6 +14,7 @@
 
 int ssusb_host_init(struct ssusb_mtk *ssusb, struct device_node *parent_dn);
 void ssusb_host_exit(struct ssusb_mtk *ssusb);
+int ssusb_host_role_switch(struct ssusb_mtk *ssusb, bool to_host);
 int ssusb_wakeup_of_property_parse(struct ssusb_mtk *ssusb,
 				struct device_node *dn);
 int ssusb_host_resume(struct ssusb_mtk *ssusb, bool p0_skipped);
@@ -31,6 +32,11 @@ static inline int ssusb_host_init(struct ssusb_mtk *ssusb,
 
 static inline void ssusb_host_exit(struct ssusb_mtk *ssusb)
 {}
+
+static inline int ssusb_host_role_switch(struct ssusb_mtk *ssusb, bool to_host)
+{
+	return 0;
+}
 
 static inline int ssusb_wakeup_of_property_parse(
 	struct ssusb_mtk *ssusb, struct device_node *dn)
@@ -51,6 +57,18 @@ static inline int ssusb_host_suspend(struct ssusb_mtk *ssusb)
 static inline void ssusb_wakeup_set(struct ssusb_mtk *ssusb, bool enable)
 {}
 
+#endif
+
+/*
+ * Implemented by the xHCI glue driver, which may be a separate module.
+ */
+#if IS_REACHABLE(CONFIG_USB_XHCI_MTK)
+int xhci_mtk_set_host_role(struct device *dev, bool host);
+#else
+static inline int xhci_mtk_set_host_role(struct device *dev, bool host)
+{
+	return 0;
+}
 #endif
 
 
