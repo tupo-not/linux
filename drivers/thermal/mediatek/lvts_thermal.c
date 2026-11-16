@@ -2070,6 +2070,57 @@ static const struct lvts_data mt8186_lvts_data = {
 	.ops = &lvts_platform_ops_mt7988,
 };
 
+/*
+ * MT6893 (Infinix X6710).  The stock soc_temp_lvts.ko tc table describes six
+ * banks across two internal domains.  We expose the first domain here; the
+ * eFuse payload is 0x58 bytes (data1 0x10 + data2 0x48), so keep every
+ * calibration byte offset inside that window.  The per-sensor offsets are an
+ * initial approximation - the vendor firmware uses a different packing.
+ */
+static const struct lvts_ctrl_data mt6893_lvts_data_ctrl[] = {
+	{
+		.lvts_sensor = {
+			{ .dt_id = MT6893_LVTS_TS8, .cal_offsets = { 0, 1, 2 } },
+			/* TS9 is unpopulated on X6710: reads back as -259 C. */
+			{ .dt_id = MT6893_LVTS_TS9, .cal_offsets = { 3, 4, 5 } },
+		},
+		VALID_SENSOR_MAP(1, 1, 0, 0),
+		.offset = 0x0,
+	},
+	{
+		.lvts_sensor = {
+			{ .dt_id = MT6893_LVTS_TS10, .cal_offsets = { 6, 7, 8 } },
+			/* TS11 is unpopulated on X6710. */
+			{ .dt_id = MT6893_LVTS_TS11, .cal_offsets = { 9, 10, 11 } },
+		},
+		VALID_SENSOR_MAP(1, 1, 0, 0),
+		.offset = 0x100,
+	},
+	{
+		.lvts_sensor = {
+			{ .dt_id = MT6893_LVTS_TS12, .cal_offsets = { 12, 13, 14 } },
+			{ .dt_id = MT6893_LVTS_TS13, .cal_offsets = { 15, 16, 17 } },
+		},
+		VALID_SENSOR_MAP(1, 1, 0, 0),
+		.offset = 0x200,
+	},
+};
+
+static const struct lvts_data mt6893_lvts_data = {
+	.lvts_ctrl	= mt6893_lvts_data_ctrl,
+	.conn_cmd	= default_conn_cmds,
+	.init_cmd	= default_init_cmds,
+	.num_lvts_ctrl	= ARRAY_SIZE(mt6893_lvts_data_ctrl),
+	.num_conn_cmd	= ARRAY_SIZE(default_conn_cmds),
+	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
+	.temp_factor	= LVTS_COEFF_A_MT8195,
+	.temp_offset	= LVTS_COEFF_B_MT8195,
+	.gt_calib_bit_offset = 24,
+	.def_calibration = 35000,
+	.num_cal_offsets = LVTS_NUM_CAL_OFFSETS_MT7988,
+	.ops = &lvts_platform_ops_mt7988,
+};
+
 static const struct lvts_data mt8188_lvts_mcu_data = {
 	.lvts_ctrl	= mt8188_lvts_mcu_data_ctrl,
 	.conn_cmd	= default_conn_cmds,
@@ -2196,6 +2247,7 @@ static const struct of_device_id lvts_of_match[] = {
 	{ .compatible = "mediatek,mt8195-lvts-ap", .data = &mt8195_lvts_ap_data },
 	{ .compatible = "mediatek,mt8196-lvts-mcu", .data = &mt8196_lvts_mcu_data },
 	{ .compatible = "mediatek,mt8196-lvts-ap", .data = &mt8196_lvts_ap_data },
+	{ .compatible = "mediatek,mt6893-lvts", .data = &mt6893_lvts_data },
 	{},
 };
 MODULE_DEVICE_TABLE(of, lvts_of_match);

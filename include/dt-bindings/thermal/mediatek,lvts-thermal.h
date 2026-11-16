@@ -109,4 +109,20 @@
 #define MT8196_AP_BOT2                  6
 #define MT8196_AP_BOT3                  7
 
+/* MT6893 (X6710) - sensor IDs from the stock soc_temp_lvts.ko tc table */
+#define MT6893_LVTS_TS0                 0
+#define MT6893_LVTS_TS1                 1
+#define MT6893_LVTS_TS2                 2
+#define MT6893_LVTS_TS3                 3
+#define MT6893_LVTS_TS4                 4
+#define MT6893_LVTS_TS5                 5
+#define MT6893_LVTS_TS6                 6
+#define MT6893_LVTS_TS7                 7
+#define MT6893_LVTS_TS8                 8
+#define MT6893_LVTS_TS9                 9
+#define MT6893_LVTS_TS10                10
+#define MT6893_LVTS_TS11                11
+#define MT6893_LVTS_TS12                12
+#define MT6893_LVTS_TS13                13
+
 #endif /* __MEDIATEK_LVTS_DT_H */

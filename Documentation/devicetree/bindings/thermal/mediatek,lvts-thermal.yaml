@@ -29,6 +29,7 @@ properties:
       - mediatek,mt8195-lvts-mcu
       - mediatek,mt8196-lvts-ap
       - mediatek,mt8196-lvts-mcu
+      - mediatek,mt6893-lvts
 
   reg:
     maxItems: 1
