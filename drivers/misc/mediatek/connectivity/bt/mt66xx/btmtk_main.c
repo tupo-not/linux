@@ -4194,6 +4194,7 @@ static int btmtk_read_bdaddr(struct btmtk_dev *bdev)
 const struct firmware *fw = NULL;
 struct hci_dev *hdev;
 int ret;
+int i;
 
 if (!bdev || !bdev->hdev)
 return -EINVAL;
@@ -4210,8 +4211,12 @@ ret = -EINVAL;
 goto out;
 }
 
-memcpy(bdev->bdaddr, fw->data, BD_ADDRESS_SIZE);
-memcpy(hdev->bdaddr.b, fw->data, BD_ADDRESS_SIZE);
+/* nvdata stores the address in display order (40 8e f6 a1 6e 34),
+ * while hci_dev->bdaddr.b is little-endian like the HCI wire format.
+ */
+for (i = 0; i < BD_ADDRESS_SIZE; i++)
+	bdev->bdaddr[i] = fw->data[BD_ADDRESS_SIZE - 1 - i];
+memcpy(hdev->bdaddr.b, bdev->bdaddr, BD_ADDRESS_SIZE);
 
 BTMTK_INFO("%s: BT_ADDR %pMR", __func__, &hdev->bdaddr);
 out:
