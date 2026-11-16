@@ -22,6 +22,7 @@
 #include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
 #include <linux/kthread.h>
+#include <linux/reboot.h>
 #include <linux/sched.h>
 #include <linux/dma-mapping.h>
 #include <linux/kmemleak.h>
@@ -5826,10 +5827,24 @@ static void mtk_drm_shutdown(struct platform_device *pdev)
 	struct mtk_drm_private *private = platform_get_drvdata(pdev);
 	struct drm_device *drm = private->drm;
 
-	if (drm) {
-		DDPMSG("%s\n", __func__);
-		drm_atomic_helper_shutdown(drm);
+	if (!drm)
+		return;
+
+	/*
+	 * On poweroff/halt the display engine is about to lose power, but the
+	 * atomic disable commit still waits for a GCE/DSI event that will never
+	 * arrive once the pipe stops.  The CMDQ watchdog then dumps every
+	 * thread for several seconds while the machine is going down.  There is
+	 * nothing to restore in this case, so leave the pipeline alone and let
+	 * the poweroff cut it.
+	 */
+	if (system_state == SYSTEM_POWER_OFF || system_state == SYSTEM_HALT) {
+		dev_info(drm->dev, "poweroff, skipping DRM disable commit\n");
+		return;
 	}
+
+	DDPMSG("%s\n", __func__);
+	drm_atomic_helper_shutdown(drm);
 }
 
 static void mtk_drm_remove(struct platform_device *pdev)
