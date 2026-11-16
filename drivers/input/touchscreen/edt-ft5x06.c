@@ -111,6 +111,10 @@ struct edt_ft5x06_ts_data {
 	struct touchscreen_properties prop;
 	u16 num_x;
 	u16 num_y;
+	/* X6710: take the exact panel resolution from DT instead of the
+	 * num_x/num_y * 64 fallback used by classic FT5x06 firmware. */
+	u32 x_max;
+	u32 y_max;
 	struct regulator *vcc;
 	struct regulator *iovcc;
 
@@ -838,6 +842,30 @@ static int edt_ft5x06_ts_identify(struct i2c_client *client,
 	char *model_name = tsdata->name;
 	char *fw_version = tsdata->fw_version;
 
+	/* FT3681 (Infinix X6710) is a newer FTS-generation part.  The stock
+	 * driver identifies it by reading 0xa3/0x9f and expecting 0x56/0x62;
+	 * the classic 0xbb model string is not implemented.  Its touch report
+	 * packet is nevertheless the standard 6-byte FT layout (register 0x00
+	 * header, points from 0x03), which is GENERIC_FT below.
+	 */
+	if (of_device_is_compatible(client->dev.of_node, "focaltech,fts") ||
+	    of_device_is_compatible(client->dev.of_node, "focaltech,ft3681")) {
+		u8 id[2] = { };
+
+		error = regmap_bulk_read(tsdata->regmap, 0xa3, &id[0], 1);
+		if (!error)
+			error = regmap_bulk_read(tsdata->regmap, 0x9f, &id[1], 1);
+		if (!error && id[0] == 0x56 && (id[1] & 0x7f) == 0x62) {
+			tsdata->version = GENERIC_FT;
+			snprintf(model_name, EDT_NAME_LEN, "FocalTech FT3681");
+			snprintf(fw_version, EDT_NAME_LEN, "%02x%02x", id[0], id[1]);
+			return 0;
+		}
+		dev_warn(&client->dev,
+			 "FT3681 chip ID not recognised (%*ph), trying generic detection\n",
+			 2, id);
+	}
+
 	/* see what we find if we assume it is a M06 *
 	 * if we get less than EDT_NAME_LEN, we don't want
 	 * to have garbage in there
@@ -1109,8 +1137,10 @@ static void edt_ft5x06_disable_regulators(void *arg)
 {
 	struct edt_ft5x06_ts_data *data = arg;
 
-	regulator_disable(data->vcc);
-	regulator_disable(data->iovcc);
+	if (!IS_ERR_OR_NULL(data->vcc))
+		regulator_disable(data->vcc);
+	if (!IS_ERR_OR_NULL(data->iovcc))
+		regulator_disable(data->iovcc);
 }
 
 static int edt_ft5x06_ts_probe(struct i2c_client *client)
@@ -1123,8 +1153,16 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client)
 	unsigned long irq_flags;
 	int error;
 	u32 report_rate;
+	u32 coords[4];
 
 	dev_dbg(&client->dev, "probing for EDT FT5x06 I2C\n");
+
+	if (!device_property_read_u32_array(&client->dev,
+					    "focaltech,display-coords",
+					    coords, ARRAY_SIZE(coords))) {
+		tsdata->x_max = coords[2] - coords[0];
+		tsdata->y_max = coords[3] - coords[1];
+	}
 
 	tsdata = devm_kzalloc(&client->dev, sizeof(*tsdata), GFP_KERNEL);
 	if (!tsdata) {
@@ -1158,34 +1196,44 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client)
 
 	tsdata->max_support_points = chip_data->max_support_points;
 
-	tsdata->vcc = devm_regulator_get(&client->dev, "vcc");
-	if (IS_ERR(tsdata->vcc))
-		return dev_err_probe(&client->dev, PTR_ERR(tsdata->vcc),
-				     "failed to request regulator\n");
-
-	tsdata->iovcc = devm_regulator_get(&client->dev, "iovcc");
-	if (IS_ERR(tsdata->iovcc)) {
-		error = PTR_ERR(tsdata->iovcc);
-		if (error != -EPROBE_DEFER)
-			dev_err(&client->dev,
-				"failed to request iovcc regulator: %d\n", error);
-		return error;
+	/* The X6710 vendor design powers the panel/touch from MT6360 LDO2,
+	 * called "vtp"/"vtouch", at 3.3 V.  Request that supply explicitly for
+	 * the FT3681 so the generic "vcc" name cannot accidentally win. */
+	if (of_device_is_compatible(client->dev.of_node, "focaltech,fts") ||
+	    of_device_is_compatible(client->dev.of_node, "focaltech,ft3681")) {
+		tsdata->vcc = devm_regulator_get_optional(&client->dev, "vtouch");
+		tsdata->iovcc = NULL;
+		if (!IS_ERR_OR_NULL(tsdata->vcc)) {
+			if (regulator_count_voltages(tsdata->vcc) > 0)
+				regulator_set_voltage(tsdata->vcc, 3300000, 3300000);
+			dev_info(&client->dev, "using vtouch supply\n");
+		} else {
+			dev_err(&client->dev, "no vtouch supply\n");
+		}
+	} else {
+		tsdata->vcc = devm_regulator_get_optional(&client->dev, "vcc");
+		tsdata->iovcc = devm_regulator_get_optional(&client->dev, "iovcc");
 	}
 
-	error = regulator_enable(tsdata->iovcc);
-	if (error < 0) {
-		dev_err(&client->dev, "failed to enable iovcc: %d\n", error);
-		return error;
+	if (!IS_ERR_OR_NULL(tsdata->iovcc)) {
+		error = regulator_enable(tsdata->iovcc);
+		if (error < 0) {
+			dev_err(&client->dev, "failed to enable iovcc: %d\n", error);
+			return error;
+		}
 	}
 
 	/* Delay enabling VCC for > 10us (T_ivd) after IOVCC */
 	usleep_range(10, 100);
 
-	error = regulator_enable(tsdata->vcc);
-	if (error < 0) {
-		dev_err(&client->dev, "failed to enable vcc: %d\n", error);
-		regulator_disable(tsdata->iovcc);
-		return error;
+	if (!IS_ERR_OR_NULL(tsdata->vcc)) {
+		error = regulator_enable(tsdata->vcc);
+		if (error < 0) {
+			dev_err(&client->dev, "failed to enable vcc: %d\n", error);
+			if (!IS_ERR_OR_NULL(tsdata->iovcc))
+				regulator_disable(tsdata->iovcc);
+			return error;
+		}
 	}
 
 	error = devm_add_action_or_reset(&client->dev,
@@ -1295,9 +1343,11 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client)
 	input->dev.parent = &client->dev;
 
 	input_set_abs_params(input, ABS_MT_POSITION_X,
-			     0, tsdata->num_x * 64 - 1, 0, 0);
+			     0, tsdata->x_max ? tsdata->x_max - 1 :
+			     tsdata->num_x * 64 - 1, 0, 0);
 	input_set_abs_params(input, ABS_MT_POSITION_Y,
-			     0, tsdata->num_y * 64 - 1, 0, 0);
+			     0, tsdata->y_max ? tsdata->y_max - 1 :
+			     tsdata->num_y * 64 - 1, 0, 0);
 
 	touchscreen_parse_properties(input, true, &tsdata->prop);
 
@@ -1483,6 +1533,11 @@ static const struct edt_i2c_chip_data edt_ft8719_data = {
 	.max_support_points = 10,
 };
 
+/* Infinix X6710: FT3681 behind the "focaltech,fts" vendor compatible. */
+static const struct edt_i2c_chip_data edt_ft3681_data = {
+	.max_support_points = 10,
+};
+
 static const struct i2c_device_id edt_ft5x06_ts_id[] = {
 	{ .name = "edt-ft5x06", .driver_data = (long)&edt_ft5x06_data },
 	{ .name = "edt-ft5506", .driver_data = (long)&edt_ft5506_data },
@@ -1494,6 +1549,8 @@ static const struct i2c_device_id edt_ft5x06_ts_id[] = {
 	{ .name = "ft8201", .driver_data = (long)&edt_ft8201_data },
 	{ .name = "ft8716", .driver_data = (long)&edt_ft8716_data },
 	{ .name = "ft8719", .driver_data = (long)&edt_ft8719_data },
+	{ .name = "ft3681", .driver_data = (long)&edt_ft3681_data },
+	{ .name = "fts", .driver_data = (long)&edt_ft3681_data },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(i2c, edt_ft5x06_ts_id);
@@ -1512,6 +1569,8 @@ static const struct of_device_id edt_ft5x06_of_match[] = {
 	{ .compatible = "focaltech,ft8201", .data = &edt_ft8201_data },
 	{ .compatible = "focaltech,ft8716", .data = &edt_ft8716_data },
 	{ .compatible = "focaltech,ft8719", .data = &edt_ft8719_data },
+	{ .compatible = "focaltech,ft3681", .data = &edt_ft3681_data },
+	{ .compatible = "focaltech,fts", .data = &edt_ft3681_data },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, edt_ft5x06_of_match);
