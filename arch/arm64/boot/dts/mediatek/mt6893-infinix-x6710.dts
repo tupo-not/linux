@@ -400,6 +400,19 @@
 /* The generic T-PHY binding requires a PHY type argument. */
 &{/usb@11201000} {
 	phys = <&u2port PHY_TYPE_USB2>;
+
+	/*
+	 * The OTG boost is owned by the MT6360 charger and driven through the
+	 * TCPM power-role state machine, not by the USB controller.
+	 */
+	/delete-property/ vbus-supply;
+
+	/* Role-switch endpoint consumed by the MT6360 Type-C port manager. */
+	port {
+		usb_role_switch: endpoint {
+			remote-endpoint = <&typec_con_hs>;
+		};
+	};
 };
 
 /* ------------------------------------------------------------------ */
@@ -689,6 +702,16 @@
 &i2c5 {
 	status = "okay";
 
+	/* The PMIC bus is a GIC SPI; do not rely on inheritance here. */
+	interrupt-parent = <&gic>;
+
+	/*
+	 * The MT6360 is only rated for 1 MHz I2C and the 3.4 MHz bus speed
+	 * inherited from the vendor DTS makes charger/TCPC register accesses
+	 * time out, which in turn makes the OPA (OTG VBUS) writes fail.
+	 */
+	clock-frequency = <400000>;
+
 	mt6360_pmu: pmic@34 {
 		compatible = "mediatek,mt6360";
 		reg = <0x34>;
@@ -723,6 +746,7 @@
 			interrupts = <0x19 0x08>;
 			interrupt-names = "PD_IRQB";
 			status = "okay";
+			vbus-supply = <&otg_vbus>;
 
 			connector {
 				compatible = "usb-c-connector";
@@ -733,6 +757,18 @@
 				op-sink-microwatt = <0x19bfcc0>;
 				source-pdos = <0x4019064>;
 				sink-pdos = <0x401912c 0x402d12c 0x403c0e1>;
+
+				ports {
+					#address-cells = <0x01>;
+					#size-cells = <0x00>;
+
+					port@0 {
+						reg = <0x00>;
+						typec_con_hs: endpoint {
+							remote-endpoint = <&usb_role_switch>;
+						};
+					};
+				};
 			};
 		};
 
