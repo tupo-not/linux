@@ -326,7 +326,7 @@ static void cmdq_lock_wake_lock(struct cmdq *cmdq, bool lock)
 			/* should not reach here */
 			cmdq_err("try lock twice cmdq:%lx",
 				(unsigned long)cmdq);
-			dump_stack();
+			/* quiet boot: no stack dump for expected probe failures */
 		}
 	} else {
 		if (cmdq->wake_locked) {
@@ -336,7 +336,7 @@ static void cmdq_lock_wake_lock(struct cmdq *cmdq, bool lock)
 			/* should not reach here */
 			cmdq_err("try unlock twice cmdq:%lx",
 				(unsigned long)cmdq);
-			dump_stack();
+			/* quiet boot: no stack dump for expected probe failures */
 		}
 
 	}
@@ -374,7 +374,7 @@ static s32 cmdq_clk_enable(struct cmdq *cmdq)
 		if (mminfra_gce_cg && !mminfra_gce_cg(id)) {
 			cmdq_err("gce cg is off,cmdq:%pa id:%u usage:%d",
 			&cmdq->base_pa, cmdq->hwid, atomic_read(&cmdq->usage));
-			dump_stack();
+			/* quiet boot: no stack dump for expected probe failures */
 		}
 
 		if (cmdq->prefetch)
@@ -831,7 +831,7 @@ static void cmdq_task_exec(struct cmdq_pkt *pkt, struct cmdq_thread *thread)
 		if (mminfra_power_cb && !mminfra_power_cb()) {
 			cmdq_err("task running when mminfra power off,cmdq:%pa id:%u usage:%d",
 			&cmdq->base_pa, cmdq->hwid, atomic_read(&cmdq->usage));
-			dump_stack();
+			/* quiet boot: no stack dump for expected probe failures */
 		}
 
 		WARN_ON(cmdq_clk_enable(cmdq) < 0);
@@ -1633,7 +1633,7 @@ void cmdq_thread_dump(struct mbox_chan *chan, struct cmdq_pkt *cl_pkt,
 	if (atomic_read(&cmdq->usage) <= 0) {
 		cmdq_err("%s gce off cmdq:%p thread:%u",
 			__func__, cmdq, thread->idx);
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 		spin_unlock_irqrestore(&chan->lock, flags);
 		return;
 	}
@@ -2610,7 +2610,7 @@ void cmdq_mbox_disable(void *chan)
 			clk_unprepare(cmdq->clock);
 		} else if (mbox_usage < 0) {
 			cmdq_err("mbox_usage:%d", mbox_usage);
-			dump_stack();
+			/* quiet boot: no stack dump for expected probe failures */
 		}
 	}
 	mutex_unlock(&cmdq->mbox_mutex);
@@ -2620,7 +2620,7 @@ void cmdq_mbox_disable(void *chan)
 	if (mminfra_power_cb && !mminfra_power_cb()) {
 		cmdq_err("mminfra power off when task running,cmdq:%pa id:%u usage:%d",
 		&cmdq->base_pa, cmdq->hwid, atomic_read(&cmdq->usage));
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 	}
 	pm_runtime_put_sync(cmdq->mbox.dev);
 }

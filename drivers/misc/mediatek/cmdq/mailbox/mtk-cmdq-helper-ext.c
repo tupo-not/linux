@@ -247,7 +247,7 @@ struct cmdq_client *cmdq_mbox_create(struct device *dev, int index)
 	if (IS_ERR(client->chan)) {
 		cmdq_err("channel request fail:%ld idx:%d",
 			PTR_ERR(client->chan), index);
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 		kfree(client);
 		return NULL;
 	}
@@ -590,7 +590,7 @@ static void *cmdq_mbox_buf_alloc_dev(struct device *dev, dma_addr_t *pa_out)
 
 	if (!va) {
 		cmdq_err("alloc dma buffer fail dev:0x%p", dev);
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 		return NULL;
 	}
 
@@ -606,7 +606,7 @@ void *cmdq_mbox_buf_alloc(struct cmdq_client *cl, dma_addr_t *pa_out)
 
 	if (!cl) {
 		cmdq_err("cl is NULL");
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 		return NULL;
 	}
 	mbox_dev = cl->chan->mbox->dev;
@@ -633,7 +633,7 @@ void cmdq_mbox_buf_free(struct cmdq_client *cl, void *va, dma_addr_t pa)
 
 	if (!cl) {
 		cmdq_err("cl is NULL");
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 		return;
 	}
 	mbox_dev = cl->chan->mbox->dev;
@@ -709,7 +709,7 @@ struct cmdq_pkt_buffer *cmdq_pkt_alloc_buf(struct cmdq_pkt *pkt)
 	} else {
 		cmdq_err("pkt->dev is NULL");
 		kfree(buf);
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 		return ERR_PTR(-ENODEV);
 	}
 
@@ -887,7 +887,7 @@ void cmdq_pkt_destroy(struct cmdq_pkt *pkt)
 			cmdq_err("invalid destroy, pkt:%p thd:%d", pkt, thread_id);
 		} else
 			cmdq_err("invalid pkt_destroy, pkt:0x%p", pkt);
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 	}
 #endif
 	pkt->task_alive = false;
@@ -2138,7 +2138,7 @@ s32 cmdq_pkt_refinalize(struct cmdq_pkt *pkt)
 
 	if (cmdq_pkt_is_exec(pkt)) {
 		cmdq_err("pkt still running, skip refinalize");
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 		return 0;
 	}
 
@@ -2505,7 +2505,7 @@ s32 cmdq_pkt_flush_async(struct cmdq_pkt *pkt,
 #endif
 	if (!client) {
 		cmdq_err("client is NULL");
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 		return -EINVAL;
 	}
 

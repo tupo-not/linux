@@ -218,7 +218,7 @@ void cmdq_util_error_disable(void)
 	enable = atomic_dec_return(&util.err.enable);
 	if (enable < 0) {
 		cmdq_err("enable:%d", enable);
-		dump_stack();
+		/* quiet boot: no stack dump for expected probe failures */
 	}
 }
 EXPORT_SYMBOL(cmdq_util_error_disable);
