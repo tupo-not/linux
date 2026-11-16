@@ -1404,7 +1404,7 @@ static int mtk_i2c_probe(struct platform_device *pdev)
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0)
-		return irq;
+		return dev_err_probe(&pdev->dev, irq, "cannot get irq\n");
 
 	init_completion(&i2c->msg_complete);
 
@@ -1419,10 +1419,19 @@ static int mtk_i2c_probe(struct platform_device *pdev)
 	i2c->adap.retries = 1;
 	i2c->adap.bus_regulator = devm_regulator_get_optional(&pdev->dev, "vbus");
 	if (IS_ERR(i2c->adap.bus_regulator)) {
-		if (PTR_ERR(i2c->adap.bus_regulator) == -ENODEV)
+		/*
+		 * The bus supply is only used to power level shifters while a
+		 * transfer is in flight.  It must never gate the adapter
+		 * itself: on this board the supply lives behind the PMIC that
+		 * sits on this very bus, so waiting for it deadlocks the bus.
+		 */
+		if (PTR_ERR(i2c->adap.bus_regulator) == -ENODEV ||
+		    PTR_ERR(i2c->adap.bus_regulator) == -EPROBE_DEFER)
 			i2c->adap.bus_regulator = NULL;
 		else
-			return PTR_ERR(i2c->adap.bus_regulator);
+			return dev_err_probe(&pdev->dev,
+					     PTR_ERR(i2c->adap.bus_regulator),
+					     "cannot get vbus regulator\n");
 	}
 
 	ret = mtk_i2c_parse_dt(pdev->dev.of_node, i2c);
@@ -1438,26 +1447,28 @@ static int mtk_i2c_probe(struct platform_device *pdev)
 
 	/* Get clocks one by one, some may be optional */
 	i2c->clocks[I2C_MT65XX_CLK_MAIN].clk = devm_clk_get(&pdev->dev, "main");
-	if (IS_ERR(i2c->clocks[I2C_MT65XX_CLK_MAIN].clk)) {
-		dev_err(&pdev->dev, "cannot get main clock\n");
-		return PTR_ERR(i2c->clocks[I2C_MT65XX_CLK_MAIN].clk);
-	}
+	if (IS_ERR(i2c->clocks[I2C_MT65XX_CLK_MAIN].clk))
+		return dev_err_probe(&pdev->dev,
+				     PTR_ERR(i2c->clocks[I2C_MT65XX_CLK_MAIN].clk),
+				     "cannot get main clock\n");
 
 	i2c->clocks[I2C_MT65XX_CLK_DMA].clk = devm_clk_get(&pdev->dev, "dma");
-	if (IS_ERR(i2c->clocks[I2C_MT65XX_CLK_DMA].clk)) {
-		dev_err(&pdev->dev, "cannot get dma clock\n");
-		return PTR_ERR(i2c->clocks[I2C_MT65XX_CLK_DMA].clk);
-	}
+	if (IS_ERR(i2c->clocks[I2C_MT65XX_CLK_DMA].clk))
+		return dev_err_probe(&pdev->dev,
+				     PTR_ERR(i2c->clocks[I2C_MT65XX_CLK_DMA].clk),
+				     "cannot get dma clock\n");
 
 	i2c->clocks[I2C_MT65XX_CLK_ARB].clk = devm_clk_get_optional(&pdev->dev, "arb");
 	if (IS_ERR(i2c->clocks[I2C_MT65XX_CLK_ARB].clk))
-		return PTR_ERR(i2c->clocks[I2C_MT65XX_CLK_ARB].clk);
+		return dev_err_probe(&pdev->dev,
+				     PTR_ERR(i2c->clocks[I2C_MT65XX_CLK_ARB].clk),
+				     "cannot get arb clock\n");
 
 	i2c->clocks[I2C_MT65XX_CLK_PMIC].clk = devm_clk_get_optional(&pdev->dev, "pmic");
-	if (IS_ERR(i2c->clocks[I2C_MT65XX_CLK_PMIC].clk)) {
-		dev_err(&pdev->dev, "cannot get pmic clock\n");
-		return PTR_ERR(i2c->clocks[I2C_MT65XX_CLK_PMIC].clk);
-	}
+	if (IS_ERR(i2c->clocks[I2C_MT65XX_CLK_PMIC].clk))
+		return dev_err_probe(&pdev->dev,
+				     PTR_ERR(i2c->clocks[I2C_MT65XX_CLK_PMIC].clk),
+				     "cannot get pmic clock\n");
 
 	if (i2c->have_pmic) {
 		if (!i2c->clocks[I2C_MT65XX_CLK_PMIC].clk) {
