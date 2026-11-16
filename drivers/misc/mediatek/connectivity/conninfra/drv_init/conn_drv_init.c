@@ -28,10 +28,12 @@ int do_connectivity_driver_init(int chip_id)
 	if (tmp_ret)
 		pr_err("Do BT driver init failed, ret:%d\n", tmp_ret);
 
+	/* GPS is intentionally disabled on this board; its stub returns -1.
+	 * Don't fold that into the aggregate or every boot reports a failure.
+	 */
 	tmp_ret = do_gps_drv_init(chip_id);
-	i_ret += tmp_ret;
 	if (tmp_ret)
-		pr_err("Do GPS driver init failed, ret:%d\n", tmp_ret);
+		pr_debug("GPS driver disabled (ret:%d)\n", tmp_ret);
 
 	tmp_ret = do_fm_drv_init(chip_id);
 	i_ret += tmp_ret;
