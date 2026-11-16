@@ -102,7 +102,7 @@
 #define BTMTK_LOG_LVL_INFO	3
 #define BTMTK_LOG_LVL_DBG	4
 #define BTMTK_LOG_LVL_MAX	BTMTK_LOG_LVL_DBG
-#define BTMTK_LOG_LVL_DEF	BTMTK_LOG_LVL_INFO	/* default setting */
+#define BTMTK_LOG_LVL_DEF	BTMTK_LOG_LVL_WARN	/* keep boot dmesg quiet */
 
 #define HCI_SNOOP_ENTRY_NUM	30
 #define HCI_SNOOP_BUF_SIZE	32
