@@ -3615,7 +3615,7 @@
 		};
 	};
 	mali: mali@13000000 {
-		compatible = "mediatek,mt6893-mali";
+		compatible = "mediatek,mt6893-mali", "arm,mali-valhall-jm";
 		reg = <0x0 0x13000000 0x0 0x4000>;
 		clocks = <&topckgen 0x69 &g3d_config 0x0 &scpsys 0x2 &scpsys 0x3 &scpsys 0x4 &scpsys 0x5 &scpsys 0x6 &scpsys 0x7 &scpsys 0x8 &apmixed 0xb &clk26m>;
 		clock-names = "core", "bus", "mtcmos_mfg_async", "mtcmos_mfg", "mtcmos_mfg_core0", "mtcmos_mfg_core1_2", "mtcmos_mfg_core3_4", "mtcmos_mfg_core5_6", "mtcmos_mfg_core7_8", "core_pll", "core_slow";

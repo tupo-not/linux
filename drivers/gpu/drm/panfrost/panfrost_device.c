@@ -324,7 +324,7 @@ static void chopin_mtcmos_on(struct panfrost_device *pfdev)
 	struct device *dev = pfdev->base.dev;
 	int i;
 
-	if (!of_machine_is_compatible("mediatek,MT6893"))
+	if (!of_machine_is_compatible("mediatek,mt6893"))
 		return;
 
 	for (i = 0; i < ARRAY_SIZE(chopin_mtcmos_names); i++) {
@@ -345,7 +345,7 @@ static void chopin_gpu_rails_on(struct device *dev)
 {
 	struct regulator *vsram, *vgpu;
 
-	if (!of_machine_is_compatible("mediatek,MT6893"))
+	if (!of_machine_is_compatible("mediatek,mt6893"))
 		return;
 
 	/* Same order as the vendor gpufreq driver.  Going through the SPM
@@ -380,7 +380,7 @@ static void chopin_mfg_axi_config(struct device *dev)
 	void __iomem *mfg;
 	u32 val;
 
-	if (!of_machine_is_compatible("mediatek,MT6893"))
+	if (!of_machine_is_compatible("mediatek,mt6893"))
 		return;
 
 	np = of_find_compatible_node(NULL, NULL, "mediatek,mt6893-mfgcfg");
