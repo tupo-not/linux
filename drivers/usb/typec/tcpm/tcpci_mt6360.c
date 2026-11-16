@@ -11,6 +11,7 @@
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
+#include <linux/regulator/consumer.h>
 #include <linux/usb/role.h>
 #include <linux/usb/tcpci.h>
 #include <linux/usb/tcpm.h>
@@ -41,6 +42,8 @@ struct mt6360_tcpc_info {
 	struct tcpci_data tdata;
 	struct tcpci *tcpci;
 	struct device *dev;
+	struct regulator *vbus;
+	bool vbus_on;
 	int irq;
 };
 
@@ -158,6 +161,60 @@ static irqreturn_t mt6360_irq(int irq, void *dev_id)
 	return tcpci_irq(mti->tcpci);
 }
 
+/*
+ * The MT6360 OPA (OTG boost) lives in the charger block, not behind the TCPC
+ * command interface, so VBUS is driven through the "usb-otg-vbus" regulator
+ * that the charger driver registers.  The regulator is acquired at probe time
+ * so that the TCPC is only registered once the OPA actually exists; the
+ * charger cell probes first and does not depend on us, so this cannot loop.
+ */
+static int mt6360_tcpc_set_vbus(struct tcpci *tcpci, struct tcpci_data *tdata,
+				bool source, bool sink)
+{
+	struct mt6360_tcpc_info *mti =
+		container_of(tdata, struct mt6360_tcpc_info, tdata);
+	int ret;
+
+	if (!mti->vbus) {
+		if (source)
+			dev_warn_ratelimited(mti->dev,
+					     "no usb-otg-vbus regulator\n");
+		return source ? -ENODEV : 0;
+	}
+
+	if (source == mti->vbus_on)
+		return source ? 1 : 0;
+
+	if (source) {
+		ret = regulator_set_voltage(mti->vbus, 5000000, 5000000);
+		if (ret) {
+			dev_err(mti->dev, "VBUS set 5V failed: %d\n", ret);
+			return ret;
+		}
+
+		ret = regulator_enable(mti->vbus);
+	} else {
+		ret = regulator_disable(mti->vbus);
+	}
+
+	if (ret) {
+		dev_err(mti->dev, "VBUS %s failed: %d\n",
+			source ? "enable" : "disable", ret);
+		return ret;
+	}
+
+	mti->vbus_on = source;
+	dev_dbg(mti->dev, "VBUS %s\n", source ? "on" : "off");
+
+	/*
+	 * Source VBUS is fully handled by the charger's OPA; issuing
+	 * TCPC_CMD_SRC_VBUS_DEFAULT on this chip would only fight it.  Keep
+	 * the generic sink/disable commands, which are what the charger's
+	 * input path expects.
+	 */
+	return source ? 1 : 0;
+}
+
 static int mt6360_tcpc_probe(struct platform_device *pdev)
 {
 	struct mt6360_tcpc_info *mti;
@@ -179,7 +236,17 @@ static int mt6360_tcpc_probe(struct platform_device *pdev)
 	if (mti->irq < 0)
 		return mti->irq;
 
+	mti->vbus = devm_regulator_get_optional(&pdev->dev, "vbus");
+	if (IS_ERR(mti->vbus)) {
+		ret = PTR_ERR(mti->vbus);
+		if (ret != -ENODEV)
+			return dev_err_probe(&pdev->dev, ret,
+					     "Failed to get vbus regulator\n");
+		mti->vbus = NULL;
+	}
+
 	mti->tdata.init = mt6360_tcpc_init;
+	mti->tdata.set_vbus = mt6360_tcpc_set_vbus;
 
 	mti->tcpci = tcpci_register_port(&pdev->dev, &mti->tdata);
 	if (IS_ERR(mti->tcpci)) {
@@ -205,12 +272,18 @@ static int mt6360_tcpc_probe(struct platform_device *pdev)
 	 * detection (it polls) but never sees a PD Source_Capabilities, so
 	 * VBUS stays at 5 V.
 	 *
-	 * Unmask what tcpci_init() asks for.
+	 * Unmask what tcpci_init() asks for.  This includes
+	 * TCPC_ALERT_POWER_STATUS (tcpci_init() always sets controls_vbus):
+	 * without it TCPM never gets tcpm_vbus_change() after it turns on
+	 * source VBUS, so it sits in SRC_ATTACHED until PD_T_PS_SOURCE_ON
+	 * (480 ms) expires and then detaches, cutting VBUS and switching the
+	 * port back to device mode.
 	 */
 	{
 		u16 mask = TCPC_ALERT_TX_SUCCESS | TCPC_ALERT_TX_FAILED |
 			   TCPC_ALERT_TX_DISCARDED | TCPC_ALERT_RX_STATUS |
-			   TCPC_ALERT_RX_HARD_RST | TCPC_ALERT_CC_STATUS;
+			   TCPC_ALERT_RX_HARD_RST | TCPC_ALERT_CC_STATUS |
+			   TCPC_ALERT_POWER_STATUS;
 
 		ret = mti->tdata.regmap ? mt6360_tcpc_write16(mti->tdata.regmap,
 							TCPC_ALERT_MASK, mask) : -ENODEV;

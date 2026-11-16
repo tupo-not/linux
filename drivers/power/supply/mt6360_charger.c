@@ -129,6 +129,9 @@ struct mt6360_chg_info {
 	struct power_supply *psy;
 	struct regulator_dev *otg_rdev;
 	struct mutex chgdet_lock;
+	struct mutex ctrl1_lock;
+	u8 chg_ctrl1;
+	u8 chg_ctrl5;
 	u32 vinovp;
 	bool pwr_rdy;
 	bool bc12_en;
@@ -360,15 +363,40 @@ static int mt6360_charger_get_ieoc(struct mt6360_chg_info *mci,
 	return ret;
 }
 
+/*
+ * CHG_CTRL1 is written with a plain register write backed by a shadow copy.
+ * update_bits() performs a read-modify-write, and on this PMIC a read can
+ * block for several seconds while the charger block is busy.  More importantly,
+ * if that read times out the OPA bit is never cleared, so the phone keeps
+ * sourcing 5V over VBUS while it is supposed to be a USB device.
+ */
+static int mt6360_chg_write_ctrl1(struct mt6360_chg_info *mci, u8 mask, u8 val)
+{
+	u8 tmp = (mci->chg_ctrl1 & ~mask) | (val & mask);
+	int ret;
+
+	ret = regmap_write(mci->regmap, MT6360_PMU_CHG_CTRL1, tmp);
+	if (ret) {
+		dev_err(mci->dev, "Failed to write CHG_CTRL1: %d\n", ret);
+		return ret;
+	}
+
+	mci->chg_ctrl1 = tmp;
+	return 0;
+}
+
 static int mt6360_charger_set_online(struct mt6360_chg_info *mci,
 				     const union power_supply_propval *val)
 {
 	u8 force_sleep = val->intval ? 0 : 1;
+	int ret;
 
-	return regmap_update_bits(mci->regmap,
-				  MT6360_PMU_CHG_CTRL1,
-				  MT6360_FSLP_MASK,
-				  force_sleep << MT6360_FSLP_SHFT);
+	mutex_lock(&mci->ctrl1_lock);
+	ret = mt6360_chg_write_ctrl1(mci, MT6360_FSLP_MASK,
+				     force_sleep << MT6360_FSLP_SHFT);
+	mutex_unlock(&mci->ctrl1_lock);
+
+	return ret;
 }
 
 static int mt6360_charger_set_ichg(struct mt6360_chg_info *mci,
@@ -573,13 +601,75 @@ static const struct power_supply_desc mt6360_charger_desc = {
 				  BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN),
 };
 
+static int mt6360_chg_otg_enable(struct regulator_dev *rdev)
+{
+	struct mt6360_chg_info *mci = rdev_get_drvdata(rdev);
+	int ret;
+
+	mutex_lock(&mci->ctrl1_lock);
+	ret = mt6360_chg_write_ctrl1(mci, MT6360_OPA_MODE_MASK | MT6360_FSLP_MASK,
+				     MT6360_OPA_MODE_MASK);
+	if (!ret)
+		dev_info(mci->dev, "OTG boost on: CTRL1=%#x CTRL5=%#x\n",
+			 mci->chg_ctrl1, mci->chg_ctrl5);
+	mutex_unlock(&mci->ctrl1_lock);
+
+	return ret;
+}
+
+static int mt6360_chg_otg_disable(struct regulator_dev *rdev)
+{
+	struct mt6360_chg_info *mci = rdev_get_drvdata(rdev);
+	int ret;
+
+	mutex_lock(&mci->ctrl1_lock);
+	ret = mt6360_chg_write_ctrl1(mci, MT6360_OPA_MODE_MASK, 0);
+	if (!ret)
+		dev_info(mci->dev, "OTG boost off\n");
+	mutex_unlock(&mci->ctrl1_lock);
+
+	return ret;
+}
+
+static int mt6360_chg_otg_is_enabled(struct regulator_dev *rdev)
+{
+	struct mt6360_chg_info *mci = rdev_get_drvdata(rdev);
+
+	return !!(mci->chg_ctrl1 & MT6360_OPA_MODE_MASK);
+}
+
+static int mt6360_chg_otg_set_voltage_sel(struct regulator_dev *rdev,
+					  unsigned int sel)
+{
+	struct mt6360_chg_info *mci = rdev_get_drvdata(rdev);
+	u8 tmp;
+	int ret;
+
+	mutex_lock(&mci->ctrl1_lock);
+	tmp = (mci->chg_ctrl5 & ~MT6360_VOBST_MASK) |
+	      ((sel << 2) & MT6360_VOBST_MASK);
+	ret = regmap_write(mci->regmap, MT6360_PMU_CHG_CTRL5, tmp);
+	if (!ret)
+		mci->chg_ctrl5 = tmp;
+	mutex_unlock(&mci->ctrl1_lock);
+
+	return ret;
+}
+
+static int mt6360_chg_otg_get_voltage_sel(struct regulator_dev *rdev)
+{
+	struct mt6360_chg_info *mci = rdev_get_drvdata(rdev);
+
+	return (mci->chg_ctrl5 & MT6360_VOBST_MASK) >> 2;
+}
+
 static const struct regulator_ops mt6360_chg_otg_ops = {
 	.list_voltage = regulator_list_voltage_linear,
-	.enable = regulator_enable_regmap,
-	.disable = regulator_disable_regmap,
-	.is_enabled = regulator_is_enabled_regmap,
-	.set_voltage_sel = regulator_set_voltage_sel_regmap,
-	.get_voltage_sel = regulator_get_voltage_sel_regmap,
+	.enable = mt6360_chg_otg_enable,
+	.disable = mt6360_chg_otg_disable,
+	.is_enabled = mt6360_chg_otg_is_enabled,
+	.set_voltage_sel = mt6360_chg_otg_set_voltage_sel,
+	.get_voltage_sel = mt6360_chg_otg_get_voltage_sel,
 };
 
 static const struct regulator_desc mt6360_otg_rdesc = {
@@ -780,6 +870,7 @@ static int mt6360_charger_probe(struct platform_device *pdev)
 	struct mt6360_chg_info *mci;
 	struct power_supply_config charger_cfg = {};
 	struct regulator_config config = { };
+	unsigned int ctrl1, ctrl5;
 	int ret;
 
 	mci = devm_kzalloc(&pdev->dev, sizeof(*mci), GFP_KERNEL);
@@ -789,6 +880,7 @@ static int mt6360_charger_probe(struct platform_device *pdev)
 	mci->dev = &pdev->dev;
 	mci->vinovp = 6500000;
 	mutex_init(&mci->chgdet_lock);
+	mutex_init(&mci->ctrl1_lock);
 	platform_set_drvdata(pdev, mci);
 	ret = devm_work_autocancel(&pdev->dev, &mci->chrdet_work, mt6360_chrdet_work);
 	if (ret)
@@ -801,6 +893,30 @@ static int mt6360_charger_probe(struct platform_device *pdev)
 	mci->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!mci->regmap)
 		return dev_err_probe(&pdev->dev, -ENODEV, "Failed to get parent regmap\n");
+
+	ret = regmap_read(mci->regmap, MT6360_PMU_CHG_CTRL1, &ctrl1);
+	if (ret)
+		dev_warn(&pdev->dev, "Failed to read CHG_CTRL1: %d\n", ret);
+	else
+		mci->chg_ctrl1 = ctrl1;
+
+	ret = regmap_read(mci->regmap, MT6360_PMU_CHG_CTRL5, &ctrl5);
+	if (ret)
+		dev_warn(&pdev->dev, "Failed to read CHG_CTRL5: %d\n", ret);
+	else
+		mci->chg_ctrl5 = ctrl5;
+
+	/*
+	 * Never leave the OTG boost running from the bootloader.  Only TCPM may
+	 * turn it on, once it has actually negotiated the source role.
+	 */
+	if (mci->chg_ctrl1 & MT6360_OPA_MODE_MASK) {
+		ret = mt6360_chg_write_ctrl1(mci, MT6360_OPA_MODE_MASK, 0);
+		if (ret)
+			dev_warn(&pdev->dev,
+				 "Failed to turn off bootloader OTG boost: %d\n",
+				 ret);
+	}
 
 	ret = mt6360_chg_init_setting(mci);
 	if (ret)
@@ -823,10 +939,14 @@ static int mt6360_charger_probe(struct platform_device *pdev)
 
 	config.dev = &pdev->dev;
 	config.regmap = mci->regmap;
+	config.driver_data = mci;
 	mci->otg_rdev = devm_regulator_register(&pdev->dev, &mt6360_otg_rdesc,
 						&config);
 	if (IS_ERR(mci->otg_rdev))
 		return PTR_ERR(mci->otg_rdev);
+
+	dev_info(&pdev->dev, "OTG boost ready: CHG_CTRL1=%#x CHG_CTRL5=%#x\n",
+		 mci->chg_ctrl1, mci->chg_ctrl5);
 
 	schedule_work(&mci->chrdet_work);
 

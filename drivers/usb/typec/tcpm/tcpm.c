@@ -5183,12 +5183,18 @@ static void tcpm_reset_port(struct tcpm_port *port)
 	port->rx_msgid_prime = -1;
 
 	port->tcpc->set_pd_rx(port->tcpc, false);
+	/*
+	 * Route the data mux away before touching VBUS.  On this board the
+	 * source boost is an MT6360 charger I2C write that can block for a long
+	 * time; the role-switch work must be queued first so the gadget can
+	 * come back promptly instead of waiting behind the PMIC.
+	 */
+	tcpm_mux_set(port, TYPEC_STATE_SAFE, USB_ROLE_NONE,
+		     TYPEC_ORIENTATION_NONE);
 	tcpm_init_vbus(port);	/* also disables charging */
 	tcpm_init_vconn(port);
 	tcpm_set_current_limit(port, 0, 0);
 	tcpm_set_polarity(port, TYPEC_POLARITY_CC1);
-	tcpm_mux_set(port, TYPEC_STATE_SAFE, USB_ROLE_NONE,
-		     TYPEC_ORIENTATION_NONE);
 	tcpm_set_attached_state(port, false);
 	port->try_src_count = 0;
 	port->try_snk_count = 0;
