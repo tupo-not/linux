@@ -6076,7 +6076,6 @@ void kalIndicateBssInfo(IN struct GLUE_INFO *prGlueInfo,
 					    prMgmtFrame->frame_control,
 					    u4FrameLen);
 		} else {
-			pr_info_ratelimited("CHOPIN-RPT: inform_bss ok\n");
 			cfg80211_put_bss(wiphy, bss);
 		}
 	}

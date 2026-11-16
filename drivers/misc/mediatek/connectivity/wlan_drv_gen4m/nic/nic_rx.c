@@ -1784,16 +1784,6 @@ void nicRxProcessDataPacket(IN struct ADAPTER *prAdapter,
 	ASSERT(prAdapter);
 	ASSERT(prSwRfb);
 
-	{
-		/* chopin: prove whether the data path delivers anything at all */
-		static atomic_t chopin_rx_cnt = ATOMIC_INIT(0);
-		int n = atomic_inc_return(&chopin_rx_cnt);
-
-		if (n <= 10 || (n % 200) == 0)
-			pr_info("CHOPIN-RX: data packet #%d len=%u\n",
-				n, prSwRfb->u2PacketLen);
-	}
-
 #ifdef CFG_SUPPORT_SNIFFER_RADIOTAP
 	if (prAdapter->prGlueInfo->fgIsEnableMon) {
 		radiotapFillRadiotap(prAdapter, prSwRfb);

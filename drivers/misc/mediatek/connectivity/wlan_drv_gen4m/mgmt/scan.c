@@ -1977,8 +1977,6 @@ struct BSS_DESC *scanAddToBssDesc(IN struct ADAPTER *prAdapter,
 
 	default:
 		log_dbg(SCN, WARN, "Skip unknown bss type(%u)\n", u2CapInfo);
-		pr_info("CHOPIN-RX: drop unknown bss type cap=0x%04x\n",
-			u2CapInfo);
 		return NULL;
 	}
 
@@ -2093,9 +2091,6 @@ struct BSS_DESC *scanAddToBssDesc(IN struct ADAPTER *prAdapter,
 		log_dbg(SCN, INFO, MACSTR "Band mismatch, HW band %d, DS chnl %d, HT chnl %d\n",
 		       MAC2STR(prWlanBeaconFrame->aucBSSID), eHwBand,
 		       ucIeDsChannelNum, ucIeHtChannelNum);
-		pr_info("CHOPIN-RX: drop band mismatch hw=%d ds=%u ht=%u rxdch=%u\n",
-			eHwBand, ucIeDsChannelNum, ucIeHtChannelNum,
-			prSwRfb->ucChnlNum);
 		return NULL;
 	}
 
@@ -2165,7 +2160,6 @@ struct BSS_DESC *scanAddToBssDesc(IN struct ADAPTER *prAdapter,
 				MACSTR " failed\n",
 				MAC2STR((uint8_t *)
 				prWlanBeaconFrame->aucBSSID));
-			pr_info("CHOPIN-RX: drop, BSS table full\n");
 			return NULL;
 
 		} while (FALSE);
