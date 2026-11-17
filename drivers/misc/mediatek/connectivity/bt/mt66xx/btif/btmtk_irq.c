@@ -14,7 +14,7 @@
 #include "connsys_debug_utility.h"
 
 /*
- * chopin: arming the BT IRQs as wakeup sources lets connectivity traffic wake the
+ * mt6893: arming the BT IRQs as wakeup sources lets connectivity traffic wake the
  * SoC about a second into a suspend, so it is off by default.
  */
 static bool bt_wakeup_enable;
@@ -335,7 +335,7 @@ int32_t bt_request_irq(enum bt_irq_type irq_type)
 	}
 
 	/*
-	 * chopin: do not arm the BT IRQs as wakeup sources by default.
+	 * mt6893: do not arm the BT IRQs as wakeup sources by default.
 	 *
 	 * The stack re-requests and re-arms them on every resume ("Request
 	 * BTIF_WAKEUP_IRQ (333) succeed"), and after that any activity on the
@@ -458,7 +458,9 @@ void bt_free_irq(enum bt_irq_type irq_type)
 
 	pirq = bt_irq_table[irq_type];
 	if (pirq) {
-		disable_irq_wake(pirq->irq_num);
+		/* Only undo the wake arming if we actually armed it on request. */
+		if (bt_wakeup_enable)
+			disable_irq_wake(pirq->irq_num);
 		free_irq(pirq->irq_num, pirq);
 		pirq->active = FALSE;
 		bt_irq_table[irq_type] = NULL;
