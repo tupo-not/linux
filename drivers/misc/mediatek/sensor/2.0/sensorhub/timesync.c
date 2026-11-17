@@ -144,7 +144,7 @@ static int timesync_comm_with(void)
 	/*
 	 * chopin: do not report a wakeup while a system suspend is in flight - the
 	 * activation bumps the combined wakeup counter and aborts the freeze
-	 * ("CHOPIN-WAKEUP: 'timesync' activated during suspend").
+	 * ("MT6893-WAKEUP: 'timesync' activated during suspend").
 	 */
 	if (pm_suspend_target_state != PM_SUSPEND_ON)
 		return 0;

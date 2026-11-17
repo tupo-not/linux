@@ -346,7 +346,7 @@ uint32_t kalFirmwareOpen(IN struct GLUE_INFO *prGlueInfo,
 		ret = _kalRequestFirmware(&prGlueInfo->fw_entry,
 					  apucNameTable[ucNameIdx],
 					  prGlueInfo->prDev);
-		pr_info("CHOPIN-FW: request '%s' ret=%d\n",
+		pr_info("MT6893-FW: request '%s' ret=%d\n",
 			apucNameTable[ucNameIdx], ret);
 
 		if (ret) {
@@ -5357,7 +5357,7 @@ void kalScanDone(IN struct GLUE_INFO *prGlueInfo, IN uint8_t ucBssIndex,
 	uint8_t fgAborted = (status != WLAN_STATUS_SUCCESS) ? TRUE : FALSE;
 	ASSERT(prGlueInfo);
 
-	pr_info("CHOPIN-SCN: kalScanDone bss=%u status=0x%x aborted=%u list=%u\n",
+	pr_debug("MT6893-SCN: kalScanDone bss=%u status=0x%x aborted=%u list=%u\n",
 		ucBssIndex, status, fgAborted,
 		prGlueInfo->prAdapter->rWifiVar.rScanInfo.rBSSDescList.u4NumElem);
 
@@ -6035,7 +6035,7 @@ void kalIndicateBssInfo(IN struct GLUE_INFO *prGlueInfo,
 							      KAL_BAND_5GHZ));
 	}
 
-	pr_info_ratelimited("CHOPIN-RPT: indicate ch=%u band=%d wiphy=%px chan=%px reg=%u len=%u\n",
+	pr_debug("MT6893-RPT: indicate ch=%u band=%d wiphy=%px chan=%px reg=%u len=%u\n",
 			    ucChannelNum, eBand, wiphy, prChannel,
 			    prGlueInfo->fgIsRegistered, u4FrameLen);
 
@@ -6072,7 +6072,7 @@ void kalIndicateBssInfo(IN struct GLUE_INFO *prGlueInfo,
 			/* ToDo:: DBGLOG */
 			DBGLOG(REQ, WARN,
 			       "cfg80211_inform_bss_frame() returned with NULL\n");
-			pr_info_ratelimited("CHOPIN-RPT: inform_bss NULL fc=0x%04x len=%u\n",
+			pr_debug("MT6893-RPT: inform_bss NULL fc=0x%04x len=%u\n",
 					    prMgmtFrame->frame_control,
 					    u4FrameLen);
 		} else {

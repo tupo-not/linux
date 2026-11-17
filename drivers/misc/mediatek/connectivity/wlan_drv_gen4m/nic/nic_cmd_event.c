@@ -3777,7 +3777,7 @@ void nicEventMicErrorInfo(IN struct ADAPTER *prAdapter,
 void nicEventScanDone(IN struct ADAPTER *prAdapter,
 		      IN struct WIFI_EVENT *prEvent)
 {
-	pr_info("CHOPIN-SCN: EVENT_ID_SCAN_DONE\n");
+	pr_debug("MT6893-SCN: EVENT_ID_SCAN_DONE\n");
 	scnEventScanDone(prAdapter,
 			 (struct EVENT_SCAN_DONE *) (prEvent->aucBuffer), TRUE);
 }

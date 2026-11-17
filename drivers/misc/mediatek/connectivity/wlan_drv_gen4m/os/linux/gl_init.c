@@ -2478,13 +2478,13 @@ static int wlanLoadNvramFirmware(struct device *dev)
 	ret = request_firmware(&fw, CHOPIN_WIFI_NVRAM_FW, dev);
 	if (ret) {
 		/* Quiet on the defer/retry path; the caller logs progress. */
-		pr_debug("CHOPIN-NVRAM: request '%s' failed: %d\n",
+		pr_debug("MT6893-NVRAM: request '%s' failed: %d\n",
 			 CHOPIN_WIFI_NVRAM_FW, ret);
 		return ret;
 	}
 
 	if (fw->size > sizeof(g_aucNvram)) {
-		pr_err("CHOPIN-NVRAM: blob too large: %zu > %zu\n", fw->size,
+		pr_err("MT6893-NVRAM: blob too large: %zu > %zu\n", fw->size,
 		       sizeof(g_aucNvram));
 		release_firmware(fw);
 		return -EFBIG;
@@ -2494,7 +2494,7 @@ static int wlanLoadNvramFirmware(struct device *dev)
 	kalMemZero(g_aucNvram_OnlyPreCal, sizeof(g_aucNvram_OnlyPreCal));
 	kalMemCopy(g_aucNvram, fw->data, fw->size);
 	g_NvramFsm = NVRAM_STATE_READY;
-	pr_info("CHOPIN-NVRAM: loaded '%s', size=%zu, state=READY\n",
+	pr_info("MT6893-NVRAM: loaded '%s', size=%zu, state=READY\n",
 		CHOPIN_WIFI_NVRAM_FW, fw->size);
 	release_firmware(fw);
 	return 0;
@@ -2544,12 +2544,12 @@ static void wlan_power_on_or_retry(void)
 		return;
 
 	if (retries++ < CHOPIN_PWRON_MAX_RETRIES) {
-		pr_err("CHOPIN-NVRAM: WiFi power-on failed, retry %d/%d\n",
+		pr_err("MT6893-NVRAM: WiFi power-on failed, retry %d/%d\n",
 		       retries, CHOPIN_PWRON_MAX_RETRIES);
 		schedule_delayed_work(&wlan_nvram_defer_work,
 				      msecs_to_jiffies(CHOPIN_PWRON_RETRY_MS));
 	} else {
-		pr_err("CHOPIN-NVRAM: WiFi power-on failed, giving up after %d retries\n",
+		pr_err("MT6893-NVRAM: WiFi power-on failed, giving up after %d retries\n",
 		       retries);
 	}
 }
@@ -2560,7 +2560,7 @@ static void wlan_nvram_deferred_poweron(struct work_struct *work)
 	int ret;
 
 	if (wlanNvramGetState() == NVRAM_STATE_READY) {
-		pr_info("CHOPIN-NVRAM: already ready, powering on WiFi\n");
+		pr_info("MT6893-NVRAM: already ready, powering on WiFi\n");
 		wlan_power_on_or_retry();
 		return;
 	}
@@ -2569,18 +2569,18 @@ static void wlan_nvram_deferred_poweron(struct work_struct *work)
 	if (ret) {
 		if (retries++ < CHOPIN_NVRAM_MAX_RETRIES) {
 			pr_info_ratelimited(
-				"CHOPIN-NVRAM: not available yet (%d), retrying\n",
+				"MT6893-NVRAM: not available yet (%d), retrying\n",
 				ret);
 			schedule_delayed_work(&wlan_nvram_defer_work,
 					       msecs_to_jiffies(CHOPIN_NVRAM_RETRY_MS));
 		} else {
-			pr_err("CHOPIN-NVRAM: giving up after %d retries\n",
+			pr_err("MT6893-NVRAM: giving up after %d retries\n",
 			       retries);
 		}
 		return;
 	}
 
-	pr_info("CHOPIN-NVRAM: loaded after deferral, powering on WiFi\n");
+	pr_info("MT6893-NVRAM: loaded after deferral, powering on WiFi\n");
 	wlan_power_on_or_retry();
 }
 
@@ -6022,7 +6022,7 @@ static int initWlan(void)
 	 */
 	ret = wlanLoadNvramFirmware(prGlueInfo->prDev);
 	if (ret)
-		pr_warn("CHOPIN-NVRAM: '%s' not available yet (%d), deferring\n",
+		pr_warn("MT6893-NVRAM: '%s' not available yet (%d), deferring\n",
 			CHOPIN_WIFI_NVRAM_FW, ret);
 
 	gPrDev = NULL;
@@ -6076,11 +6076,11 @@ static int initWlan(void)
 
 	if (wlanNvramGetState() == NVRAM_STATE_READY) {
 		/* Blob was available at probe time: power on immediately. */
-		pr_info("CHOPIN-NVRAM: ready, powering on WiFi\n");
+		pr_info("MT6893-NVRAM: ready, powering on WiFi\n");
 		wlan_power_on_or_retry();
 	} else {
 		/* Defer until initramfs /init copies the blob from nvdata. */
-		pr_info("CHOPIN-NVRAM: deferring WiFi power-on until blob appears\n");
+		pr_info("MT6893-NVRAM: deferring WiFi power-on until blob appears\n");
 		wlan_schedule_deferred_poweron(prGlueInfo->prDev);
 	}
 

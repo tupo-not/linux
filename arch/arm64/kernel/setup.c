@@ -323,7 +323,7 @@ void __init __no_sanitize_address setup_arch(char **cmdline_p)
 		extern char _binary_chopin_board_dtb_start[];
 		extern char _binary_chopin_board_dtb_end[];
 
-		pr_info("CHOPIN-DTB: overriding LK FDT with embedded board tree (%d bytes)\n",
+		pr_info("MT6893-DTB: overriding LK FDT with embedded board tree (%d bytes)\n",
 			(int)(_binary_chopin_board_dtb_end -
 			      _binary_chopin_board_dtb_start));
 		/*

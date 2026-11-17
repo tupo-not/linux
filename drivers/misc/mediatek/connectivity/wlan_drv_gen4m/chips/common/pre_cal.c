@@ -839,11 +839,11 @@ int wlanPreCalPwrOn(void)
 		kalMsleep(100);
 		retryCount++;
 		if ((retryCount % 50) == 0)
-			pr_info("CHOPIN-CAL: waiting for NVRAM (%d/%d)\n",
+			pr_info("MT6893-CAL: waiting for NVRAM (%d/%d)\n",
 				retryCount, MAX_NVRAM_READY_COUNT);
 
 		if (retryCount > MAX_NVRAM_READY_COUNT) {
-			pr_info("CHOPIN-CAL: NVRAM never appeared, skip pre-cal\n");
+			pr_info("MT6893-CAL: NVRAM never appeared, skip pre-cal\n");
 			return CONNINFRA_CB_RET_CAL_FAIL_POWER_OFF;
 		}
 	}

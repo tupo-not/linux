@@ -35,9 +35,9 @@
 
 #ifdef CONFIG_MTK_CHOPIN_EMBEDDED_DTB
 #define CHOPIN_CONSYS_DEV_INFO(dev, fmt, ...) \
-	dev_info(dev, "CHOPIN-CONSYS: " fmt, ##__VA_ARGS__)
+	dev_info(dev, "MT6893-CONSYS: " fmt, ##__VA_ARGS__)
 #define CHOPIN_CONSYS_INFO(fmt, ...) \
-	pr_debug("CHOPIN-CONSYS: " fmt, ##__VA_ARGS__)
+	pr_debug("MT6893-CONSYS: " fmt, ##__VA_ARGS__)
 #else
 #define CHOPIN_CONSYS_DEV_INFO(dev, fmt, ...) do { } while (0)
 #define CHOPIN_CONSYS_INFO(fmt, ...) do { } while (0)

@@ -159,7 +159,7 @@ void power_supply_changed(struct power_supply *psy)
 	/*
 	 * chopin: the charger's state changes while the system is suspending (the
 	 * PD contract teardown on the way into suspend, for one) and the activation
-	 * aborts the freeze: "CHOPIN-WAKEUP: 'mt6360-chg.2.auto' activated during
+	 * aborts the freeze: "MT6893-WAKEUP: 'mt6360-chg.2.auto' activated during
 	 * suspend".  Skip the wakeup bookkeeping for that window - the notifier chain
 	 * and the uevent still run.
 	 */

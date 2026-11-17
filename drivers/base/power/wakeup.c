@@ -570,7 +570,7 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 	 * ("Wakeup pending. Abort CPU freeze") can be identified directly.
 	 */
 	if (pm_suspend_target_state != PM_SUSPEND_ON) {
-		pr_info("CHOPIN-WAKEUP: '%s' activated during suspend\n",
+		pr_info("MT6893-WAKEUP: '%s' activated during suspend\n",
 			ws->name ? ws->name : "?");
 		dump_stack();
 	}
@@ -929,7 +929,7 @@ void pm_system_wakeup(void)
 	 * the culprit stays anonymous.  Name it here.
 	 */
 	if (pm_suspend_target_state != PM_SUSPEND_ON) {
-		pr_info("CHOPIN-ABORT: hard wakeup event while suspending\n");
+		pr_info("MT6893-ABORT: hard wakeup event while suspending\n");
 		dump_stack();
 	}
 
@@ -971,7 +971,7 @@ void pm_system_irq_wakeup(unsigned int irq_number)
 	if (pm_suspend_target_state != PM_SUSPEND_ON) {
 		struct irq_desc *desc = irq_to_desc(irq_number);
 
-		pr_info("CHOPIN-ABORT: wakeup irq %u (%s) while suspending\n",
+		pr_info("MT6893-ABORT: wakeup irq %u (%s) while suspending\n",
 			irq_number,
 			(desc && desc->action && desc->action->name) ?
 				desc->action->name : "?");

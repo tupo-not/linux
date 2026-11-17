@@ -567,7 +567,7 @@ static void connlog_ring_emi_to_cache(struct connlog_dev* handler)
 	#ifndef DEBUG_LOG_ON
 		if (__ratelimit(&_rs))
 	#endif
-			pr_warn("[connlog] %s cache is full.\n", type_to_title[handler->conn_type]);
+			pr_debug("[connlog] %s cache is full.\n", type_to_title[handler->conn_type]);
 		return;
 	}
 
@@ -576,7 +576,7 @@ static void connlog_ring_emi_to_cache(struct connlog_dev* handler)
 	#ifndef DEBUG_LOG_ON
 		if(__ratelimit(&_rs))
 	#endif
-			pr_err("[connlog] %s no data.\n", type_to_title[handler->conn_type]);
+			pr_debug("[connlog] %s no data.\n", type_to_title[handler->conn_type]);
 		return;
 	}
 

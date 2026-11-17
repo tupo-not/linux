@@ -1029,8 +1029,8 @@ int mtk_cfg80211_scan(struct wiphy *wiphy,
 	 *
 	 * NetworkManager's periodic scan kept landing inside the suspend window:
 	 *
-	 *   CHOPIN-SCN: req wlan0 n_channels=26 ...
-	 *   CHOPIN-SCN: scan queued
+	 *   MT6893-SCN: req wlan0 n_channels=26 ...
+	 *   MT6893-SCN: scan queued
 	 *   Wakeup pending. Abort CPU freeze
 	 *
 	 * The completion reported a wakeup event and aborted the deep suspend, so a
@@ -1053,11 +1053,11 @@ int mtk_cfg80211_scan(struct wiphy *wiphy,
 #endif
 	ucBssIndex = wlanGetBssIdx(request->wdev->netdev);
 	if (!IS_BSS_INDEX_AIS(prGlueInfo->prAdapter, ucBssIndex)) {
-		pr_info("CHOPIN-SCN: %s is not an AIS BSS (idx %u)\n",
+		pr_debug("MT6893-SCN: %s is not an AIS BSS (idx %u)\n",
 			request->wdev->netdev->name, ucBssIndex);
 		return -EINVAL;
 	}
-	pr_info("CHOPIN-SCN: req %s n_channels=%d n_ssids=%d flags=0x%x\n",
+	pr_debug("MT6893-SCN: req %s n_channels=%d n_ssids=%d flags=0x%x\n",
 		request->wdev->netdev->name, request->n_channels,
 		request->n_ssids, request->flags);
 
@@ -1276,11 +1276,11 @@ int mtk_cfg80211_scan(struct wiphy *wiphy,
 		   sizeof(struct PARAM_SCAN_REQUEST_ADV), VIR_MEM_TYPE);
 	if (rStatus != WLAN_STATUS_SUCCESS) {
 		prGlueInfo->prScanRequest = NULL;
-		pr_info("CHOPIN-SCN: wlanoidSetBssidListScanAdv failed 0x%x\n",
+		pr_debug("MT6893-SCN: wlanoidSetBssidListScanAdv failed 0x%x\n",
 			rStatus);
 		return -EINVAL;
 	}
-	pr_info("CHOPIN-SCN: scan queued\n");
+	pr_debug("MT6893-SCN: scan queued\n");
 
 	return 0;
 }

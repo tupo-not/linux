@@ -2103,7 +2103,7 @@ struct BSS_DESC *scanAddToBssDesc(IN struct ADAPTER *prAdapter,
 		fgIsValidSsid, fgIsValidSsid == TRUE ? &rSsid : NULL);
 
 	ucChnlNum = prSwRfb->ucChnlNum;
-	pr_info_ratelimited("CHOPIN-RX: rxdch=%u dsch=%u htch=%u hwband=%u\n",
+	pr_debug("MT6893-RX: rxdch=%u dsch=%u htch=%u hwband=%u\n",
 			    prSwRfb->ucChnlNum, ucIeDsChannelNum,
 			    ucIeHtChannelNum, eHwBand);
 #if (CFG_SUPPORT_WIFI_6G == 1)
@@ -3406,7 +3406,7 @@ uint32_t scanProcessBeaconAndProbeResp(IN struct ADAPTER *prAdapter,
 
 	prScanInfo = &(prAdapter->rWifiVar.rScanInfo);
 
-	pr_info_ratelimited("CHOPIN-RX: scan frame len=%u\n",
+	pr_debug("MT6893-RX: scan frame len=%u\n",
 			    prSwRfb->u2PacketLen);
 
 	/* 4 <0> Ignore invalid Beacon Frame */
@@ -3438,7 +3438,7 @@ uint32_t scanProcessBeaconAndProbeResp(IN struct ADAPTER *prAdapter,
 	prAdapter->rWlanInfo.u4ScanDbgTimes1++;
 
 	if (!prBssDesc)
-		pr_info_ratelimited("CHOPIN-RX: scanAddToBssDesc returned NULL\n");
+		pr_debug("MT6893-RX: scanAddToBssDesc returned NULL\n");
 
 	if (prBssDesc) {
 		/* Full2Partial: save channel info for later scan */
@@ -4421,7 +4421,7 @@ void scanReportBss2Cfg80211(IN struct ADAPTER *prAdapter,
 			static int chopin_rpt_n;
 
 			if (chopin_rpt_n < 6) {
-				pr_info("CHOPIN-RPT: ch=%u band=%d legal=%u ssidlen=%u\n",
+				pr_debug("MT6893-RPT: ch=%u band=%d legal=%u ssidlen=%u\n",
 					prBssDesc->ucChannelNum,
 					prBssDesc->eBand,
 					scanCheckBssIsLegal(prAdapter, prBssDesc),
