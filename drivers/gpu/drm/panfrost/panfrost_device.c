@@ -319,26 +319,36 @@ static const char * const chopin_mtcmos_names[7] = {
 	"mtcmos_mfg_core7_8",
 };
 
-static void chopin_mtcmos_on(struct panfrost_device *pfdev)
+static int chopin_mtcmos_on(struct panfrost_device *pfdev)
 {
 	struct device *dev = pfdev->base.dev;
+	bool defer = false;
 	int i;
 
 	if (!of_machine_is_compatible("mediatek,mt6893"))
-		return;
+		return 0;
 
 	for (i = 0; i < ARRAY_SIZE(chopin_mtcmos_names); i++) {
 		pfdev->mtcmos_clks[i] = devm_clk_get_optional(dev,
 							      chopin_mtcmos_names[i]);
 		if (IS_ERR(pfdev->mtcmos_clks[i])) {
-			dev_warn(dev, "mtcmos %s: %ld\n", chopin_mtcmos_names[i],
-				 PTR_ERR(pfdev->mtcmos_clks[i]));
+			long ret = PTR_ERR(pfdev->mtcmos_clks[i]);
+
+			dev_warn(dev, "mtcmos %s: %ld\n", chopin_mtcmos_names[i], ret);
 			pfdev->mtcmos_clks[i] = NULL;
+			/* The MTCMOS clock provider (scpsys) can still be
+			 * probing.  Without these clocks the GPU is powered
+			 * off and every reset times out, so defer instead of
+			 * limping on and failing with -ETIMEDOUT. */
+			if (ret == -EPROBE_DEFER)
+				defer = true;
 			continue;
 		}
 		if (pfdev->mtcmos_clks[i])
 			clk_prepare_enable(pfdev->mtcmos_clks[i]);
 	}
+
+	return defer ? -EPROBE_DEFER : 0;
 }
 
 static void chopin_gpu_rails_on(struct device *dev)
@@ -431,7 +441,9 @@ int panfrost_device_init(struct panfrost_device *pfdev)
 	int err;
 
 	chopin_gpu_rails_on(pfdev->base.dev);
-	chopin_mtcmos_on(pfdev);
+	err = chopin_mtcmos_on(pfdev);
+	if (err)
+		return err;
 
 	mutex_init(&pfdev->sched_lock);
 	INIT_LIST_HEAD(&pfdev->as_lru_list);

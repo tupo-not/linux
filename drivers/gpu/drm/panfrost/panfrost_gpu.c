@@ -370,6 +370,18 @@ static int panfrost_gpu_init_features(struct panfrost_device *pfdev)
 
 	dev_info(pfdev->base.dev, "mali-%s id 0x%x major 0x%x minor 0x%x status 0x%x",
 		 name, gpu_id, major, minor, status);
+
+	/* The in-tree Mesa's model table lacked the MT6893's G77 product ID
+	 * (0x9080) and rejected it in pan_get_model(), falling back to
+	 * llvmpipe.  Report the equivalent G77 product encoding (9.8.0) to
+	 * userspace; the patched Mesa now has a real G77 entry with the same
+	 * tilebuffer geometry and rate tables as the G57 family.  The kernel
+	 * keeps using its G77 model above for features and errata.
+	 */
+	if (of_machine_is_compatible("mediatek,mt6893") &&
+	    pfdev->features.id == 0x9080)
+		pfdev->features.id = 0x9800;
+
 	dev_info(pfdev->base.dev, "features: %64pb, issues: %64pb",
 		 pfdev->features.hw_features,
 		 pfdev->features.hw_issues);
