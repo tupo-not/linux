@@ -1157,17 +1157,22 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client)
 
 	dev_dbg(&client->dev, "probing for EDT FT5x06 I2C\n");
 
+	tsdata = devm_kzalloc(&client->dev, sizeof(*tsdata), GFP_KERNEL);
+	if (!tsdata) {
+		dev_err(&client->dev, "failed to allocate driver data.\n");
+		return -ENOMEM;
+	}
+
+	/* X6710: the panel reports native 1080x2400 coordinates, so the
+	 * display-coords range from DT must be applied (otherwise x_max/y_max
+	 * stay 0 and the fallback sensor range puts touches off-screen).
+	 * This has to run after tsdata is allocated.
+	 */
 	if (!device_property_read_u32_array(&client->dev,
 					    "focaltech,display-coords",
 					    coords, ARRAY_SIZE(coords))) {
 		tsdata->x_max = coords[2] - coords[0];
 		tsdata->y_max = coords[3] - coords[1];
-	}
-
-	tsdata = devm_kzalloc(&client->dev, sizeof(*tsdata), GFP_KERNEL);
-	if (!tsdata) {
-		dev_err(&client->dev, "failed to allocate driver data.\n");
-		return -ENOMEM;
 	}
 
 	tsdata->regmap = regmap_init_i2c(client, &edt_ft5x06_i2c_regmap_config);
