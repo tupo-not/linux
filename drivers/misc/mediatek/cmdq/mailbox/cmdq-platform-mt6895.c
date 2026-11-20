@@ -157,6 +157,8 @@ u32 cmdq_util_hw_id(u32 pa)
 	return 0;
 }
 
+u32 cmdq_test_get_subsys_list(u32 **regs_out);
+
 u32 cmdq_test_get_subsys_list(u32 **regs_out)
 {
 	static u32 regs[] = {
@@ -170,6 +172,8 @@ u32 cmdq_test_get_subsys_list(u32 **regs_out)
 	*regs_out = regs;
 	return ARRAY_SIZE(regs);
 }
+
+void cmdq_test_set_ostd(void);
 
 void cmdq_test_set_ostd(void)
 {

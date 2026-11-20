@@ -282,7 +282,7 @@ static void cmdq_vcp_off_work(struct work_struct *work_item)
 {
 	mutex_lock(&vcp.vcp_mutex);
 	if (!atomic_read(&vcp.vcp_usage) && (atomic_read(&vcp.vcp_power) > 0)) {
-		cmdq_msg("[VCP] power off VCP");
+		cmdq_msg("power off VCP");
 #if IS_ENABLED(CONFIG_MTK_TINYSYS_VCP_SUPPORT)
 		vcp_deregister_feature_ex(GCE_FEATURE_ID);
 #endif
@@ -304,11 +304,11 @@ static void cmdq_vcp_is_ready(void)
 
 	/* wait mmup ready */
 	while (!is_vcp_ready_ex(VCP_A_ID)) {
-		cmdq_log("[VCP] wait ready");
+		cmdq_log("wait ready");
 		i += 5;
 		msleep_interruptible(5);
 		if (i > 100) {
-			cmdq_err("[VCP] wait ready timeout");
+			cmdq_err("wait ready timeout");
 			break;
 		}
 	}
@@ -333,7 +333,7 @@ void cmdq_vcp_enable(bool en)
 			vcp_register_feature_ex(GCE_FEATURE_ID);
 			atomic_inc(&vcp.vcp_power);
 			mutex_unlock(&vcp.vcp_mutex);
-			cmdq_msg("[VCP] power on VCP");
+			cmdq_msg("power on VCP");
 			cmdq_vcp_is_ready();
 			writel(CMDQ_PACK_IOVA(buf_pa), vcp.mminfra_base + MMINFRA_MBIST_DELSEL10);
 #endif
@@ -1236,6 +1236,8 @@ s32 cmdq_pkt_write_value_addr_reuse(struct cmdq_pkt *pkt, dma_addr_t addr,
 EXPORT_SYMBOL(cmdq_pkt_write_value_addr_reuse);
 
 
+void cmdq_pkt_reuse_jump(struct cmdq_pkt *pkt, struct cmdq_reuse *reuse);
+
 void cmdq_pkt_reuse_jump(struct cmdq_pkt *pkt, struct cmdq_reuse *reuse)
 {
 	struct cmdq_instruction *inst;
@@ -1249,6 +1251,8 @@ void cmdq_pkt_reuse_jump(struct cmdq_pkt *pkt, struct cmdq_reuse *reuse)
 	inst->arg_b = CMDQ_GET_ARG_B(shift_pa);
 	inst->arg_c = CMDQ_GET_ARG_C(shift_pa);
 }
+
+void cmdq_pkt_reuse_value(struct cmdq_pkt *pkt, struct cmdq_reuse *reuse);
 
 void cmdq_pkt_reuse_value(struct cmdq_pkt *pkt, struct cmdq_reuse *reuse)
 {
@@ -2234,9 +2238,9 @@ static void cmdq_pkt_err_irq_dump(struct cmdq_pkt *pkt)
 				pc > CMDQ_BUF_ADDR(buf) + CMDQ_CMD_BUFFER_SIZE) {
 				size -= CMDQ_CMD_BUFFER_SIZE;
 				cmdq_util_user_msg(client ? client->chan : NULL,
-					"buffer %u:%p va:0x%p pa:%pa iova:%pa alloc_time:%#llu",
+					"buffer %u:%p va:0x%p pa:%pa iova:%pa alloc_time:0x%llx",
 					cnt, buf, buf->va_base, &buf->pa_base,
-					&buf->iova_base, buf->alloc_time);
+					&buf->iova_base, (unsigned long long)buf->alloc_time);
 				cnt++;
 				continue;
 			}
@@ -2247,9 +2251,9 @@ static void cmdq_pkt_err_irq_dump(struct cmdq_pkt *pkt)
 				size = CMDQ_CMD_BUFFER_SIZE;
 
 			cmdq_util_user_msg(client ? client->chan : NULL,
-				"error irq buffer %u:%p va:0x%p pa:%pa iova:%pa alloc_time:%#llu",
+				"error irq buffer %u:%p va:0x%p pa:%pa iova:%pa alloc_time:0x%llx",
 				cnt, buf, buf->va_base, &buf->pa_base,
-				&buf->iova_base, buf->alloc_time);
+				&buf->iova_base, (unsigned long long)buf->alloc_time);
 			cmdq_buf_cmd_parse(buf->va_base, CMDQ_NUM_CMD(size),
 				CMDQ_BUF_ADDR(buf), pc, NULL, client->chan);
 
@@ -2353,6 +2357,8 @@ static void cmdq_pkt_call_item_cb(struct cmdq_flush_item *item)
 }
 #endif
 
+void cmdq_pkt_err_dump_cb(struct cmdq_cb_data data);
+
 void cmdq_pkt_err_dump_cb(struct cmdq_cb_data data)
 {
 #if IS_ENABLED(CONFIG_MTK_CMDQ_MBOX_EXT)
@@ -2385,7 +2391,7 @@ void cmdq_pkt_err_dump_cb(struct cmdq_cb_data data)
 	if (err_num == 0)
 		cmdq_util_helper->error_enable();
 
-	cmdq_util_user_err(client->chan, "Begin of Error %u", err_num);
+	cmdq_util_user_err(client->chan, "begin of Error %u", err_num);
 
 	cmdq_dump_core(client->chan);
 
@@ -2477,7 +2483,7 @@ void cmdq_pkt_err_dump_cb(struct cmdq_cb_data data)
 done:
 #endif
 
-	cmdq_util_user_err(client->chan, "End of Error %u", err_num);
+	cmdq_util_user_err(client->chan, "end of Error %u", err_num);
 	if (err_num == 0) {
 		cmdq_util_helper->error_disable();
 		cmdq_util_helper->set_first_err_mod(client->chan, mod);
@@ -2544,6 +2550,8 @@ s32 cmdq_pkt_flush_async(struct cmdq_pkt *pkt,
 EXPORT_SYMBOL(cmdq_pkt_flush_async);
 
 #if IS_ENABLED(CONFIG_MTK_CMDQ_MBOX_EXT)
+void cmdq_dump_summary(struct cmdq_client *client, struct cmdq_pkt *pkt);
+
 void cmdq_dump_summary(struct cmdq_client *client, struct cmdq_pkt *pkt)
 {
 	struct cmdq_instruction *inst = NULL;
@@ -3129,9 +3137,9 @@ s32 cmdq_pkt_dump_buf(struct cmdq_pkt *pkt, dma_addr_t curr_pa)
 		} else if (cnt > 0 && !(curr_pa >= CMDQ_BUF_ADDR(buf) &&
 			curr_pa < CMDQ_BUF_ADDR(buf) + CMDQ_BUF_ALLOC_SIZE)) {
 			cmdq_util_user_msg(client ? client->chan : NULL,
-				"buffer %u:%p va:0x%p pa:%pa iova:%pa alloc_time:%#llu %#018llx (skip detail) %#018llx",
+				"buffer %u:%p va:0x%p pa:%pa iova:%pa alloc_time:0x%llx %#018llx (skip detail) %#018llx",
 				cnt, buf, buf->va_base, &buf->pa_base,
-				&buf->iova_base, buf->alloc_time,
+				&buf->iova_base, (unsigned long long)buf->alloc_time,
 				*((u64 *)buf->va_base),
 				*((u64 *)(buf->va_base +
 				CMDQ_CMD_BUFFER_SIZE - CMDQ_INST_SIZE)));
@@ -3141,9 +3149,9 @@ s32 cmdq_pkt_dump_buf(struct cmdq_pkt *pkt, dma_addr_t curr_pa)
 			size = CMDQ_CMD_BUFFER_SIZE;
 		}
 		cmdq_util_user_msg(client ? client->chan : NULL,
-			"buffer %u:%p va:0x%p pa:%pa iova:%pa alloc_time:%#llu",
+			"buffer %u:%p va:0x%p pa:%pa iova:%pa alloc_time:0x%llx",
 			cnt, buf, buf->va_base, &buf->pa_base,
-			&buf->iova_base, buf->alloc_time);
+			&buf->iova_base, (unsigned long long)buf->alloc_time);
 		if (buf->va_base && client) {
 			cmdq_buf_cmd_parse(buf->va_base, CMDQ_NUM_CMD(size),
 				CMDQ_BUF_ADDR(buf), curr_pa, NULL, client->chan);
@@ -3160,7 +3168,7 @@ int cmdq_dump_pkt(struct cmdq_pkt *pkt, dma_addr_t pc, bool dump_ist)
 	struct cmdq_client *client = (struct cmdq_client *)pkt->cl;
 
 	if (!pkt) {
-		cmdq_err("%s pkt is empty");
+		cmdq_err("pkt is empty");
 		return -EINVAL;
 	}
 	if (!pkt->task_alive) {

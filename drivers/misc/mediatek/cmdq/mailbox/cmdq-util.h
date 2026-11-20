@@ -18,54 +18,60 @@ enum {
 	CMDQ_LOG_FEAT_NUM,
 };
 
+/* Mainline-style logging: standard levels, no vendor tags or decorations.
+ * Thread/GCE context is kept as plain text; the old bracketed prefixes and
+ * function/line suffixes are gone. Error buffers keep their side effects.
+ */
 #define cmdq_util_log(feat, fmt, args...) \
 	do { \
-		cmdq_util_error_save("[cmdq] "fmt"\n", ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 		if (cmdq_util_get_bit_feature() & (1 << feat)) \
-			cmdq_msg(fmt, ##args); \
+			pr_debug(fmt, ##args); \
 	} while (0)
 
 #define cmdq_aee(fmt, args...) \
-	pr_notice("[cmdq][aee] "fmt"\n", ##args)
+	pr_err(fmt, ##args)
 
 #define cmdq_util_msg(fmt, args...) \
 	do { \
-		cmdq_msg(fmt, ##args); \
-		cmdq_util_error_save("[cmdq] "fmt"\n", ##args); \
+		pr_debug(fmt, ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 	} while (0)
 
 #define cmdq_util_err(fmt, args...) \
 	do { \
-		cmdq_dump(fmt, ##args); \
-		cmdq_util_error_save("[cmdq][err] "fmt"\n", ##args); \
+		pr_err(fmt, ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 	} while (0)
 
 #define cmdq_util_user_msg(chan, fmt, args...) \
 	do { \
-		if (chan) {  \
+		if (chan) { \
 			u32 gce = cmdq_util_get_hw_id( \
 				(u32)cmdq_mbox_get_base_pa(chan)); \
 			s32 thd = cmdq_mbox_chan_id(chan); \
-			pr_notice("[%s]<%u>(%d)[cmdq] "fmt"\n", \
+			pr_debug("%s: gce %u thread %d: "fmt, \
 				cmdq_util_thread_module_dispatch(gce, thd), \
 				gce, thd, ##args); \
-			cmdq_util_error_save("[cmdq] "fmt"\n", ##args); \
-		} else \
-			cmdq_util_msg(fmt, ##args); \
+		} else { \
+			pr_debug(fmt, ##args); \
+		} \
+		cmdq_util_error_save(fmt"\n", ##args); \
 	} while (0)
 
 #define cmdq_util_user_err(chan, fmt, args...) \
 	do { \
-		if (chan) {  \
+		if (chan) { \
 			u32 gce = cmdq_util_get_hw_id( \
 				(u32)cmdq_mbox_get_base_pa(chan)); \
 			s32 thd = cmdq_mbox_chan_id(chan); \
-			pr_notice("[%s]<%u>(%d)[cmdq][err] "fmt"\n", \
+			pr_err("%s: gce %u thread %d: "fmt, \
 				cmdq_util_thread_module_dispatch(gce, thd), \
 				gce, thd, ##args); \
-			cmdq_util_error_save("[cmdq][err] "fmt"\n", ##args); \
-		} else \
-			cmdq_util_msg(fmt, ##args); \
+		} else { \
+			pr_err(fmt, ##args); \
+		} \
+		cmdq_util_error_save(fmt"\n", ##args); \
 	} while (0)
 
 #define DB_OPT_CMDQ	(DB_OPT_DEFAULT | DB_OPT_PROC_CMDQ_INFO | \
@@ -77,10 +83,10 @@ enum {
 		char tag[LINK_MAX]; \
 		int len = snprintf(tag, LINK_MAX, "CRDISPATCH_KEY:%s", key); \
 		if (len >= LINK_MAX) \
-			pr_debug("len:%d over max:%d\n", \
+			pr_debug("%s:%d len:%d over max:%d\n", \
 				__func__, __LINE__, len, LINK_MAX); \
 		cmdq_aee(fmt, ##args); \
-		cmdq_util_error_save("[cmdq][aee] "fmt"\n", ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 		aee_kernel_warning_api(__FILE__, __LINE__, \
 			DB_OPT_CMDQ, tag, fmt, ##args); \
 	} while (0)
@@ -90,10 +96,10 @@ enum {
 		char tag[LINK_MAX]; \
 		int len = snprintf(tag, LINK_MAX, "CRDISPATCH_KEY:%s", key); \
 		if (len >= LINK_MAX) \
-			pr_debug("len:%d over max:%d\n", \
+			pr_debug("%s:%d len:%d over max:%d\n", \
 				__func__, __LINE__, len, LINK_MAX); \
 		cmdq_aee(fmt" (aee not ready)", ##args); \
-		cmdq_util_error_save("[cmdq][aee] "fmt"\n", ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 	} while (0)
 
 #endif
@@ -104,10 +110,10 @@ enum {
 		char tag[LINK_MAX]; \
 		int len = snprintf(tag, LINK_MAX, "CRDISPATCH_KEY:%s", key); \
 		if (len >= LINK_MAX) \
-			pr_debug("len:%d over max:%d\n", \
+			pr_debug("%s:%d len:%d over max:%d\n", \
 				__func__, __LINE__, len, LINK_MAX); \
 		cmdq_aee(fmt, ##args); \
-		cmdq_util_error_save("[cmdq][aee] "fmt"\n", ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 		if (aee == CMDQ_AEE_WARN) \
 			aee_kernel_warning_api(__FILE__, __LINE__, \
 				DB_OPT_CMDQ, tag, fmt, ##args); \
@@ -123,10 +129,10 @@ enum {
 		char tag[LINK_MAX]; \
 		int len = snprintf(tag, LINK_MAX, "CRDISPATCH_KEY:%s", key); \
 		if (len >= LINK_MAX) \
-			pr_debug("len:%d over max:%d\n", \
+			pr_debug("%s:%d len:%d over max:%d\n", \
 				__func__, __LINE__, len, LINK_MAX); \
 		cmdq_aee(fmt" (aee not ready)", ##args); \
-		cmdq_util_error_save("[cmdq][aee] "fmt"\n", ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 	} while (0)
 
 #endif

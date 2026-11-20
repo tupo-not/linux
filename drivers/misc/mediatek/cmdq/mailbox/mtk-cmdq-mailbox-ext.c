@@ -130,12 +130,6 @@ EXPORT_SYMBOL(skip_poll_sleep);
 bool gce_in_vcp;
 EXPORT_SYMBOL(gce_in_vcp);
 
-static void __iomem *xaga_mminfra_base;
-static void __iomem *xaga_smi_mdp_base;
-static void __iomem *xaga_smi_disp_base;
-static void __iomem *xaga_smi_mdp_sub0_base;
-static void __iomem *xaga_smi_mdp_sub1_base;
-static void __iomem *xaga_larb0_base;
 static void __iomem *xaga_mdp_iommu_base;
 
 /* CMDQ log flag */
@@ -536,6 +530,8 @@ static void cmdq_thread_resume(struct cmdq_thread *thread)
 #endif
 }
 
+int cmdq_thread_reset(struct cmdq *cmdq, struct cmdq_thread *thread);
+
 int cmdq_thread_reset(struct cmdq *cmdq, struct cmdq_thread *thread)
 {
 	u32 warm_reset;
@@ -572,8 +568,8 @@ static void cmdq_thread_err_reset(struct cmdq *cmdq, struct cmdq_thread *thread,
 	for (i = 0; i < 4; i++)
 		writel(spr[i], thread->base + CMDQ_THR_SPR + i * 4);
 
-		writel(CMDQ_INST_CYCLE_TIMEOUT,
-				thread->base + CMDQ_THR_INST_CYCLES);
+	writel(CMDQ_INST_CYCLE_TIMEOUT,
+			thread->base + CMDQ_THR_INST_CYCLES);
 	cmdq_thread_set_end(thread, end);
 	cmdq_thread_set_pc(thread, pc);
 	writel(cookie, thread->base + CMDQ_THR_CNT);
@@ -865,102 +861,16 @@ static void cmdq_task_exec(struct cmdq_pkt *pkt, struct cmdq_thread *thread)
 		writel(CMDQ_THR_ENABLED, thread->base + CMDQ_THR_ENABLE_TASK);
 
 		if (thread->idx == 22) {
-			dma_addr_t dbg_end = cmdq_task_get_end_pa(pkt);
-			u32 xaga_gctl = readl(cmdq->base + GCE_GCTL_VALUE);
-			u32 xaga_dbg_s = readl(cmdq->base + GCE_DEBUG_START_ADDR);
-			u32 xaga_dbg_e = readl(cmdq->base + GCE_DEBUG_END_ADDR);
-			u32 xaga_rst = readl(thread->base + CMDQ_THR_WARM_RESET);
-			u32 xaga_susp = readl(thread->base + CMDQ_THR_SUSPEND_TASK);
-			u32 xaga_wait = readl(thread->base + CMDQ_THR_WAIT_TOKEN);
-			u32 xaga_cfg = readl(thread->base + CMDQ_THR_CFG);
-			u32 xaga_prefetch = readl(thread->base + CMDQ_THR_PREFETCH);
-			u32 xaga_cnt = readl(thread->base + CMDQ_THR_CNT);
-			u32 xaga_inst_cyc = readl(thread->base + CMDQ_THR_INST_CYCLES);
-			u32 xaga_bus_gctl = readl(cmdq->base + GCE_BUS_GCTL);
-			u32 xaga_outpin = readl(cmdq->base + GCE_OUTPIN_EVENT);
-			u32 xaga_tpr = readl(cmdq->base + CMDQ_TPR_MASK);
-			u32 xaga_slot_cyc = readl(cmdq->base + CMDQ_THR_SLOT_CYCLES);
-			u32 xaga_mm_cg0 = xaga_mminfra_base ?
-				readl(xaga_mminfra_base + 0x100) : 0;
-			u32 xaga_mm_cg1 = xaga_mminfra_base ?
-				readl(xaga_mminfra_base + 0x110) : 0;
-			u32 xaga_mdp_bus = xaga_smi_mdp_base ?
-				readl(xaga_smi_mdp_base + 0x220) : 0;
-			u32 xaga_disp_bus = xaga_smi_disp_base ?
-				readl(xaga_smi_disp_base + 0x220) : 0;
-			u32 xaga_mdp_l1len = xaga_smi_mdp_base ?
-				readl(xaga_smi_mdp_base + 0x100) : 0;
-			u32 xaga_mdp_l1arb0 = xaga_smi_mdp_base ?
-				readl(xaga_smi_mdp_base + 0x104) : 0;
-			u32 xaga_mdp_m4u = xaga_smi_mdp_base ?
-				readl(xaga_smi_mdp_base + 0x234) : 0;
-			u32 xaga_mdp_fifo1 = xaga_smi_mdp_base ?
-				readl(xaga_smi_mdp_base + 0x238) : 0;
-			u32 xaga_mdp_fifo2 = xaga_smi_mdp_base ?
-				readl(xaga_smi_mdp_base + 0x23c) : 0;
-			u32 xaga_mdp_dcm = xaga_smi_mdp_base ?
-				readl(xaga_smi_mdp_base + 0x300) : 0;
-			u32 xaga_mdp_dummy = xaga_smi_mdp_base ?
-				readl(xaga_smi_mdp_base + 0x444) : 0;
-			u32 xaga_sub0_l1len = xaga_smi_mdp_sub0_base ?
-				readl(xaga_smi_mdp_sub0_base + 0x100) : 0;
-			u32 xaga_sub0_preultra = xaga_smi_mdp_sub0_base ?
-				readl(xaga_smi_mdp_sub0_base + 0x244) : 0;
-			u32 xaga_sub0_dcm = xaga_smi_mdp_sub0_base ?
-				readl(xaga_smi_mdp_sub0_base + 0x300) : 0;
-			u32 xaga_sub0_dummy = xaga_smi_mdp_sub0_base ?
-				readl(xaga_smi_mdp_sub0_base + 0x444) : 0;
-			u32 xaga_sub1_l1len = xaga_smi_mdp_sub1_base ?
-				readl(xaga_smi_mdp_sub1_base + 0x100) : 0;
-			u32 xaga_sub1_preultra = xaga_smi_mdp_sub1_base ?
-				readl(xaga_smi_mdp_sub1_base + 0x244) : 0;
-			u32 xaga_sub1_dcm = xaga_smi_mdp_sub1_base ?
-				readl(xaga_smi_mdp_sub1_base + 0x300) : 0;
-			u32 xaga_sub1_dummy = xaga_smi_mdp_sub1_base ?
-				readl(xaga_smi_mdp_sub1_base + 0x444) : 0;
+			/* DEBUG: force MDP IOMMU ctrl to Android's working value */
 			u32 xaga_iommu_ctrl = xaga_mdp_iommu_base ?
 				readl(xaga_mdp_iommu_base + 0x110) : 0;
-			u32 xaga_iommu_sta = xaga_mdp_iommu_base ?
-				readl(xaga_mdp_iommu_base + 0x008) : 0;
-			u32 xaga_iommu_pt = xaga_mdp_iommu_base ?
-				readl(xaga_mdp_iommu_base + 0x000) : 0;
-			u32 xaga_iommu_misc = xaga_mdp_iommu_base ?
-				readl(xaga_mdp_iommu_base + 0x048) : 0;
-			u32 xaga_iommu_int_main = xaga_mdp_iommu_base ?
-				readl(xaga_mdp_iommu_base + 0x124) : 0;
-			u32 xaga_iommu_fault0 = xaga_mdp_iommu_base ?
-				readl(xaga_mdp_iommu_base + 0x130) : 0;
-			u32 xaga_iommu_fault1 = xaga_mdp_iommu_base ?
-				readl(xaga_mdp_iommu_base + 0x134) : 0;
-			u32 xaga_iommu_id0 = xaga_mdp_iommu_base ?
-				readl(xaga_mdp_iommu_base + 0x150) : 0;
-			u32 xaga_iommu_id1 = xaga_mdp_iommu_base ?
-				readl(xaga_mdp_iommu_base + 0x154) : 0;
-			u32 xaga_ns[8], xaga_ost[8];
-			u64 *xaga_insts = (u64 *)buf->va_base;
-			struct iommu_domain *xaga_domain =
-				iommu_get_domain_for_dev(cmdq->mbox.dev);
-			u64 xaga_iommu_pa = xaga_domain ?
-				iommu_iova_to_phys(xaga_domain,
-					buf->iova_base ? buf->iova_base :
-					buf->pa_base) : 0;
-			int xaga_i;
 
-			/* DEBUG: force MDP IOMMU ctrl to Android's working value */
 			if (xaga_mdp_iommu_base &&
 			    (xaga_iommu_ctrl & 0x100a) != 0x100a) {
 				writel(0x100a, xaga_mdp_iommu_base + 0x110);
 				xaga_iommu_ctrl =
 					readl(xaga_mdp_iommu_base + 0x110);
 			}
-
-			for (xaga_i = 0; xaga_i < 8; xaga_i++) {
-				xaga_ns[xaga_i] = xaga_larb0_base ?
-					readl(xaga_larb0_base + 0x380 + xaga_i * 4) : 0;
-				xaga_ost[xaga_i] = xaga_larb0_base ?
-					readl(xaga_larb0_base + 0x200 + xaga_i * 4) : 0;
-			}
-
 		}
 #if IS_ENABLED(CMDQ_MMPROFILE_SUPPORT)
 		mmprofile_log_ex(cmdq_mmp.thread_en, MMPROFILE_FLAG_PULSE,
@@ -1004,9 +914,8 @@ static void cmdq_task_exec(struct cmdq_pkt *pkt, struct cmdq_thread *thread)
 		list_add(&task->list_entry, insert_pos);
 		last_task = list_last_entry(&thread->task_busy_list,
 			typeof(*task), list_entry);
-		cmdq_thread_set_end(thread,
-			cmdq_task_get_end_pa(last_task->pkt));
 		pkt_end_pa = cmdq_task_get_end_pa(last_task->pkt);
+		cmdq_thread_set_end(thread, pkt_end_pa);
 		cmdq_log("set end:%pa pkt:0x%p",
 			&pkt_end_pa,
 			last_task->pkt);
@@ -1563,7 +1472,7 @@ static void cmdq_thread_handle_timeout(struct timer_list *t)
 void cmdq_dump_core(struct mbox_chan *chan)
 {
 	struct cmdq *cmdq = dev_get_drvdata(chan->mbox->dev);
-	u32 irq, loaded, cycle, thd_timer, tpr_mask, tpr_en, bus_gctl;
+	u32 irq, loaded, cycle, thd_timer, tpr_mask, tpr_en;
 
 	irq = readl(cmdq->base + CMDQ_CURR_IRQ_STATUS);
 	loaded = readl(cmdq->base + CMDQ_CURR_LOADED_THR);
@@ -1571,8 +1480,6 @@ void cmdq_dump_core(struct mbox_chan *chan)
 	thd_timer = readl(cmdq->base + CMDQ_THR_TIMEOUT_TIMER);
 	tpr_mask = readl(cmdq->base + CMDQ_TPR_MASK);
 	tpr_en = readl(cmdq->base + CMDQ_TPR_TIMEOUT_EN);
-	bus_gctl = readl(cmdq->base + GCE_BUS_GCTL);
-
 
 	cmdq_util_user_msg(chan,
 		"irq:%#x loaded:%#x cycle:%#x thd timer:%#x mask:%#x en:%#x",
@@ -1712,7 +1619,7 @@ void cmdq_thread_dump(struct mbox_chan *chan, struct cmdq_pkt *cl_pkt,
 
 /* if pc match end and irq flag on, dump irq status */
 	if (curr_pa == end_pa && irq)
-		cmdq_util_msg("gic dump not support irq id:%u\n",
+		cmdq_util_msg("gic dump not support irq id:%u",
 			cmdq->irq);
 
 	if (inst_out)
@@ -2210,7 +2117,7 @@ static void cmdq_config_dma_mask(struct device *dev)
 	if (ret != 0 || !dma_mask_bit)
 		dma_mask_bit = 32;
 	ret = dma_set_coherent_mask(dev, DMA_BIT_MASK(dma_mask_bit));
-	cmdq_msg("mbox set dma mask bit:%u result:%d\n",
+	cmdq_msg("mbox set dma mask bit:%u result:%d",
 		dma_mask_bit, ret);
 }
 
@@ -2260,6 +2167,8 @@ static void cmdq_config_init_buf(struct device *dev, struct cmdq *cmdq)
 	for (i = 0; i < cmdq->token_cnt; i++)
 		va[cmdq->tokens[i] * 2] = 0x80010000;
 }
+
+int cmdq_iommu_fault_callback(int port, dma_addr_t mva, void *cb_data);
 
 int cmdq_iommu_fault_callback(int port, dma_addr_t mva, void *cb_data)
 {
@@ -2314,18 +2223,6 @@ static int cmdq_probe(struct platform_device *pdev)
 		return PTR_ERR(cmdq->base);
 	}
 
-	if (!xaga_mminfra_base)
-		xaga_mminfra_base = ioremap(0x1e800000, 0x1000);
-	if (!xaga_smi_mdp_base)
-		xaga_smi_mdp_base = ioremap(0x1e80f000, 0x1000);
-	if (!xaga_smi_disp_base)
-		xaga_smi_disp_base = ioremap(0x1e801000, 0x1000);
-	if (!xaga_smi_mdp_sub0_base)
-		xaga_smi_mdp_sub0_base = ioremap(0x1e817000, 0x1000);
-	if (!xaga_smi_mdp_sub1_base)
-		xaga_smi_mdp_sub1_base = ioremap(0x1e818000, 0x1000);
-	if (!xaga_larb0_base)
-		xaga_larb0_base = ioremap(0x14021000, 0x1000);
 	if (!xaga_mdp_iommu_base)
 		xaga_mdp_iommu_base = ioremap(0x1e810000, 0x1000);
 
@@ -2350,7 +2247,7 @@ static int cmdq_probe(struct platform_device *pdev)
 
 	plat_data = (struct gce_plat *)of_device_get_match_data(dev);
 	if (!plat_data) {
-		cmdq_err("failed to get match data\n");
+		cmdq_err("failed to get match data");
 		return -EINVAL;
 	}
 
@@ -2368,7 +2265,7 @@ static int cmdq_probe(struct platform_device *pdev)
 		(unsigned long)cmdq->base,
 		(unsigned long)cmdq->base_pa);
 
-	cmdq_msg("cmdq thread:%u shift:%u base:0x%lx pa:0x%lx\n",
+	cmdq_msg("cmdq thread:%u shift:%u base:0x%lx pa:0x%lx",
 		plat_data->thread_nr, plat_data->shift,
 		(unsigned long)cmdq->base,
 		(unsigned long)cmdq->base_pa);
@@ -2597,7 +2494,7 @@ void cmdq_mbox_disable(void *chan)
 	mbox_usage = atomic_dec_return(&cmdq->thread[i].usage);
 	if (mbox_usage < 0)
 		// cmdq_util_thread_module_dispatch(cmdq->base_pa, i)
-		cmdq_util_aee("CMDQ", "hwid:%hu idx:%d usage:d",
+		cmdq_util_aee("CMDQ", "hwid:%hu idx:%d usage:%d",
 			cmdq->hwid, i, mbox_usage);
 
 	cmdq_clk_disable(cmdq);
@@ -2688,6 +2585,8 @@ phys_addr_t cmdq_mbox_get_spr_pa(void *chan, u8 spr)
 		CMDQ_THR_SPR + 4 * spr;
 }
 EXPORT_SYMBOL(cmdq_mbox_get_spr_pa);
+
+struct device *cmdq_mbox_get_dev(void *chan);
 
 struct device *cmdq_mbox_get_dev(void *chan)
 {

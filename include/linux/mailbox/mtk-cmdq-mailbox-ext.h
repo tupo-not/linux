@@ -205,14 +205,17 @@ do { \
 
 /* MTK only functions */
 
+/* Mainline-style logging: real log levels, no vendor tags or
+ * function/line suffixes (ftrace already provides the call site).
+ */
 #define cmdq_msg(fmt, args...) \
-	pr_notice("[cmdq] "fmt"\n", ##args)
+	pr_debug(fmt, ##args)
 
 #define cmdq_err(fmt, args...) \
-	pr_notice("[cmdq][err] "fmt" @%s,%u\n", ##args, __func__, __LINE__)
+	pr_err(fmt, ##args)
 
 #define cmdq_dump(fmt, args...) \
-	pr_notice("[cmdq][err] "fmt"\n", ##args)
+	pr_debug(fmt, ##args)
 
 #ifdef CMDQ_TRACE_ENABLE
 /* CMDQ FTRACE */

@@ -577,7 +577,7 @@ void cmdq_util_dump_smi(void)
 	smi_hang = mtk_smi_dbg_hang_detect("CMDQ");
 	cmdq_util_err("smi hang:%d", smi_hang);
 #else
-	cmdq_util_err("[WARNING]not enable SMI dump now");
+	cmdq_util_err("not enable SMI dump now");
 #endif
 }
 EXPORT_SYMBOL(cmdq_util_dump_smi);
