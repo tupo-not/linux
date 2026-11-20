@@ -4,7 +4,7 @@
  * Copyright (C) 2020 XiaoMi, Inc.
  */
 
-#define pr_fmt(fmt)	"mi-disp-lhbm:[%s:%d] " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/slab.h>
 #include <linux/spinlock.h>

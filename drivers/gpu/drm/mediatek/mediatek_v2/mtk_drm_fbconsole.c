@@ -80,11 +80,11 @@ static void _mfc_draw_char(struct MFC_CONTEXT *ctxt, UINT32 x, UINT32 y, char c)
 	int font_draw_table16[4];
 
 	if (x > (MFC_WIDTH - MFC_FONT_WIDTH)) {
-		DDPPR_ERR("draw width too large,x=%d\n", x);
+		DDPPR_ERR("draw width too large,x=%d", x);
 		return;
 	}
 	if (y > (MFC_HEIGHT - MFC_FONT_HEIGHT)) {
-		DDPPR_ERR("draw hight too large,y=%d\n", y);
+		DDPPR_ERR("draw hight too large,y=%d", y);
 		return;
 	}
 
@@ -158,7 +158,7 @@ static void _mfc_draw_char(struct MFC_CONTEXT *ctxt, UINT32 x, UINT32 y, char c)
 		}
 		break;
 	default:
-		DDPPR_ERR("draw char fail,MFC_BPP=%d\n", MFC_BPP);
+		DDPPR_ERR("draw char fail,MFC_BPP=%d", MFC_BPP);
 		break;
 	}
 }
@@ -360,7 +360,7 @@ enum MFC_STATUS MFC_SetWH(MFC_HANDLE handle, unsigned int fb_width,
 		return MFC_STATUS_INVALID_ARGUMENT;
 
 	if (down_interruptible(&ctxt->sem)) {
-		DDPPR_ERR("[MFC] ERROR: Can't get semaphore in %s()\n", __func__);
+		DDPPR_ERR("ERROR: Can't get semaphore in %s()", __func__);
 		return MFC_STATUS_LOCK_FAIL;
 	}
 

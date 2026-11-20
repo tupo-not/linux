@@ -22,7 +22,7 @@
 #include "tile_mdp_func.h"
 
 #undef pr_fmt
-#define pr_fmt(fmt) "[mml_pq_aal]" fmt
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #define AAL_EN				0x000
 #define AAL_RESET			0x004
@@ -450,7 +450,7 @@ static s32 aal_config_frame(struct mml_comp *comp, struct mml_task *task,
 	for (i = 0; i < result->aal_reg_cnt; i++) {
 		cmdq_pkt_write(pkt, NULL, base_pa + regs[i].offset,
 			regs[i].value, regs[i].mask);
-		mml_pq_msg("[aal][config][%x] = %#x mask(%#x)",
+		mml_pq_msg("[%x] = %#x mask(%#x)",
 			regs[i].offset, regs[i].value, regs[i].mask);
 	}
 	for (i = 0; i < AAL_CURVE_NUM; i++, addr += 4) {
@@ -559,7 +559,7 @@ static s32 aal_config_tile(struct mml_comp *comp, struct mml_task *task,
 	aal_hist_left_start =
 		(tile->out.xs > aal_frm->out_hist_xs) ? tile->out.xs : aal_frm->out_hist_xs;
 
-	mml_pq_msg("%s jobid[%d] engine_id[%d] idx[%d] pipe[%d] pkt[%08x]",
+	mml_pq_msg("%s jobid[%d] engine_id[%d] idx[%d] pipe[%d] pkt[%p]",
 		__func__, task->job.jobid, comp->id, idx, ccfg->pipe, pkt);
 
 	mml_pq_msg("%s %d: %d: %d: [cut_pos_x, out_hist_xs] = [%d, %d]",
@@ -791,7 +791,7 @@ static void aal_readback_cmdq(struct mml_comp *comp, struct mml_task *task,
 
 	condi_inst = (u32 *)cmdq_pkt_get_va_by_offset(pkt, aal_frm->condi_offset);
 	if (unlikely(!condi_inst))
-		mml_pq_err("%s wrong offset %u\n", __func__, aal_frm->condi_offset);
+		mml_pq_err("%s wrong offset %u", __func__, aal_frm->condi_offset);
 
 	*condi_inst = (u32)CMDQ_REG_SHIFT_ADDR(begin_pa);
 
@@ -1013,7 +1013,7 @@ static s32 aal_config_repost(struct mml_comp *comp, struct mml_task *task,
 		begin_pa = cmdq_pkt_get_pa_by_offset(pkt, aal_frm->begin_offset);
 		condi_inst = (u32 *)cmdq_pkt_get_va_by_offset(pkt, aal_frm->condi_offset);
 		if (unlikely(!condi_inst))
-			mml_pq_err("%s wrong offset %u\n", __func__, aal_frm->condi_offset);
+			mml_pq_err("%s wrong offset %u", __func__, aal_frm->condi_offset);
 
 		*condi_inst = (u32)CMDQ_REG_SHIFT_ADDR(begin_pa);
 
@@ -1108,7 +1108,7 @@ static void aal_task_done_readback(struct mml_comp *comp, struct mml_task *task,
 			task->pq_task->aal_hist[pipe]->va[offset/4+3],
 			task->pq_task->aal_hist[pipe]->va[offset/4+4]);
 
-		mml_pq_rb_msg("%s job_id[%d] hist[10~14]={%08x, %08x, %08x, %08x, %08}",
+		mml_pq_rb_msg("%s job_id[%d] hist[10~14]={%08x, %08x, %08x, %08x, %08x}",
 			__func__, task->job.jobid,
 			task->pq_task->aal_hist[pipe]->va[offset/4+10],
 			task->pq_task->aal_hist[pipe]->va[offset/4+11],
@@ -1408,12 +1408,12 @@ static s32 dbg_get(char *buf, const struct kernel_param *kp)
 			struct mml_comp *comp = &dbg_probed_components[i]->comp;
 
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  - [%d] mml comp_id: %d.%d @%08x name: %s bound: %d\n", i,
-				comp->id, comp->sub_idx, comp->base_pa,
+				"  - [%d] mml comp_id: %d.%d @%08llx name: %s bound: %d\n", i,
+				comp->id, comp->sub_idx, (unsigned long long)comp->base_pa,
 				comp->name ? comp->name : "(null)", comp->bound);
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  -         larb_port: %d @%08x pw: %d clk: %d\n",
-				comp->larb_port, comp->larb_base,
+				"  -         larb_port: %d @%08llx pw: %d clk: %d\n",
+				comp->larb_port, (unsigned long long)comp->larb_base,
 				comp->pw_cnt, comp->clk_cnt);
 			length += snprintf(buf + length, PAGE_SIZE - length,
 				"  -     ddp comp_id: %d bound: %d\n",

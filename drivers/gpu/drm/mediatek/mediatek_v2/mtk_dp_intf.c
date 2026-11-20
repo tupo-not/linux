@@ -382,7 +382,7 @@ static void mtk_dp_intf_start(struct mtk_ddp_comp *comp,
 		DP_EN, DP_CONTROLLER_EN, handle);
 
 	dp_intf->enable = 1;
-	DDPMSG("%s, dp_intf_start:0x%x!\n",
+	DDPMSG("%s, dp_intf_start:0x%x!",
 		mtk_dump_comp_str(comp), readl(baddr + DP_EN));
 }
 
@@ -396,7 +396,7 @@ static void mtk_dp_intf_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 	irq_underflowsa = 0;
 	irq_tl = 0;
 
-	DDPMSG("%s, stop\n", mtk_dump_comp_str(comp));
+	DDPMSG("%s, stop", mtk_dump_comp_str(comp));
 }
 
 static void mtk_dp_intf_prepare(struct mtk_ddp_comp *comp)
@@ -413,19 +413,19 @@ static void mtk_dp_intf_prepare(struct mtk_ddp_comp *comp)
 	if (dp_intf != NULL) {
 		ret = clk_prepare_enable(dp_intf->hf_fmm_ck);
 		if (ret < 0)
-			DDPPR_ERR("%s Failed to enable hf_fmm_ck clock: %d\n",
+			DDPPR_ERR("%s failed to enable hf_fmm_ck clock: %d",
 				__func__, ret);
 		ret = clk_prepare_enable(dp_intf->hf_fdp_ck);
 		if (ret < 0)
-			DDPPR_ERR("%s Failed to enable hf_fdp_ck clock: %d\n",
+			DDPPR_ERR("%s failed to enable hf_fdp_ck clock: %d",
 				__func__, ret);
 		//ret = clk_prepare_enable(dp_intf->pclk);
 		if (ret < 0)
-			DDPPR_ERR("%s Failed to enable pclk clock: %d\n",
+			DDPPR_ERR("%s failed to enable pclk clock: %d",
 				__func__, ret);
-		DDPMSG("%s:succesed enable dp_intf clock\n", __func__);
+		DDPMSG("%s:succesed enable dp_intf clock", __func__);
 	} else
-		DDPPR_ERR("Failed to enable dp_intf clock\n");
+		DDPPR_ERR("failed to enable dp_intf clock");
 }
 
 static void mtk_dp_intf_unprepare(struct mtk_ddp_comp *comp)
@@ -442,9 +442,9 @@ static void mtk_dp_intf_unprepare(struct mtk_ddp_comp *comp)
 		clk_disable_unprepare(dp_intf->hf_fmm_ck);
 		clk_disable_unprepare(dp_intf->hf_fdp_ck);
 		clk_disable_unprepare(dp_intf->pclk);
-		DDPMSG("%s:succesed disable dp_intf clock\n", __func__);
+		DDPMSG("%s:succesed disable dp_intf clock", __func__);
 	} else
-		DDPPR_ERR("Failed to disable dp_intf clock\n");
+		DDPPR_ERR("failed to disable dp_intf clock");
 }
 
 void mtk_dp_inf_video_clock(struct mtk_dp_intf *dp_intf)
@@ -456,10 +456,10 @@ void mtk_dp_inf_video_clock(struct mtk_dp_intf *dp_intf)
 	int ret = 0;
 	struct device_node *node;
 	if (dp_intf == NULL)
-		DDPPR_ERR("%s:input error\n", __func__);
+		DDPPR_ERR("%s:input error", __func__);
 
 	if (dp_intf->res >= SINK_MAX || dp_intf->res < 0) {
-		DDPPR_ERR("%s:input res error: %d\n", __func__, dp_intf->res);
+		DDPPR_ERR("%s:input res error: %d", __func__, dp_intf->res);
 		dp_intf->res = SINK_1920_1080;
 	}
 
@@ -483,15 +483,15 @@ void mtk_dp_inf_video_clock(struct mtk_dp_intf *dp_intf)
 		node = of_find_compatible_node(NULL, NULL,
 			dp_intf->driver_data->video_clock_cfg->compatible);
 		if (!node)
-			DDPPR_ERR("dp_intf [CLK_APMIXED] find node failed\n");
+			DDPPR_ERR("dp_intf [CLK_APMIXED] find node failed");
 			clk_apmixed_base = of_iomap(node, 0);
 		if (clk_apmixed_base == NULL) {
-			DDPPR_ERR("dp_intf [CLK_APMIXED] io map failed\n");
+			DDPPR_ERR("dp_intf [CLK_APMIXED] io map failed");
 			return;
 		}
 	}
 
-	DDPMSG("clk_apmixed_base clk_apmixed_base 0x%lx!!!,res %d\n",
+	DDPMSG("clk_apmixed_base clk_apmixed_base 0x%lx!!!,res %d",
 		clk_apmixed_base, dp_intf->res);
 	ret = clk_prepare_enable(dp_intf->pclk);
 	ret = clk_set_parent(dp_intf->pclk, dp_intf->pclk_src[clksrc]);
@@ -502,7 +502,7 @@ void mtk_dp_inf_video_clock(struct mtk_dp_intf *dp_intf)
 	DISP_REG_SET_FIELD(NULL, REG_FLD_MSB_LSB(0, 0),
 			clk_apmixed_base + con0_reg, 1);
 
-	DDPMSG("%s set pclk2 and src %d\n", __func__, clksrc);
+	DDPMSG("%s set pclk2 and src %d", __func__, clksrc);
 
 }
 
@@ -529,7 +529,7 @@ static void mtk_dp_intf_config(struct mtk_ddp_comp *comp,
 	unsigned int bg_left = 0, bg_right = 0;
 	unsigned int bg_top = 0, bg_bot = 0;
 
-	DDPMSG("%s w %d, h, %d, fps %d!\n",
+	DDPMSG("%s w %d, h, %d, fps %d!",
 			__func__, cfg->w, cfg->h, cfg->vrefresh);
 
 	hsize = cfg->w;
@@ -619,7 +619,7 @@ static void mtk_dp_intf_config(struct mtk_ddp_comp *comp,
 			DP_OUTPUT_SETTING, RB_SWAP, handle);
 
 	} else
-		DDPPR_ERR("%s error, w %d, h, %d, fps %d!\n",
+		DDPPR_ERR("%s error, w %d, h, %d, fps %d!",
 			__func__, cfg->w, cfg->h, cfg->vrefresh);
 
 
@@ -655,7 +655,7 @@ static void mtk_dp_intf_config(struct mtk_ddp_comp *comp,
 			DISP_REG_DSC_SLICE_W, handle);
 	mtk_ddp_write(comp, 0x20000c03, DISP_REG_DSC_PPS6, handle);
 #endif
-	DDPMSG("%s config done\n",
+	DDPMSG("%s config done",
 			mtk_dump_comp_str(comp));
 
 	dp_intf->enable = true;
@@ -665,84 +665,84 @@ int mtk_dp_intf_dump(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s REGS ==\n", mtk_dump_comp_str(comp));
-	DDPDUMP("(0x0000) DP_EN                 =0x%x\n",
+	DDPDUMP("== %s REGS ==", mtk_dump_comp_str(comp));
+	DDPDUMP("(0x0000) DP_EN                 =0x%x",
 			readl(baddr + DP_EN));
-	DDPDUMP("(0x0004) DP_RST                =0x%x\n",
+	DDPDUMP("(0x0004) DP_RST                =0x%x",
 			readl(baddr + DP_RST));
-	DDPDUMP("(0x0008) DP_INTEN              =0x%x\n",
+	DDPDUMP("(0x0008) DP_INTEN              =0x%x",
 			readl(baddr + DP_INTEN));
-	DDPDUMP("(0x000C) DP_INTSTA             =0x%x\n",
+	DDPDUMP("(0x000C) DP_INTSTA             =0x%x",
 			readl(baddr + DP_INTSTA));
-	DDPDUMP("(0x0010) DP_CON                =0x%x\n",
+	DDPDUMP("(0x0010) DP_CON                =0x%x",
 			readl(baddr + DP_CON));
-	DDPDUMP("(0x0014) DP_OUTPUT_SETTING     =0x%x\n",
+	DDPDUMP("(0x0014) DP_OUTPUT_SETTING     =0x%x",
 			readl(baddr + DP_OUTPUT_SETTING));
-	DDPDUMP("(0x0018) DP_SIZE               =0x%x\n",
+	DDPDUMP("(0x0018) DP_SIZE               =0x%x",
 			readl(baddr + DP_SIZE));
-	DDPDUMP("(0x0020) DP_TGEN_HWIDTH        =0x%x\n",
+	DDPDUMP("(0x0020) DP_TGEN_HWIDTH        =0x%x",
 			readl(baddr + DP_TGEN_HWIDTH));
-	DDPDUMP("(0x0024) DP_TGEN_HPORCH        =0x%x\n",
+	DDPDUMP("(0x0024) DP_TGEN_HPORCH        =0x%x",
 			readl(baddr + DP_TGEN_HPORCH));
-	DDPDUMP("(0x0028) DP_TGEN_VWIDTH        =0x%x\n",
+	DDPDUMP("(0x0028) DP_TGEN_VWIDTH        =0x%x",
 			readl(baddr + DP_TGEN_VWIDTH));
-	DDPDUMP("(0x002C) DP_TGEN_VPORCH        =0x%x\n",
+	DDPDUMP("(0x002C) DP_TGEN_VPORCH        =0x%x",
 			readl(baddr + DP_TGEN_VPORCH));
-	DDPDUMP("(0x0030) DP_BG_HCNTL           =0x%x\n",
+	DDPDUMP("(0x0030) DP_BG_HCNTL           =0x%x",
 			readl(baddr + DP_BG_HCNTL));
-	DDPDUMP("(0x0034) DP_BG_VCNTL           =0x%x\n",
+	DDPDUMP("(0x0034) DP_BG_VCNTL           =0x%x",
 			readl(baddr + DP_BG_VCNTL));
-	DDPDUMP("(0x0038) DP_BG_COLOR           =0x%x\n",
+	DDPDUMP("(0x0038) DP_BG_COLOR           =0x%x",
 			readl(baddr + DP_BG_COLOR));
-	DDPDUMP("(0x003C) DP_FIFO_CTL           =0x%x\n",
+	DDPDUMP("(0x003C) DP_FIFO_CTL           =0x%x",
 			readl(baddr + DP_FIFO_CTL));
-	DDPDUMP("(0x0040) DP_STATUS             =0x%x\n",
+	DDPDUMP("(0x0040) DP_STATUS             =0x%x",
 			readl(baddr + DP_STATUS));
-	DDPDUMP("(0x004C) DP_DCM                =0x%x\n",
+	DDPDUMP("(0x004C) DP_DCM                =0x%x",
 			readl(baddr + DP_DCM));
-	DDPDUMP("(0x0050) DP_DUMMY              =0x%x\n",
+	DDPDUMP("(0x0050) DP_DUMMY              =0x%x",
 			readl(baddr + DP_DUMMY));
-	DDPDUMP("(0x0068) DP_TGEN_VWIDTH_LEVEN  =0x%x\n",
+	DDPDUMP("(0x0068) DP_TGEN_VWIDTH_LEVEN  =0x%x",
 			readl(baddr + DP_TGEN_VWIDTH_LEVEN));
-	DDPDUMP("(0x006C) DP_TGEN_VPORCH_LEVEN  =0x%x\n",
+	DDPDUMP("(0x006C) DP_TGEN_VPORCH_LEVEN  =0x%x",
 			readl(baddr + DP_TGEN_VPORCH_LEVEN));
-	DDPDUMP("(0x0070) DP_TGEN_VWIDTH_RODD   =0x%x\n",
+	DDPDUMP("(0x0070) DP_TGEN_VWIDTH_RODD   =0x%x",
 			readl(baddr + DP_TGEN_VWIDTH_RODD));
-	DDPDUMP("(0x0074) DP_TGEN_VPORCH_RODD   =0x%x\n",
+	DDPDUMP("(0x0074) DP_TGEN_VPORCH_RODD   =0x%x",
 			readl(baddr + DP_TGEN_VPORCH_RODD));
-	DDPDUMP("(0x0078) DP_TGEN_VWIDTH_REVEN  =0x%x\n",
+	DDPDUMP("(0x0078) DP_TGEN_VWIDTH_REVEN  =0x%x",
 			readl(baddr + DP_TGEN_VWIDTH_REVEN));
-	DDPDUMP("(0x007C) DP_TGEN_VPORCH_REVEN  =0x%x\n",
+	DDPDUMP("(0x007C) DP_TGEN_VPORCH_REVEN  =0x%x",
 			readl(baddr + DP_TGEN_VPORCH_REVEN));
-	DDPDUMP("(0x00E0) DP_MUTEX_VSYNC_SETTING=0x%x\n",
+	DDPDUMP("(0x00E0) DP_MUTEX_VSYNC_SETTING=0x%x",
 			readl(baddr + DP_MUTEX_VSYNC_SETTING));
-	DDPDUMP("(0x00E4) DP_SHEUDO_REG_UPDATE  =0x%x\n",
+	DDPDUMP("(0x00E4) DP_SHEUDO_REG_UPDATE  =0x%x",
 			readl(baddr + DP_SHEUDO_REG_UPDATE));
-	DDPDUMP("(0x00E8) DP_INTERNAL_DCM_DIS   =0x%x\n",
+	DDPDUMP("(0x00E8) DP_INTERNAL_DCM_DIS   =0x%x",
 			readl(baddr + DP_INTERNAL_DCM_DIS));
-	DDPDUMP("(0x00F0) DP_TARGET_LINE        =0x%x\n",
+	DDPDUMP("(0x00F0) DP_TARGET_LINE        =0x%x",
 			readl(baddr + DP_TARGET_LINE));
-	DDPDUMP("(0x0100) DP_CHKSUM_EN          =0x%x\n",
+	DDPDUMP("(0x0100) DP_CHKSUM_EN          =0x%x",
 			readl(baddr + DP_CHKSUM_EN));
-	DDPDUMP("(0x0104) DP_CHKSUM0            =0x%x\n",
+	DDPDUMP("(0x0104) DP_CHKSUM0            =0x%x",
 			readl(baddr + DP_CHKSUM0));
-	DDPDUMP("(0x0108) DP_CHKSUM1            =0x%x\n",
+	DDPDUMP("(0x0108) DP_CHKSUM1            =0x%x",
 			readl(baddr + DP_CHKSUM1));
-	DDPDUMP("(0x010C) DP_CHKSUM2            =0x%x\n",
+	DDPDUMP("(0x010C) DP_CHKSUM2            =0x%x",
 			readl(baddr + DP_CHKSUM2));
-	DDPDUMP("(0x0110) DP_CHKSUM3            =0x%x\n",
+	DDPDUMP("(0x0110) DP_CHKSUM3            =0x%x",
 			readl(baddr + DP_CHKSUM3));
-	DDPDUMP("(0x0114) DP_CHKSUM4            =0x%x\n",
+	DDPDUMP("(0x0114) DP_CHKSUM4            =0x%x",
 			readl(baddr + DP_CHKSUM4));
-	DDPDUMP("(0x0118) DP_CHKSUM5            =0x%x\n",
+	DDPDUMP("(0x0118) DP_CHKSUM5            =0x%x",
 			readl(baddr + DP_CHKSUM5));
-	DDPDUMP("(0x011C) DP_CHKSUM6            =0x%x\n",
+	DDPDUMP("(0x011C) DP_CHKSUM6            =0x%x",
 			readl(baddr + DP_CHKSUM6));
-	DDPDUMP("(0x0120) DP_CHKSUM7            =0x%x\n",
+	DDPDUMP("(0x0120) DP_CHKSUM7            =0x%x",
 			readl(baddr + DP_CHKSUM7));
-	DDPDUMP("(0x0F00) DP_PATTERN_CTRL0      =0x%x\n",
+	DDPDUMP("(0x0F00) DP_PATTERN_CTRL0      =0x%x",
 			readl(baddr + DP_PATTERN_CTRL0));
-	DDPDUMP("(0x0F04) DP_PATTERN_CTRL1      =0x%x\n",
+	DDPDUMP("(0x0F04) DP_PATTERN_CTRL1      =0x%x",
 			readl(baddr + DP_PATTERN_CTRL1));
 
 	return 0;
@@ -752,8 +752,8 @@ int mtk_dp_intf_analysis(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s ANALYSIS ==\n", mtk_dump_comp_str(comp));
-	DDPDUMP("en=%d, rst_sel=%d, rst=%d, bg_en=%d, intl_en=%d\n",
+	DDPDUMP("== %s ANALYSIS ==", mtk_dump_comp_str(comp));
+	DDPDUMP("en=%d, rst_sel=%d, rst=%d, bg_en=%d, intl_en=%d",
 		 DISP_REG_GET_FIELD(CON_FLD_DP_EN,
 				baddr + DP_EN),
 		 DISP_REG_GET_FIELD(CON_FLD_DP_RST_SEL,
@@ -764,7 +764,7 @@ int mtk_dp_intf_analysis(struct mtk_ddp_comp *comp)
 				baddr + DP_CON),
 		 DISP_REG_GET_FIELD(CON_FLD_DP_INTL_EN,
 				baddr + DP_CON));
-	DDPDUMP("== End %s ANALYSIS ==\n", mtk_dump_comp_str(comp));
+	DDPDUMP("== end %s ANALYSIS ==", mtk_dump_comp_str(comp));
 
 	return 0;
 }
@@ -784,7 +784,7 @@ static int mtk_dp_intf_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	ret = mtk_ddp_comp_register(drm_dev, &dp_intf->ddp_comp);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component %s: %d\n",
@@ -792,7 +792,7 @@ static int mtk_dp_intf_bind(struct device *dev, struct device *master,
 		return ret;
 	}
 
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 	return 0;
 }
 
@@ -821,7 +821,7 @@ static int mtk_dp_intf_probe(struct platform_device *pdev)
 	int ret;
 	struct device_node *node;
 
-	DDPMSG("%s+\n", __func__);
+	DDPMSG("%s+", __func__);
 	dp_intf = devm_kzalloc(dev, sizeof(*dp_intf), GFP_KERNEL);
 	if (!dp_intf)
 		return -ENOMEM;
@@ -829,7 +829,7 @@ static int mtk_dp_intf_probe(struct platform_device *pdev)
 
 	of_id = of_match_device(mtk_dp_intf_driver_dt_match, &pdev->dev);
 	dp_intf->driver_data = (struct mtk_dp_intf_driver_data *)of_id->data;
-	DDPMSG("%s:%d\n", __func__, __LINE__);
+	DDPMSG("%s:%d", __func__, __LINE__);
 
 	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	dp_intf->regs = devm_ioremap(dev, mem->start, resource_size(mem));
@@ -869,12 +869,12 @@ static int mtk_dp_intf_probe(struct platform_device *pdev)
 		node = of_find_compatible_node(NULL, NULL,
 			dp_intf->driver_data->video_clock_cfg->compatible);
 		if (!node)
-			DDPPR_ERR("[CLK_APMIXED] find node failed\n");
+			DDPPR_ERR("find node failed");
 		clk_apmixed_base = of_iomap(node, 0);
 		if (clk_apmixed_base == NULL)
-			DDPPR_ERR("[CLK_APMIXED] io map failed\n");
+			DDPPR_ERR("io map failed");
 
-		DDPPR_ERR("clk_apmixed_base clk_apmixed_base 0x%lx!!!\n",
+		DDPPR_ERR("clk_apmixed_base clk_apmixed_base 0x%lx!!!",
 			clk_apmixed_base);
 	}
 
@@ -891,7 +891,7 @@ static int mtk_dp_intf_probe(struct platform_device *pdev)
 		return comp_id;
 	}
 
-	DDPMSG("%s:%d\n", __func__, __LINE__);
+	DDPMSG("%s:%d", __func__, __LINE__);
 	ret = mtk_ddp_comp_init(dev, dev->of_node, &dp_intf->ddp_comp, comp_id,
 				&mtk_dp_intf_funcs);
 	if (ret) {
@@ -899,7 +899,7 @@ static int mtk_dp_intf_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	DDPMSG("%s:%d\n", __func__, __LINE__);
+	DDPMSG("%s:%d", __func__, __LINE__);
 	/* Get dp intf irq num and request irq */
 	dp_intf->irq = platform_get_irq(pdev, 0);
 	dp_intf->res = SINK_MAX;
@@ -918,7 +918,7 @@ static int mtk_dp_intf_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	DDPMSG("%s:%d\n", __func__, __LINE__);
+	DDPMSG("%s:%d", __func__, __LINE__);
 
 	platform_set_drvdata(pdev, dp_intf);
 	pm_runtime_enable(dev);
@@ -933,7 +933,7 @@ static int mtk_dp_intf_probe(struct platform_device *pdev)
 	}
 
 	g_dp_intf = dp_intf;
-	DDPMSG("%s-\n", __func__);
+	DDPMSG("%s-", __func__);
 	return ret;
 }
 
@@ -988,7 +988,7 @@ static irqreturn_t mtk_dp_intf_irq_status(int irq, void *dev_id)
 		|| ((irq_vdesa+1)%200 == 0)
 		|| ((irq_underflowsa+1)%200 == 0)
 		|| ((irq_tl+1)%200 == 0))
-		DDPMSG("dp_intf irq %d - %d - %d - %d! 0x%x\n", irq_intsa,
+		DDPMSG("dp_intf irq %d - %d - %d - %d! 0x%x", irq_intsa,
 				irq_vdesa, irq_underflowsa, irq_tl, status);
 
 	return IRQ_HANDLED;

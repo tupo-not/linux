@@ -66,14 +66,14 @@ void mtk_dp_debug(const char *opt)
 			else if (strncmp(opt + 12, "enable1080p10", 13) == 0)
 				mtk_dp_fake_plugin(SINK_1920_1080, 2);
 		} else
-			DDPINFO("fakecablein error msg\n");
+			DDPINFO("fakecablein error msg");
 	} else if (strncmp(opt, "fec:", 4) == 0) {
 		if (strncmp(opt + 4, "enable", 6) == 0)
 			mtk_dp_fec_enable(1);
 		else if (strncmp(opt + 4, "disable", 7) == 0)
 			mtk_dp_fec_enable(0);
 		else
-			DDPINFO("fec:enable/disable error msg\n");
+			DDPINFO("fec:enable/disable error msg");
 
 	} else if (strncmp(opt, "power:", 6) == 0) {
 		if (strncmp(opt + 6, "on", 2) == 0)
@@ -113,7 +113,7 @@ void mtk_dp_debug(const char *opt)
 		else if (strncmp(opt + 7, "8", 1) == 0)
 			mtk_dp_test(8);
 		else
-			DDPINFO("dptest error msg\n");
+			DDPINFO("dptest error msg");
 	} else if (strncmp(opt, "debug_log:", 10) == 0) {
 		if (strncmp(opt + 10, "on", 2) == 0)
 			mtk_dp_debug_enable(true);

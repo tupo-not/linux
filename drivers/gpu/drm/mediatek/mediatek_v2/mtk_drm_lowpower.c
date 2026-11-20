@@ -220,7 +220,7 @@ void mtk_drm_idlemgr_kick(const char *source, struct drm_crtc *crtc,
 		DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 
 	if (idlemgr_ctx->is_idle) {
-		DDPINFO("[LP] kick idle from [%s]\n", source);
+		DDPINFO("kick idle from [%s]", source);
 		if (mtk_crtc->esd_ctx)
 			atomic_set(&mtk_crtc->esd_ctx->target_time, 0);
 		mtk_drm_idlemgr_leave_idle_nolock(crtc);
@@ -250,11 +250,11 @@ unsigned int mtk_drm_set_idlemgr(struct drm_crtc *crtc, unsigned int flag,
 	old_flag = atomic_read(&idlemgr->idlemgr_task_active);
 
 	if (flag) {
-		DDPINFO("[LP] enable idlemgr\n");
+		DDPINFO("enable idlemgr");
 		atomic_set(&idlemgr->idlemgr_task_active, 1);
 		wake_up_interruptible(&idlemgr->idlemgr_wq);
 	} else {
-		DDPINFO("[LP] disable idlemgr\n");
+		DDPINFO("disable idlemgr");
 		atomic_set(&idlemgr->idlemgr_task_active, 0);
 		mtk_drm_idlemgr_kick(__func__, crtc, need_lock);
 	}
@@ -346,7 +346,6 @@ static bool mtk_planes_is_yuv_fmt(struct drm_crtc *crtc)
 
 static int mtk_drm_idlemgr_monitor_thread(void *data)
 {
-	int ret = 0;
 	unsigned long long t_idle;
 	struct drm_crtc *crtc = (struct drm_crtc *)data;
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
@@ -359,7 +358,7 @@ static int mtk_drm_idlemgr_monitor_thread(void *data)
 
 	msleep(16000);
 	while (1) {
-		ret = wait_event_interruptible(
+		wait_event_interruptible(
 			idlemgr->idlemgr_wq,
 			atomic_read(&idlemgr->idlemgr_task_active));
 
@@ -425,7 +424,7 @@ static int mtk_drm_idlemgr_monitor_thread(void *data)
 
 			/* enter idle state */
 			if (!vblank || atomic_read(&vblank->refcount) == 0) {
-				DDPINFO("[LP] enter idle\n");
+				DDPINFO("enter idle");
 				mtk_drm_idlemgr_enter_idle_nolock(crtc);
 				idlemgr_ctx->is_idle = 1;
 			} else {
@@ -457,14 +456,14 @@ int mtk_drm_idlemgr_init(struct drm_crtc *crtc, int index)
 	char name[LEN];
 
 	if (!idlemgr) {
-		DDPPR_ERR("struct mtk_drm_idlemgr allocate fail\n");
+		DDPPR_ERR("struct mtk_drm_idlemgr allocate fail");
 		return -ENOMEM;
 		;
 	}
 
 	if (!idlemgr_ctx) {
 
-		DDPPR_ERR("struct mtk_drm_idlemgr_context allocate fail\n");
+		DDPPR_ERR("struct mtk_drm_idlemgr_context allocate fail");
 		return -ENOMEM;
 	}
 
@@ -517,11 +516,11 @@ static void mtk_drm_idlemgr_disable_crtc(struct drm_crtc *crtc)
 	struct mtk_drm_private *priv =
 				mtk_crtc->base.dev->dev_private;
 
-	DDPINFO("%s, crtc%d+\n", __func__, crtc_id);
+	DDPINFO("%s, crtc%d+", __func__, crtc_id);
 
 	if (mode) {
-		DDPINFO("crtc%d mode:%d bypass enter idle\n", crtc_id, mode);
-		DDPINFO("crtc%d do %s-\n", crtc_id, __func__);
+		DDPINFO("crtc%d mode:%d bypass enter idle", crtc_id, mode);
+		DDPINFO("crtc%d do %s-", crtc_id, __func__);
 		return;
 	}
 
@@ -556,7 +555,7 @@ static void mtk_drm_idlemgr_disable_crtc(struct drm_crtc *crtc)
 	/* 8. CMDQ power off */
 	cmdq_mbox_disable(mtk_crtc->gce_obj.client[CLIENT_CFG]->chan);
 
-	DDPINFO("crtc%d do %s-\n", crtc_id, __func__);
+	DDPINFO("crtc%d do %s-", crtc_id, __func__);
 }
 
 /* TODO: we should restore the current setting rather than default setting */
@@ -570,11 +569,11 @@ static void mtk_drm_idlemgr_enable_crtc(struct drm_crtc *crtc)
 	struct mtk_ddp_comp *comp;
 	unsigned int i, j;
 
-	DDPINFO("crtc%d do %s+\n", crtc_id, __func__);
+	DDPINFO("crtc%d do %s+", crtc_id, __func__);
 
 	if (mode) {
-		DDPINFO("crtc%d mode:%d bypass exit idle\n", crtc_id, mode);
-		DDPINFO("crtc%d do %s-\n", crtc_id, __func__);
+		DDPINFO("crtc%d mode:%d bypass exit idle", crtc_id, mode);
+		DDPINFO("crtc%d do %s-", crtc_id, __func__);
 		return;
 	}
 
@@ -633,5 +632,5 @@ static void mtk_drm_idlemgr_enable_crtc(struct drm_crtc *crtc)
 	/* 11. enable fake vsync if need */
 	mtk_drm_fake_vsync_switch(crtc, true);
 
-	DDPINFO("crtc%d do %s-\n", crtc_id, __func__);
+	DDPINFO("crtc%d do %s-", crtc_id, __func__);
 }

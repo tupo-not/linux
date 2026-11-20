@@ -222,6 +222,9 @@ void mtk_ddp_write_mask_cpu(struct mtk_ddp_comp *comp,
 }
 
 void mtk_dither_set(struct mtk_ddp_comp *comp, unsigned int bpc,
+		    unsigned int CFG, struct cmdq_pkt *handle);
+
+void mtk_dither_set(struct mtk_ddp_comp *comp, unsigned int bpc,
 		    unsigned int CFG, struct cmdq_pkt *handle)
 {
 	/* If bpc equal to 0, the dithering function didn't be enabled */
@@ -296,7 +299,7 @@ static const struct mtk_ddp_comp_funcs ddp_ufoe = {
 	.start = mtk_ufoe_start, .config = mtk_ufoe_config,
 };
 
-static const struct mtk_ddp_comp_funcs ddp_split = {
+static const struct mtk_ddp_comp_funcs ddp_split __maybe_unused = {
 	.start = mtk_split_start,
 };
 
@@ -529,7 +532,7 @@ void mtk_ddp_comp_get_name(struct mtk_ddp_comp *comp, char *buf, int buf_len)
 	int r;
 
 	if (comp->id < 0 || comp->id >= DDP_COMPONENT_ID_MAX) {
-		DDPPR_ERR("%s(), invalid id %d, set buf to 0\n",
+		DDPPR_ERR("%s(), invalid id %d, set buf to 0",
 			  __func__, comp->id);
 		memset(buf, 0, buf_len);
 		return;
@@ -538,7 +541,7 @@ void mtk_ddp_comp_get_name(struct mtk_ddp_comp *comp, char *buf, int buf_len)
 	if (buf_len > sizeof(buf))
 		buf_len = sizeof(buf);
 	if (mtk_ddp_matches[comp->id].type < 0) {
-		DDPPR_ERR("%s invalid type\n", __func__);
+		DDPPR_ERR("%s invalid type", __func__);
 		return;
 	}
 	r = snprintf(buf, buf_len, "%s%d",
@@ -546,7 +549,7 @@ void mtk_ddp_comp_get_name(struct mtk_ddp_comp *comp, char *buf, int buf_len)
 		  mtk_ddp_matches[comp->id].alias_id);
 	if (r < 0) {
 		/* Handle snprintf() error */
-		DDPPR_ERR("snprintf error\n");
+		DDPPR_ERR("snprintf error");
 	}
 }
 
@@ -589,7 +592,7 @@ enum mtk_ddp_comp_id mtk_ddp_comp_get_id(struct device_node *node,
 
 	id = of_alias_get_id(node, mtk_ddp_comp_stem[comp_type]);
 
-	DDPINFO("id:%d, comp_type:%d\n", id, comp_type);
+	DDPINFO("id:%d, comp_type:%d", id, comp_type);
 	for (i = 0; i < ARRAY_SIZE(mtk_ddp_matches); i++) {
 		if (comp_type == mtk_ddp_matches[i].type &&
 		    (id < 0 || id == mtk_ddp_matches[i].alias_id))
@@ -652,7 +655,7 @@ static void mtk_ddp_comp_set_larb(struct device *dev, struct device_node *node,
 	    type == MTK_DISP_WDMA || type == MTK_DISP_POSTMASK) {
 		dev_warn(dev, "%s: %s need larb device\n", __func__,
 				mtk_dump_comp_str(comp));
-		DDPPR_ERR("%s: smi-id:%d\n", mtk_dump_comp_str(comp),
+		DDPPR_ERR("%s: smi-id:%d", mtk_dump_comp_str(comp),
 				comp->larb_id);
 	}
 }
@@ -685,7 +688,7 @@ static int mtk_ddp_iommu_callback(int port, dma_addr_t mva, void *data)
 {
 	struct mtk_ddp_comp *comp = (struct mtk_ddp_comp *)data;
 
-	DDPPR_ERR("fault call port=0x%x, mva=0x%lx, data=0x%p\n", port,
+	DDPPR_ERR("fault call port=0x%x, mva=0x%lx, data=0x%p", port,
 		  (unsigned long)mva, data);
 	if (mva == 0x0) {
 		/*
@@ -697,7 +700,7 @@ static int mtk_ddp_iommu_callback(int port, dma_addr_t mva, void *data)
 		 * ignore the translation fault, just resolve the ovl underflow issue
 		 */
 		DDPPR_ERR(
-			"When had translation fault & mva = 0, check the code comment:[%s] line (%d)\n"
+			"when had translation fault & mva = 0, check the code comment:[%s] line (%d)"
 			, __func__, __LINE__);
 	}
 	DRM_MMP_EVENT_START(iova_tf, port, mva);
@@ -742,7 +745,7 @@ static void mtk_ddp_comp_iommu_register(struct mtk_ddp_comp *comp)
 			mtk_iommu_register_fault_callback(
 						port, mtk_ddp_iommu_callback,
 						comp, false);
-		DDPINFO("%s, comp:%u, register the %d port:0x%x\n",
+		DDPINFO("%s, comp:%u, register the %d port:0x%x",
 			__func__, comp->id, index, port);
 		index++;
 	}
@@ -753,16 +756,13 @@ int mtk_ddp_comp_init(struct device *dev, struct device_node *node,
 		      struct mtk_ddp_comp *comp, enum mtk_ddp_comp_id comp_id,
 		      const struct mtk_ddp_comp_funcs *funcs)
 {
-	enum mtk_ddp_comp_type type;
 	struct platform_device *comp_pdev = NULL;
 	struct resource res;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 
 	if (comp_id < 0 || comp_id >= DDP_COMPONENT_ID_MAX)
 		return -EINVAL;
-
-	type = mtk_ddp_matches[comp_id].type;
 
 	comp->id = comp_id;
 	comp->funcs = funcs ?: mtk_ddp_matches[comp_id].funcs;
@@ -772,7 +772,7 @@ int mtk_ddp_comp_init(struct device *dev, struct device_node *node,
 	comp->clk = of_clk_get(node, 0);
 	if (IS_ERR(comp->clk)) {
 		comp->clk = NULL;
-		DDPPR_ERR("comp:%d get clock fail!\n", comp_id);
+		DDPPR_ERR("comp:%d get clock fail!", comp_id);
 	}
 
 	if (comp_id == DDP_COMPONENT_BLS || comp_id == DDP_COMPONENT_PWM0) {
@@ -796,7 +796,7 @@ int mtk_ddp_comp_init(struct device *dev, struct device_node *node,
 		comp->irq = of_irq_get(node, 0);
 
 	comp->regs = of_iomap(node, 0);
-	DDPINFO("[DRM]regs_pa:0x%lx, regs:0x%p, node:%s\n",
+	DDPINFO("regs_pa:0x%lx, regs:0x%p, node:%s",
 		(unsigned long)comp->regs_pa, comp->regs, node->full_name);
 
 	/* handle cmdq related resources */
@@ -823,7 +823,7 @@ int mtk_ddp_comp_init(struct device *dev, struct device_node *node,
 	mtk_ddp_comp_iommu_register(comp);
 #endif
 
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return 0;
 }
@@ -879,7 +879,7 @@ void mtk_ddp_comp_clk_prepare(struct mtk_ddp_comp *comp)
 	if (comp->clk) {
 		ret = clk_prepare_enable(comp->clk);
 		if (ret)
-			DDPPR_ERR("clk prepare enable failed:%s\n",
+			DDPPR_ERR("clk prepare enable failed:%s",
 				mtk_dump_comp_str(comp));
 	}
 
@@ -1147,7 +1147,7 @@ void mt6833_mtk_sodi_config(struct drm_device *drm, enum mtk_ddp_comp_id id,
 					| MT6833_INFRA_FLD_DDR_MASK);
 				writel_relaxed(v, priv->infra_regs + MT6833_INFRA_DISP_DDR_CTL);
 			} else
-				DDPINFO("%s: failed to disable infra ddr control\n", __func__);
+				DDPINFO("%s: failed to disable infra ddr control", __func__);
 		}
 	} else {
 		cmdq_pkt_write(handle, NULL, priv->config_regs_pa +
@@ -1160,7 +1160,7 @@ void mt6833_mtk_sodi_config(struct drm_device *drm, enum mtk_ddp_comp_id id,
 						MT6833_INFRA_DISP_DDR_CTL,
 						infra_req_val, infra_req_mask);
 			} else
-				DDPINFO("%s: failed to disable infra ddr control\n", __func__);
+				DDPINFO("%s: failed to disable infra ddr control", __func__);
 		}
 	}
 }
@@ -1483,7 +1483,7 @@ void mt6983_mtk_sodi_config(struct drm_device *drm, enum mtk_ddp_comp_id id,
 {
 	struct mtk_drm_private *priv = drm->dev_private;
 	unsigned int sodi_req_val = 0, sodi_req_mask = 0;
-	unsigned int emi_req_val = 0, emi_req_mask = 0;
+	unsigned int emi_req_val __maybe_unused = 0, emi_req_mask __maybe_unused = 0;
 	bool en = *((bool *)data);
 
 	if (id == DDP_COMPONENT_ID_MAX) { /* config when top clk on */
@@ -1603,8 +1603,8 @@ void mt6895_mtk_sodi_config(struct drm_device *drm, enum mtk_ddp_comp_id id,
 			    struct cmdq_pkt *handle, void *data)
 {
 	struct mtk_drm_private *priv = drm->dev_private;
-	unsigned int sodi_req_val = 0, sodi_req_mask = 0;
-	unsigned int emi_req_val = 0, emi_req_mask = 0;
+	unsigned int sodi_req_val __maybe_unused = 0, sodi_req_mask __maybe_unused = 0;
+	unsigned int emi_req_val __maybe_unused = 0, emi_req_mask __maybe_unused = 0;
 	unsigned int ultra_ovl_val = 0, ultra_ovl_mask = 0;
 	bool en = *((bool *)data);
 
@@ -1735,7 +1735,7 @@ int mtk_ddp_comp_helper_get_opt(struct mtk_ddp_comp *comp,
 	struct mtk_drm_helper *helper_opt = NULL;
 
 	if (!mtk_crtc) {
-		DDPINFO("%s: crtc is empty\n", __func__);
+		DDPINFO("%s: crtc is empty", __func__);
 		return -EINVAL;
 	}
 

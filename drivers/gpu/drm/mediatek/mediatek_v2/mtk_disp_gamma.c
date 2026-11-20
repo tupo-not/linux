@@ -81,6 +81,8 @@ static struct DISP_GAMMA_12BIT_LUT_T g_disp_gamma_12bit_lut_db;
 
 static DEFINE_MUTEX(g_gamma_global_lock);
 static DEFINE_MUTEX(g_gamma_sram_lock);
+/* Serializes the static LUT scratch buffers in mtk_trans_gain_to_gamma(). */
+static DEFINE_MUTEX(g_gamma_lut_mutex);
 
 static atomic_t g_gamma_is_clock_on[DISP_GAMMA_TOTAL] = { ATOMIC_INIT(0),
 	ATOMIC_INIT(0)};
@@ -175,7 +177,7 @@ static int mtk_gamma_write_lut_reg(struct mtk_ddp_comp *comp,
 		mutex_lock(&g_gamma_global_lock);
 	gamma_lut = g_disp_gamma_lut[id];
 	if (gamma_lut == NULL) {
-		DDPINFO("%s: table [%d] not initialized\n", __func__, id);
+		DDPINFO("%s: table [%d] not initialized", __func__, id);
 		ret = -EFAULT;
 		goto gamma_write_lut_unlock;
 	}
@@ -186,13 +188,13 @@ static int mtk_gamma_write_lut_reg(struct mtk_ddp_comp *comp,
 			gamma_lut->lut[i], ~0);
 
 		if ((i & 0x3f) == 0) {
-			DDPINFO("[0x%08lx](%d) = 0x%x\n",
+			DDPINFO("[0x%08lx](%d) = 0x%x",
 				(long)(comp->regs_pa + DISP_GAMMA_LUT + i * 4),
 				i, gamma_lut->lut[i]);
 		}
 	}
 	i--;
-	DDPINFO("[0x%08lx](%d) = 0x%x\n",
+	DDPINFO("[0x%08lx](%d) = 0x%x",
 		(long)(comp->regs_pa + DISP_GAMMA_LUT + i * 4),
 		i, gamma_lut->lut[i]);
 
@@ -200,11 +202,11 @@ static int mtk_gamma_write_lut_reg(struct mtk_ddp_comp *comp,
 		(int)(gamma_lut->lut[510] & 0x3FF) > 0) {
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_GAMMA_CFG, 0x1 << 2, 0x4);
-		DDPINFO("decreasing LUT\n");
+		DDPINFO("decreasing LUT");
 	} else {
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_GAMMA_CFG, 0x0 << 2, 0x4);
-		DDPINFO("Incremental LUT\n");
+		DDPINFO("incremental LUT");
 	}
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
@@ -222,7 +224,7 @@ void disp_gamma_on_start_of_frame(void){
 
 	//DDPINFO("%s: sof:%d,sram:%d\n", __func__, atomic_read(&g_gamma_sof_irq_available),atomic_read(&g_gamma_sof_filp));
 	if ((!atomic_read(&g_gamma_sof_irq_available)) && (atomic_read(&g_gamma_sof_filp))) {
-		DDPINFO("%s: wake up thread\n",__func__);
+		DDPINFO("%s: wake up thread",__func__);
 		atomic_set(&g_gamma_sof_irq_available, 1);
 		wake_up_interruptible(&g_gamma_sof_irq_wq);
 	}
@@ -241,7 +243,7 @@ static int mtk_gamma_write_12bit_lut_reg(struct mtk_ddp_comp *comp,
 		mutex_lock(&g_gamma_global_lock);
 	gamma_lut = g_disp_gamma_12bit_lut[id];
 	if (gamma_lut == NULL) {
-		DDPINFO("%s: table [%d] not initialized\n", __func__, id);
+		DDPINFO("%s: table [%d] not initialized", __func__, id);
 		ret = -EFAULT;
 		goto gamma_write_lut_unlock;
 	}
@@ -251,7 +253,7 @@ static int mtk_gamma_write_12bit_lut_reg(struct mtk_ddp_comp *comp,
 	} else if (g_gamma_data_mode == HW_12BIT_MODE_8BIT) {
 		block_num = DISP_GAMMA_LUT_SIZE / DISP_GAMMA_BLOCK_SIZE;
 	} else {
-		DDPINFO("%s: g_gamma_data_mode is error\n", __func__);
+		DDPINFO("%s: g_gamma_data_mode is error", __func__);
 		return -1;
 	}
 
@@ -282,11 +284,11 @@ static int mtk_gamma_write_12bit_lut_reg(struct mtk_ddp_comp *comp,
 		(int)(gamma_lut->lut_0[510] & 0x3FF) > 0) {
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_GAMMA_CFG, 0x1 << 2, 0x4);
-		DDPINFO("decreasing LUT\n");
+		DDPINFO("decreasing LUT");
 	} else {
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_GAMMA_CFG, 0x0 << 2, 0x4);
-		DDPINFO("Incremental LUT\n");
+		DDPINFO("incremental LUT");
 	}
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
@@ -311,12 +313,12 @@ static int mtk_gamma_set_lut(struct mtk_ddp_comp *comp,
 	int id;
 	struct DISP_GAMMA_LUT_T *gamma_lut, *old_lut;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	gamma_lut = kmalloc(sizeof(struct DISP_GAMMA_LUT_T),
 		GFP_KERNEL);
 	if (gamma_lut == NULL) {
-		DDPPR_ERR("%s: no memory\n", __func__);
+		DDPPR_ERR("%s: no memory", __func__);
 		return -EFAULT;
 	}
 
@@ -334,7 +336,7 @@ static int mtk_gamma_set_lut(struct mtk_ddp_comp *comp,
 			old_lut = g_disp_gamma_lut[id];
 			g_disp_gamma_lut[id] = gamma_lut;
 
-			DDPINFO("%s: Set module(%d) lut\n", __func__, comp->id);
+			DDPINFO("%s: set module(%d) lut", __func__, comp->id);
 			ret = mtk_gamma_write_lut_reg(comp, handle, 0);
 
 			mutex_unlock(&g_gamma_global_lock);
@@ -346,7 +348,7 @@ static int mtk_gamma_set_lut(struct mtk_ddp_comp *comp,
 				mtk_crtc_check_trigger(comp->mtk_crtc, false,
 					false);
 		} else {
-			DDPPR_ERR("%s: invalid ID = %d\n", __func__, comp->id);
+			DDPPR_ERR("%s: invalid ID = %d", __func__, comp->id);
 			ret = -EFAULT;
 		}
 	}
@@ -362,12 +364,12 @@ static int mtk_gamma_12bit_set_lut(struct mtk_ddp_comp *comp,
 	int id;
 	struct DISP_GAMMA_12BIT_LUT_T *gamma_lut, *old_lut;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	gamma_lut = kmalloc(sizeof(struct DISP_GAMMA_12BIT_LUT_T),
 		GFP_KERNEL);
 	if (gamma_lut == NULL) {
-		DDPPR_ERR("%s: no memory\n", __func__);
+		DDPPR_ERR("%s: no memory", __func__);
 		return -EFAULT;
 	}
 
@@ -384,7 +386,7 @@ static int mtk_gamma_12bit_set_lut(struct mtk_ddp_comp *comp,
 			old_lut = g_disp_gamma_12bit_lut[id];
 			g_disp_gamma_12bit_lut[id] = gamma_lut;
 
-			DDPINFO("%s: Set module(%d) lut\n", __func__, comp->id);
+			DDPINFO("%s: set module(%d) lut", __func__, comp->id);
 			ret = mtk_gamma_write_12bit_lut_reg(comp, handle, 0);
 
 			mutex_unlock(&g_gamma_global_lock);
@@ -395,7 +397,7 @@ static int mtk_gamma_12bit_set_lut(struct mtk_ddp_comp *comp,
 				mtk_crtc_check_trigger(comp->mtk_crtc, false,
 					false);
 		} else {
-			DDPPR_ERR("%s: invalid ID = %d\n", __func__, comp->id);
+			DDPPR_ERR("%s: invalid ID = %d", __func__, comp->id);
 			ret = -EFAULT;
 		}
 	}
@@ -427,16 +429,18 @@ int mtk_drm_ioctl_set_12bit_gammalut(struct drm_device *dev, void *data,
 	memcpy(&ioctl_data,(struct DISP_GAMMA_12BIT_LUT_T *)data,sizeof(struct DISP_GAMMA_12BIT_LUT_T));
 	atomic_set(&g_gamma_sof_filp,1);
 	if (g_gamma_flip_comp[0]->mtk_crtc != NULL) {
-		DDPINFO("%s kick idle! \n", __func__);
+		DDPINFO("%s kick idle! ", __func__);
 		mtk_drm_idlemgr_kick(__func__, &g_gamma_flip_comp[0]->mtk_crtc->base, 1);
 		mtk_crtc_check_trigger(g_gamma_flip_comp[0]->mtk_crtc, false, false);
 	}
-	DDPINFO("%s:update IOCTL g_gamma_sof_filp to 1\n",__func__);
+	DDPINFO("%s:update IOCTL g_gamma_sof_filp to 1",__func__);
 	CRTC_MMP_EVENT_END(0, gamma_ioctl, 0, 1);
 	mutex_unlock(&g_gamma_sram_lock);
 
 	return 0;
 }
+
+int mtk_drm_12bit_gammalut_ioctl_impl(void);
 
 int mtk_drm_12bit_gammalut_ioctl_impl(void)
 {
@@ -466,7 +470,7 @@ static void disp_gamma_wait_sof_irq(void)
 	int ret = 0;
 
 	if (atomic_read(&g_gamma_sof_irq_available) == 0) {
-		DDPINFO("wait_event_interruptible\n");
+		DDPINFO("wait_event_interruptible");
 		ret = wait_event_interruptible(g_gamma_sof_irq_wq,
 				atomic_read(&g_gamma_sof_irq_available) == 1);
 		CRTC_MMP_EVENT_START(0, gamma_sof, 0, 0);
@@ -478,12 +482,12 @@ static void disp_gamma_wait_sof_irq(void)
 
 	ret = mtk_drm_12bit_gammalut_ioctl_impl();
 	if(ret != 0) {
-		DDPPR_ERR("%s:12bit gammalut ioctl impl failed!!\n",__func__);
+		DDPPR_ERR("%s:12bit gammalut ioctl impl failed!!",__func__);
 		CRTC_MMP_MARK(0, gamma_sof, 0, 1);
 	}
 
 	atomic_set(&g_gamma_sof_filp,0);
-	DDPINFO("set g_gamma_ioctl_lock to 0\n");
+	DDPINFO("set g_gamma_ioctl_lock to 0");
 	CRTC_MMP_EVENT_END(0, gamma_sof, 0, 2);
 }
 
@@ -493,11 +497,12 @@ static int mtk_gamma_sof_irq_trigger(void *data)
 		disp_gamma_wait_sof_irq();
 		atomic_set(&g_gamma_sof_irq_available, 0);
 	}
+	return 0;
 }
 
 static void mtk_gamma_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		comp->regs_pa + DISP_GAMMA_EN, GAMMA_EN, ~0);
@@ -518,7 +523,7 @@ static void mtk_gamma_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 static void mtk_gamma_bypass(struct mtk_ddp_comp *comp, int bypass,
 	struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		comp->regs_pa + DISP_GAMMA_CFG, bypass, 0x1);
 	g_gamma_relay_value[index_of_gamma(comp->id)] = bypass;
@@ -534,7 +539,7 @@ static void mtk_gamma_set(struct mtk_ddp_comp *comp,
 	u32 word_first = 0;
 	u32 word_last = 0;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	if (state->gamma_lut) {
 		cmdq_pkt_write(handle, comp->cmdq_base,
@@ -560,11 +565,11 @@ static void mtk_gamma_set(struct mtk_ddp_comp *comp,
 	if ((word_first - word_last) > 0) {
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_GAMMA_CFG, 0x1 << 2, 0x4);
-		DDPINFO("decreasing LUT\n");
+		DDPINFO("decreasing LUT");
 	} else {
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_GAMMA_CFG, 0x0 << 2, 0x4);
-		DDPINFO("Incremental LUT\n");
+		DDPINFO("incremental LUT");
 	}
 }
 
@@ -607,6 +612,7 @@ static void calculateGamma12bitLut(struct DISP_GAMMA_12BIT_LUT_T *data)
 void mtk_trans_gain_to_gamma(struct drm_crtc *crtc,
 	unsigned int gain[3], unsigned int bl)
 {
+	mutex_lock(&g_gamma_lut_mutex);
 	if (g_sb_param.gain[gain_r] != gain[gain_r] &&
 		g_sb_param.gain[gain_g] != gain[gain_g] &&
 		g_sb_param.gain[gain_b] != gain[gain_b]) {
@@ -616,7 +622,7 @@ void mtk_trans_gain_to_gamma(struct drm_crtc *crtc,
 		g_sb_param.gain[gain_b] = gain[gain_b];
 
 		if (g_gamma_data_mode == HW_8BIT) {
-			struct DISP_GAMMA_LUT_T data;
+			static struct DISP_GAMMA_LUT_T data;
 
 			calculateGammaLut(&data);
 			mtk_crtc_user_cmd(crtc, default_comp,
@@ -625,7 +631,7 @@ void mtk_trans_gain_to_gamma(struct drm_crtc *crtc,
 
 		if (g_gamma_data_mode == HW_12BIT_MODE_8BIT ||
 			g_gamma_data_mode == HW_12BIT_MODE_12BIT) {
-			struct DISP_GAMMA_12BIT_LUT_T data;
+			static struct DISP_GAMMA_12BIT_LUT_T data;
 
 			calculateGamma12bitLut(&data);
 			mtk_crtc_user_cmd(crtc, default_comp,
@@ -643,19 +649,20 @@ void mtk_trans_gain_to_gamma(struct drm_crtc *crtc,
 			DDPINFO("%s : backlight = %d", __func__, bl);
 		}
 	}
+	mutex_unlock(&g_gamma_lut_mutex);
 }
 
 static int mtk_gamma_user_cmd(struct mtk_ddp_comp *comp,
 	struct cmdq_pkt *handle, unsigned int cmd, void *data)
 {
-	DDPINFO("%s: cmd: %d\n", __func__, cmd);
+	DDPINFO("%s: cmd: %d", __func__, cmd);
 	switch (cmd) {
 	case SET_GAMMALUT:
 	{
 		struct DISP_GAMMA_LUT_T *config = data;
 
 		if (mtk_gamma_set_lut(comp, handle, config) < 0) {
-			DDPPR_ERR("%s: failed\n", __func__);
+			DDPPR_ERR("%s: failed", __func__);
 			return -EFAULT;
 		}
 		if (comp->mtk_crtc->is_dual_pipe) {
@@ -665,7 +672,7 @@ static int mtk_gamma_user_cmd(struct mtk_ddp_comp *comp,
 			struct mtk_ddp_comp *comp_gamma1 = priv->ddp_comp[DDP_COMPONENT_GAMMA1];
 
 			if (mtk_gamma_set_lut(comp_gamma1, handle, config) < 0) {
-				DDPPR_ERR("%s: comp_gamma1 failed\n", __func__);
+				DDPPR_ERR("%s: comp_gamma1 failed", __func__);
 				return -EFAULT;
 			}
 		}
@@ -676,7 +683,7 @@ static int mtk_gamma_user_cmd(struct mtk_ddp_comp *comp,
 		struct DISP_GAMMA_12BIT_LUT_T *config = data;
 
 		if (mtk_gamma_12bit_set_lut(comp, handle, config) < 0) {
-			DDPPR_ERR("%s: failed\n", __func__);
+			DDPPR_ERR("%s: failed", __func__);
 			return -EFAULT;
 		}
 		if (comp->mtk_crtc->is_dual_pipe) {
@@ -686,7 +693,7 @@ static int mtk_gamma_user_cmd(struct mtk_ddp_comp *comp,
 			struct mtk_ddp_comp *comp_gamma1 = priv->ddp_comp[DDP_COMPONENT_GAMMA1];
 
 			if (mtk_gamma_12bit_set_lut(comp_gamma1, handle, config) < 0) {
-				DDPPR_ERR("%s: comp_gamma1 failed\n", __func__);
+				DDPPR_ERR("%s: comp_gamma1 failed", __func__);
 				return -EFAULT;
 			}
 		}
@@ -708,7 +715,7 @@ static int mtk_gamma_user_cmd(struct mtk_ddp_comp *comp,
 	}
 	break;
 	default:
-		DDPPR_ERR("%s: error cmd: %d\n", __func__, cmd);
+		DDPPR_ERR("%s: error cmd: %d", __func__, cmd);
 		return -EINVAL;
 	}
 	return 0;
@@ -772,7 +779,7 @@ static int mtk_disp_gamma_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
@@ -801,7 +808,7 @@ void mtk_gamma_dump(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 	mtk_cust_dump_reg(baddr, 0x14, 0x20, 0x700, 0xb00);
 }
 
@@ -812,49 +819,49 @@ static void mtk_disp_gamma_dts_parse(const struct device_node *np,
 
 	if (of_property_read_u32(np, "gamma_data_mode",
 		&g_gamma_data_mode)) {
-		DDPPR_ERR("comp_id: %d, gamma_data_mode = %d\n",
+		DDPPR_ERR("comp_id: %d, gamma_data_mode = %d",
 			comp_id, g_gamma_data_mode);
 		g_gamma_data_mode = HW_8BIT;
 	}
 
 	if (of_property_read_u32(np, "color_protect_lsb",
 		&g_gamma_color_protect.gamma_color_protect_lsb)) {
-		DDPPR_ERR("comp_id: %d, color_protect_lsb = %d\n",
+		DDPPR_ERR("comp_id: %d, color_protect_lsb = %d",
 			comp_id, g_gamma_color_protect.gamma_color_protect_lsb);
 		g_gamma_color_protect.gamma_color_protect_lsb = 0;
 	}
 
 	if (of_property_read_u32(np, "color_protect_red",
 		&color_protect_mode.red_support)) {
-		DDPPR_ERR("comp_id: %d, color_protect_red = %d\n",
+		DDPPR_ERR("comp_id: %d, color_protect_red = %d",
 			comp_id, color_protect_mode.red_support);
 		color_protect_mode.red_support = 0;
 	}
 
 	if (of_property_read_u32(np, "color_protect_green",
 		&color_protect_mode.green_support)) {
-		DDPPR_ERR("comp_id: %d, color_protect_green = %d\n",
+		DDPPR_ERR("comp_id: %d, color_protect_green = %d",
 			comp_id, color_protect_mode.green_support);
 		color_protect_mode.green_support = 0;
 	}
 
 	if (of_property_read_u32(np, "color_protect_blue",
 		&color_protect_mode.blue_support)) {
-		DDPPR_ERR("comp_id: %d, color_protect_blue = %d\n",
+		DDPPR_ERR("comp_id: %d, color_protect_blue = %d",
 			comp_id, color_protect_mode.blue_support);
 		color_protect_mode.blue_support = 0;
 	}
 
 	if (of_property_read_u32(np, "color_protect_black",
 		&color_protect_mode.black_support)) {
-		DDPPR_ERR("comp_id: %d, color_protect_black = %d\n",
+		DDPPR_ERR("comp_id: %d, color_protect_black = %d",
 			comp_id, color_protect_mode.black_support);
 		color_protect_mode.black_support = 0;
 	}
 
 	if (of_property_read_u32(np, "color_protect_white",
 		&color_protect_mode.white_support)) {
-		DDPPR_ERR("comp_id: %d, color_protect_white = %d\n",
+		DDPPR_ERR("comp_id: %d, color_protect_white = %d",
 			comp_id, color_protect_mode.white_support);
 		color_protect_mode.white_support = 0;
 	}
@@ -875,7 +882,7 @@ static int mtk_disp_gamma_probe(struct platform_device *pdev)
 	int ret;
 	struct sched_param param = {.sched_priority = 84 };
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (priv == NULL)
@@ -883,7 +890,7 @@ static int mtk_disp_gamma_probe(struct platform_device *pdev)
 
 	comp_id = mtk_ddp_comp_get_id(dev->of_node, MTK_DISP_GAMMA);
 	if ((int)comp_id < 0) {
-		DDPPR_ERR("Failed to identify by alias: %d\n", comp_id);
+		DDPPR_ERR("failed to identify by alias: %d", comp_id);
 		return comp_id;
 	}
 
@@ -893,7 +900,7 @@ static int mtk_disp_gamma_probe(struct platform_device *pdev)
 	ret = mtk_ddp_comp_init(dev, dev->of_node, &priv->ddp_comp, comp_id,
 				&mtk_disp_gamma_funcs);
 	if (ret != 0) {
-		DDPPR_ERR("Failed to initialize component: %d\n", ret);
+		DDPPR_ERR("failed to initialize component: %d", ret);
 		return ret;
 	}
 
@@ -924,7 +931,7 @@ static int mtk_disp_gamma_probe(struct platform_device *pdev)
 		wake_up_process(gamma_sof_irq_event_task);
 	}
 
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return ret;
 }

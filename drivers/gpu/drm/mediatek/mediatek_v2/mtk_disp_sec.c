@@ -30,10 +30,10 @@ struct mtk_disp_sec_config sec_config;
 static void mtk_disp_secure_cb(struct cmdq_cb_data data)
 {
 	if (!sec_config.sec_cmdq_handle) {
-		DDPPR_ERR("%s: secure sec_cmdq_handle already stopped\n", __func__);
+		DDPPR_ERR("%s: secure sec_cmdq_handle already stopped", __func__);
 		return;
 	}
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	cmdq_pkt_destroy(sec_config.sec_cmdq_handle);
 	sec_config.sec_cmdq_handle = NULL;
@@ -42,7 +42,7 @@ static void mtk_disp_secure_cb(struct cmdq_cb_data data)
 int mtk_disp_cmdq_secure_init(void)
 {
 	if (!sec_config.disp_sec_client) {
-		DDPINFO("%s:%d, sec_config.disp_sec_client is NULL\n",
+		DDPINFO("%s:%d, sec_config.disp_sec_client is NULL",
 			__func__, __LINE__);
 		return false;
 	}
@@ -56,7 +56,7 @@ int mtk_disp_cmdq_secure_init(void)
 	cmdq_pkt_finalize_loop(sec_config.sec_cmdq_handle);
 	if (cmdq_pkt_flush_threaded(sec_config.sec_cmdq_handle,
 		mtk_disp_secure_cb, NULL) < 0) {
-		DDPPR_ERR("Failed to flush user_cmd\n");
+		DDPPR_ERR("failed to flush user_cmd");
 		return false;
 	}
 	return true;
@@ -65,12 +65,12 @@ int mtk_disp_cmdq_secure_init(void)
 int mtk_disp_cmdq_secure_end(void)
 {
 	if (!sec_config.sec_cmdq_handle) {
-		DDPPR_ERR("%s cmdq_handle is NULL\n", __func__);
+		DDPPR_ERR("%s cmdq_handle is NULL", __func__);
 		return false;
 	}
 
 	if (!sec_config.disp_sec_client) {
-		DDPINFO("%s:%d, sec_config.disp_sec_client is NULL\n",
+		DDPINFO("%s:%d, sec_config.disp_sec_client is NULL",
 			__func__, __LINE__);
 		return false;
 	}
@@ -82,7 +82,7 @@ int mtk_disp_cmdq_secure_end(void)
 int mtk_disp_secure_domain_enable(struct cmdq_pkt *handle,
 									resource_size_t dummy_larb)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	cmdq_pkt_write(handle, NULL, dummy_larb, BIT(1), BIT(1));
 	cmdq_pkt_set_event(handle, sec_config.tzmp_disp_sec_wait);
@@ -94,7 +94,7 @@ int mtk_disp_secure_domain_enable(struct cmdq_pkt *handle,
 int mtk_disp_secure_domain_disable(struct cmdq_pkt *handle,
 									resource_size_t dummy_larb)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	cmdq_pkt_write(handle, NULL, dummy_larb, 0, BIT(1));
 	cmdq_pkt_set_event(handle, sec_config.tzmp_disp_sec_wait);
@@ -106,7 +106,7 @@ int mtk_disp_secure_domain_disable(struct cmdq_pkt *handle,
 static int mtk_drm_disp_sec_cb_event(int value, struct cmdq_pkt *handle,
 									resource_size_t dummy_larb)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	switch (value) {
 	case DISP_SEC_START:
 		return mtk_disp_cmdq_secure_init();
@@ -128,26 +128,26 @@ static int disp_sec_probe(struct platform_device *pdev)
 	struct device_node *node = pdev->dev.of_node;
 	struct device *dev = &pdev->dev;
 
-	DDPMSG("%s+\n", __func__);
+	DDPMSG("%s+", __func__);
 	sec_config.disp_sec_client = cmdq_mbox_create(dev, 0);
 	if (sec_config.disp_sec_client) {
 		of_property_read_u32(node, "sw_sync_token_tzmp_disp_wait",
 					&sec_config.tzmp_disp_sec_wait);
 		of_property_read_u32(node, "sw_sync_token_tzmp_disp_set",
 					&sec_config.tzmp_disp_sec_set);
-		DDPMSG("tzmp_disp_sec_wait %d tzmp_disp_sec_set %d\n",
+		DDPMSG("tzmp_disp_sec_wait %d tzmp_disp_sec_set %d",
 					sec_config.tzmp_disp_sec_wait,
 					sec_config.tzmp_disp_sec_set);
 	}
 	ret = mtk_drm_disp_sec_cb_init();
 	*ret = (void *) mtk_drm_disp_sec_cb_event;
-	DDPMSG("%s-\n", __func__);
+	DDPMSG("%s-", __func__);
 	return 0;
 }
 
 static void disp_sec_remove(struct platform_device *pdev)
 {
-	DDPMSG("%s\n", __func__);
+	DDPMSG("%s", __func__);
 	return;
 }
 
@@ -173,7 +173,7 @@ static int __init mtk_disp_sec_init(void)
 
 	status = platform_driver_register(&disp_sec_drv);
 	if (status) {
-		DDPMSG("Failed to register disp sec driver(%d)\n", status);
+		DDPMSG("failed to register disp sec driver(%d)", status);
 		return -ENODEV;
 	}
 	return 0;

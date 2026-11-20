@@ -84,7 +84,6 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/mmp/ \
              -I$(srctree)/drivers/misc/mediatek/slbc/ \
              -I$(srctree)/drivers/misc/mediatek/clkbuf/v1/inc/ \
              -I$(srctree)/drivers/misc/mediatek/scp/include/ \
-             -I$(srctree)/drivers/misc/mediatek/dramc/mt6895/ \
              -I$(srctree)/drivers/misc/mediatek/include/ \
              -I$(srctree)/drivers/misc/mediatek/include/mt-plat/ \
              -I$(srctree)/drivers/gpu/drm/mediatek/mediatek_v2/ \

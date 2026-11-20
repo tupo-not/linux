@@ -4,7 +4,7 @@
  * Copyright (C) 2020 XiaoMi, Inc.
  */
 
-#define pr_fmt(fmt)	"mi-disp-procfs:[%s:%d] " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 #include <linux/slab.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
@@ -165,6 +165,8 @@ static int mi_disp_procfs_mipi_rw_deinit(void *d_display, int disp_id)
 }
 
 
+int mi_disp_procfs_init(void *d_display, int disp_id);
+
 int mi_disp_procfs_init(void *d_display, int disp_id)
 {
 	int ret = 0;
@@ -173,6 +175,8 @@ int mi_disp_procfs_init(void *d_display, int disp_id)
 
 	return ret;
 }
+
+int mi_disp_procfs_deinit(void *d_display, int disp_id);
 
 int mi_disp_procfs_deinit(void *d_display, int disp_id)
 {

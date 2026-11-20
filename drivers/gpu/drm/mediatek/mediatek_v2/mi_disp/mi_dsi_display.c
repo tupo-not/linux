@@ -4,7 +4,7 @@
  * Copyright (C) 2020 XiaoMi, Inc.
  */
 
-#define pr_fmt(fmt)	"mi-dsi-display:[%s] " fmt, __func__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/list.h>
 #include <linux/of.h>
@@ -24,6 +24,9 @@
 //static atomic64_t g_param = ATOMIC64_INIT(0);
 
 int mi_dsi_display_set_disp_param(void *display,
+			struct disp_feature_ctl *ctl);
+
+int mi_dsi_display_set_disp_param(void *display,
 			struct disp_feature_ctl *ctl)
 {
 	struct mtk_dsi *dsi = (struct mtk_dsi *)display;
@@ -40,6 +43,9 @@ int mi_dsi_display_set_disp_param(void *display,
 }
 
 ssize_t mi_dsi_display_get_disp_param(void *display,
+			char *buf, size_t size);
+
+ssize_t mi_dsi_display_get_disp_param(void *display,
 			char *buf, size_t size)
 {
 	struct mtk_dsi *dsi = (struct mtk_dsi *)display;
@@ -50,6 +56,9 @@ ssize_t mi_dsi_display_get_disp_param(void *display,
 	}
 	return mi_dsi_panel_get_disp_param(dsi, buf, size);
 }
+
+ssize_t dsi_display_write_mipi_reg(struct drm_connector *connector,
+			char *buf, size_t count);
 
 ssize_t dsi_display_write_mipi_reg(struct drm_connector *connector,
 			char *buf, size_t count)
@@ -63,6 +72,9 @@ ssize_t dsi_display_write_mipi_reg(struct drm_connector *connector,
 }
 
 ssize_t dsi_display_read_mipi_reg(struct drm_connector *connector,
+			char *buf);
+
+ssize_t dsi_display_read_mipi_reg(struct drm_connector *connector,
 			char *buf)
 {
 	if (!connector) {
@@ -72,6 +84,8 @@ ssize_t dsi_display_read_mipi_reg(struct drm_connector *connector,
 
 	return dsi_panel_read_mipi_reg(buf);
 }
+ssize_t mi_dsi_display_enable_gir(void *display, char *buf);
+
 ssize_t mi_dsi_display_enable_gir(void *display, char *buf)
 {
 	struct mtk_dsi *dsi = (struct mtk_dsi *)display;
@@ -81,6 +95,8 @@ ssize_t mi_dsi_display_enable_gir(void *display, char *buf)
 	}
 	return mi_dsi_panel_enable_gir(dsi, buf);
 }
+
+ssize_t mi_dsi_display_disable_gir(void *display, char *buf);
 
 ssize_t mi_dsi_display_disable_gir(void *display, char *buf)
 {
@@ -92,6 +108,8 @@ ssize_t mi_dsi_display_disable_gir(void *display, char *buf)
 	return mi_dsi_panel_disable_gir(dsi, buf);
 }
 
+int mi_dsi_display_get_gir_status(void *display);
+
 int mi_dsi_display_get_gir_status(void *display)
 {
 	struct mtk_dsi *dsi = (struct mtk_dsi *)display;
@@ -102,25 +120,36 @@ int mi_dsi_display_get_gir_status(void *display)
 	return mi_dsi_panel_get_gir_status(dsi);
 }
 
+ssize_t mi_dsi_display_write_mipi_reg(void *display, char *buf);
+
 ssize_t mi_dsi_display_write_mipi_reg(void *display, char *buf)
 {
 	return mi_dsi_panel_write_mipi_reg(buf);
 }
+
+ssize_t mi_dsi_display_read_mipi_reg(void *display, char *buf);
 
 ssize_t mi_dsi_display_read_mipi_reg(void *display, char *buf)
 {
 	return mi_dsi_panel_read_mipi_reg(buf);
 }
 
+int mi_dsi_display_write_dsi_cmd(struct dsi_cmd_rw_ctl *ctl);
+
 int mi_dsi_display_write_dsi_cmd(struct dsi_cmd_rw_ctl *ctl)
 {
 	return mi_dsi_panel_write_dsi_cmd(ctl);
 }
 
+int mi_dsi_display_read_dsi_cmd(struct dsi_cmd_rw_ctl *ctl);
+
 int mi_dsi_display_read_dsi_cmd(struct dsi_cmd_rw_ctl *ctl)
 {
 	return 0;
 }
+
+ssize_t mi_dsi_display_write_led_i2c_reg(void *display,
+			char *buf, size_t count);
 
 ssize_t mi_dsi_display_write_led_i2c_reg(void *display,
 			char *buf, size_t count)
@@ -135,6 +164,9 @@ ssize_t mi_dsi_display_write_led_i2c_reg(void *display,
 }
 
 ssize_t mi_dsi_display_read_led_i2c_reg(void *display,
+			char *buf);
+
+ssize_t mi_dsi_display_read_led_i2c_reg(void *display,
 			char *buf)
 {
 	struct mtk_dsi *dsi = (struct mtk_dsi *)display;
@@ -145,6 +177,9 @@ ssize_t mi_dsi_display_read_led_i2c_reg(void *display,
 
 	return led_i2c_reg_read(dsi, buf);
 }
+
+ssize_t mi_dsi_display_read_panel_info(void *display,
+			char *buf);
 
 ssize_t mi_dsi_display_read_panel_info(void *display,
 			char *buf)
@@ -159,6 +194,9 @@ ssize_t mi_dsi_display_read_panel_info(void *display,
 }
 
 ssize_t mi_dsi_display_read_wp_info(void *display,
+			char *buf, size_t size);
+
+ssize_t mi_dsi_display_read_wp_info(void *display,
 			char *buf, size_t size)
 {
 	struct mtk_dsi *dsi_display = (struct mtk_dsi *)display;
@@ -170,6 +208,9 @@ ssize_t mi_dsi_display_read_wp_info(void *display,
 }
 
 ssize_t mi_dsi_display_read_grayscale_info(void *display,
+			char *buf, size_t size);
+
+ssize_t mi_dsi_display_read_grayscale_info(void *display,
 			char *buf, size_t size)
 {
 	struct mtk_dsi *dsi_display = (struct mtk_dsi *)display;
@@ -179,6 +220,9 @@ ssize_t mi_dsi_display_read_grayscale_info(void *display,
 	}
 	return mi_dsi_panel_get_grayscale_info(dsi_display, buf, size);
 }
+
+int mi_dsi_display_get_fps(void *display,
+			u32 *fps);
 
 int mi_dsi_display_get_fps(void *display,
 			u32 *fps)
@@ -193,6 +237,8 @@ int mi_dsi_display_get_fps(void *display,
 	return mi_dsi_panel_get_fps(display, fps);
 }
 
+int mi_dsi_display_set_doze_brightness(void *display, int doze_brightness);
+
 int mi_dsi_display_set_doze_brightness(void *display, int doze_brightness)
 {
 	struct mtk_dsi *dsi_display = (struct mtk_dsi *)display;
@@ -204,6 +250,9 @@ int mi_dsi_display_set_doze_brightness(void *display, int doze_brightness)
 
 	return mi_dsi_panel_set_doze_brightness(dsi_display, doze_brightness);
 }
+
+int mi_dsi_display_get_doze_brightness(void *display,
+			u32 *doze_brightness);
 
 int mi_dsi_display_get_doze_brightness(void *display,
 			u32 *doze_brightness)
@@ -219,6 +268,8 @@ int mi_dsi_display_get_doze_brightness(void *display,
 				doze_brightness);
 }
 
+int mi_dsi_display_set_brightness(void *display, int brightness);
+
 int mi_dsi_display_set_brightness(void *display, int brightness)
 {
 	struct mtk_dsi *dsi_display = (struct mtk_dsi *)display;
@@ -230,6 +281,9 @@ int mi_dsi_display_set_brightness(void *display, int brightness)
 
 	return mi_dsi_panel_set_brightness(dsi_display, brightness);
 }
+
+int mi_dsi_display_get_brightness(void *display,
+			u32 *brightness);
 
 int mi_dsi_display_get_brightness(void *display,
 			u32 *brightness)
@@ -244,6 +298,9 @@ int mi_dsi_display_get_brightness(void *display,
 	return mi_dsi_panel_get_brightness(dsi_display,
 				brightness);
 }
+
+int mi_dsi_display_set_brightness_clone(void *display,
+			u32 brightness_clone);
 
 int mi_dsi_display_set_brightness_clone(void *display,
 			u32 brightness_clone)
@@ -268,6 +325,9 @@ int mi_dsi_display_set_brightness_clone(void *display,
 }
 
 int mi_dsi_display_get_brightness_clone(void *display,
+			u32 *brightness_clone);
+
+int mi_dsi_display_get_brightness_clone(void *display,
 			u32 *brightness_clone)
 {
 	struct mtk_dsi *dsi_display = (struct mtk_dsi *)display;
@@ -280,6 +340,9 @@ int mi_dsi_display_get_brightness_clone(void *display,
 	*brightness_clone = dsi_display->mi_cfg.brightness_clone;
 	return 0;
 }
+
+int mi_dsi_display_get_max_brightness_clone(void *display,
+			u32 *max_brightness_clone);
 
 int mi_dsi_display_get_max_brightness_clone(void *display,
 			u32 *max_brightness_clone)
@@ -296,6 +359,9 @@ int mi_dsi_display_get_max_brightness_clone(void *display,
 }
 
 int mi_dsi_display_get_factory_max_brightness(void *display,
+			u32 *max_brightness_clone);
+
+int mi_dsi_display_get_factory_max_brightness(void *display,
 			u32 *max_brightness_clone)
 {
 	struct mtk_dsi *dsi_display = (struct mtk_dsi *)display;
@@ -308,6 +374,9 @@ int mi_dsi_display_get_factory_max_brightness(void *display,
 	*max_brightness_clone = dsi_display->mi_cfg.factory_max_brightness;
 	return 0;
 }
+
+int mi_dsi_display_set_thermal_limit_brightness_clone(void *display,
+			u32 brightness_clone);
 
 int mi_dsi_display_set_thermal_limit_brightness_clone(void *display,
 			u32 brightness_clone)
@@ -336,6 +405,9 @@ int mi_dsi_display_set_thermal_limit_brightness_clone(void *display,
 }
 
 int mi_dsi_display_get_thermal_limit_brightness_clone(void *display,
+			u32 *thermal_limit_brightness_clone);
+
+int mi_dsi_display_get_thermal_limit_brightness_clone(void *display,
 			u32 *thermal_limit_brightness_clone)
 {
 	struct mtk_dsi *dsi_display = (struct mtk_dsi *)display;
@@ -348,6 +420,8 @@ int mi_dsi_display_get_thermal_limit_brightness_clone(void *display,
 	*thermal_limit_brightness_clone = dsi_display->mi_cfg.thermal_max_brightness_clone;
 	return 0;
 }
+
+void mi_dsi_display_wakeup_pending_doze_work(void *display);
 
 void mi_dsi_display_wakeup_pending_doze_work(void *display)
 {

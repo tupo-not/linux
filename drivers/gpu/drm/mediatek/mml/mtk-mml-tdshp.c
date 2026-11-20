@@ -20,7 +20,7 @@
 #include "tile_mdp_func.h"
 
 #undef pr_fmt
-#define pr_fmt(fmt) "[mml_pq_tdshp]" fmt
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 
 #define TDSHP_00		0x000
@@ -392,7 +392,7 @@ static s32 tdshp_config_frame(struct mml_comp *comp, struct mml_task *task,
 		mml_write(pkt, base_pa + regs[i].offset, regs[i].value,
 			regs[i].mask, reuse, cache,
 			&tdshp_frm->labels[i]);
-		mml_pq_msg("[ds][config][%x] = %#x mask(%#x)",
+		mml_pq_msg("[%x] = %#x mask(%#x)",
 			regs[i].offset, regs[i].value, regs[i].mask);
 	}
 
@@ -487,7 +487,7 @@ static s32 tdshp_reconfig_frame(struct mml_comp *comp, struct mml_task *task,
 		mml_pq_msg("%s:config ds regs, count: %d", __func__, result->ds_reg_cnt);
 		for (i = 0; i < result->ds_reg_cnt; i++) {
 			mml_update(reuse, tdshp_frm->labels[i], regs[i].value);
-			mml_pq_msg("[ds][config][%x] = %#x mask(%#x)",
+			mml_pq_msg("[%x] = %#x mask(%#x)",
 				regs[i].offset, regs[i].value, regs[i].mask);
 		}
 	} else {
@@ -708,12 +708,12 @@ static s32 dbg_get(char *buf, const struct kernel_param *kp)
 			struct mml_comp *comp = &dbg_probed_components[i]->comp;
 
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  - [%d] mml comp_id: %d.%d @%08x name: %s bound: %d\n", i,
-				comp->id, comp->sub_idx, comp->base_pa,
+				"  - [%d] mml comp_id: %d.%d @%08llx name: %s bound: %d\n", i,
+				comp->id, comp->sub_idx, (unsigned long long)comp->base_pa,
 				comp->name ? comp->name : "(null)", comp->bound);
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  -         larb_port: %d @%08x pw: %d clk: %d\n",
-				comp->larb_port, comp->larb_base,
+				"  -         larb_port: %d @%08llx pw: %d clk: %d\n",
+				comp->larb_port, (unsigned long long)comp->larb_base,
 				comp->pw_cnt, comp->clk_cnt);
 			length += snprintf(buf + length, PAGE_SIZE - length,
 				"  -     ddp comp_id: %d bound: %d\n",

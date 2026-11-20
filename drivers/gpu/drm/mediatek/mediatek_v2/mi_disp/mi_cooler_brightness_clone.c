@@ -55,7 +55,6 @@ static int mi_cooler_brightness_clone_set_cur_state(
 {
 	struct mtk_dsi *dsi = NULL;
 	u32 max_brightness_clone = 0;
-	u32 thermal_limit_brightness_clone = 0;
 
 	if (state == 0 || state > MAX_THERMAL_STATE) {
 		pr_err("%s: invalid state %d\n", __func__, state);
@@ -65,8 +64,7 @@ static int mi_cooler_brightness_clone_set_cur_state(
 	dsi = (struct mtk_dsi *)cdev->devdata;
 	dsi->mi_cfg.thermal_state = state;
 	mi_dsi_display_get_max_brightness_clone(dsi, &max_brightness_clone);
-	thermal_limit_brightness_clone = max_brightness_clone * state / MAX_THERMAL_STATE;
-	//mi_dsi_display_set_thermal_limit_brightness_clone(dsi, thermal_limit_brightness_clone);
+	//mi_dsi_display_set_thermal_limit_brightness_clone(dsi, max_brightness_clone * state / MAX_THERMAL_STATE);
         sysfs_notify(&cdev->device.kobj, NULL, "cur_state");
 
 	mi_cooler_brightness_clone_dprintk("%s: %d\n", __func__, state);
@@ -105,6 +103,8 @@ static void mi_cooler_brightness_clone_unregister_ltf(void)
 	}
 }
 
+int mi_cooler_brightness_clone_init(struct mtk_dsi *display);
+
 int mi_cooler_brightness_clone_init(struct mtk_dsi *display)
 {
 	int err = 0;
@@ -123,6 +123,8 @@ err_unreg:
 }
 
 EXPORT_SYMBOL(mi_cooler_brightness_clone_init);
+
+void mi_cooler_brightness_clone_exit(void);
 
 void mi_cooler_brightness_clone_exit(void)
 {

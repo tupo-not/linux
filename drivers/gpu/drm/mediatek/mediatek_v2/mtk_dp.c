@@ -3712,7 +3712,7 @@ void mtk_dp_HPDInterruptSet(int bstatus)
 		return;
 	}
 	DPTXMSG("%s\n", __func__);
-	DDPFUNC("status:%d[2:DISCONNECT, 4:CONNECT, 8:IRQ] Power:%d\n",
+	DDPFUNC("status:%d[2:DISCONNECT, 4:CONNECT, 8:IRQ] Power:%d",
 		bstatus, g_mtk_dp->bPowerOn);
 
 	if ((bstatus == HPD_CONNECT && !g_mtk_dp->bPowerOn)

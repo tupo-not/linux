@@ -25,10 +25,14 @@
 
 /* provided by drivers/memory/mtk-smi-downstream.c */
 
+long mtk_dma_buf_set_name(struct dma_buf *dmabuf, const char *buf);
+
 long mtk_dma_buf_set_name(struct dma_buf *dmabuf, const char *buf) { return 0; }
 EXPORT_SYMBOL_GPL(mtk_dma_buf_set_name);
 
 /* the v2 sources call this trace helper without a declaration (they rely on the
  * vendor header); an old-style definition keeps any argument list linkable. */
-void mtk_disp_trace() { }
+void mtk_disp_trace(void);
+
+void mtk_disp_trace(void) { }
 EXPORT_SYMBOL_GPL(mtk_disp_trace);

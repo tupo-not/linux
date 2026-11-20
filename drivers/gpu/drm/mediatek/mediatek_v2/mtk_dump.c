@@ -11,11 +11,11 @@ static const char * const ddp_comp_str[] = {DECLARE_DDP_COMP(DECLARE_STR)};
 const char *mtk_dump_comp_str(struct mtk_ddp_comp *comp)
 {
 	if (IS_ERR_OR_NULL(comp)) {
-		DDPPR_ERR("%s: Invalid ddp comp\n", __func__);
+		DDPPR_ERR("%s: invalid ddp comp", __func__);
 		return "invalid";
 	}
 	if (comp->id < 0 || comp->id >= DDP_COMPONENT_ID_MAX) {
-		DDPPR_ERR("%s: Invalid ddp comp id:%d\n", __func__, comp->id);
+		DDPPR_ERR("%s: invalid ddp comp id:%d", __func__, comp->id);
 		return "invalid";
 	}
 	return ddp_comp_str[comp->id];
@@ -197,6 +197,7 @@ int mtk_dump_analysis(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_MERGE0:
 	case DDP_COMPONENT_MERGE1:
 		mtk_merge_analysis(comp);
+		break;
 	case DDP_COMPONENT_CHIST0:
 	case DDP_COMPONENT_CHIST1:
 		mtk_chist_analysis(comp);
@@ -226,7 +227,7 @@ void mtk_serial_dump_reg(void __iomem *base, unsigned int offset,
 		l += s;
 	}
 
-	DDPDUMP("%s\n", buf);
+	DDPDUMP("%s", buf);
 }
 
 #define CUST_REG_MAX 84
@@ -249,5 +250,5 @@ void mtk_cust_dump_reg(void __iomem *base, int off1, int off2, int off3,
 		l += s;
 	}
 
-	DDPDUMP("%s\n", buf);
+	DDPDUMP("%s", buf);
 }

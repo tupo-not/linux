@@ -748,7 +748,7 @@ static void rdma_color_fmt(struct mml_frame_config *cfg,
 		rdma_frm->ver_shift_uv = 1;
 		break;
 	default:
-		mml_err("[rdma] not support format %x", fmt);
+		mml_err("not support format %x", fmt);
 		break;
 	}
 
@@ -765,10 +765,12 @@ static void rdma_color_fmt(struct mml_frame_config *cfg,
 		else if (profile_in == MML_YCBCR_PROFILE_FULL_BT601)
 			rdma_frm->matrix_sel = 0;
 		else
-			mml_err("[rdma] unknown color conversion %x",
+			mml_err("unknown color conversion %x",
 				profile_in);
 	}
 }
+
+s32 check_setting(struct mml_file_buf *src_buf, struct mml_frame_data *src);
 
 s32 check_setting(struct mml_file_buf *src_buf, struct mml_frame_data *src)
 {
@@ -1510,12 +1512,16 @@ static const struct mml_comp_config_ops rdma_cfg_ops = {
 	.reframe = rdma_reconfig_frame,
 };
 
+u32 rdma_datasize_get(struct mml_task *task, struct mml_comp_config *ccfg);
+
 u32 rdma_datasize_get(struct mml_task *task, struct mml_comp_config *ccfg)
 {
 	struct rdma_frame_data *rdma_frm = rdma_frm_data(ccfg);
 
 	return rdma_frm->datasize;
 }
+
+u32 rdma_format_get(struct mml_task *task, struct mml_comp_config *ccfg);
 
 u32 rdma_format_get(struct mml_task *task, struct mml_comp_config *ccfg)
 {
@@ -1748,7 +1754,8 @@ static int probe(struct platform_device *pdev)
 	priv->smi_larb_con = priv->comp.larb_base +
 		SMI_LARB_NON_SEC_CON + priv->comp.larb_port * 4;
 	mutex_init(&priv->sram_mutex);
-	mml_log("comp(rdma) %u smi larb con %#lx", priv->comp.id, priv->smi_larb_con);
+	mml_log("comp(rdma) %u smi larb con %#llx", priv->comp.id,
+		(unsigned long long)priv->smi_larb_con);
 
 	if (of_property_read_u16(dev->of_node, "event_frame_done",
 				 &priv->event_eof))
@@ -1844,12 +1851,12 @@ static s32 dbg_get(char *buf, const struct kernel_param *kp)
 			struct mml_comp *comp = &dbg_probed_components[i]->comp;
 
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  - [%d] mml comp_id: %d.%d @%08x name: %s bound: %d\n", i,
-				comp->id, comp->sub_idx, comp->base_pa,
+				"  - [%d] mml comp_id: %d.%d @%08llx name: %s bound: %d\n", i,
+				comp->id, comp->sub_idx, (unsigned long long)comp->base_pa,
 				comp->name ? comp->name : "(null)", comp->bound);
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  -         larb_port: %d @%08x pw: %d clk: %d\n",
-				comp->larb_port, comp->larb_base,
+				"  -         larb_port: %d @%08llx pw: %d clk: %d\n",
+				comp->larb_port, (unsigned long long)comp->larb_base,
 				comp->pw_cnt, comp->clk_cnt);
 		}
 		break;

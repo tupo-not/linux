@@ -491,11 +491,13 @@ int mtk_ovl_layer_num(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_OVL3_2L_NWCG:
 		return 2;
 	default:
-		DDPPR_ERR("invalid ovl module=%d\n", comp->id);
+		DDPPR_ERR("invalid ovl module=%d", comp->id);
 		return -1;
 	}
 	return 0;
 }
+
+resource_size_t mtk_ovl_mmsys_mapping_MT6983(struct mtk_ddp_comp *comp);
 
 resource_size_t mtk_ovl_mmsys_mapping_MT6983(struct mtk_ddp_comp *comp)
 {
@@ -513,10 +515,12 @@ resource_size_t mtk_ovl_mmsys_mapping_MT6983(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_OVL3_2L_NWCG:
 		return priv->side_config_regs_pa;
 	default:
-		DDPPR_ERR("%s invalid ovl module=%d\n", __func__, comp->id);
+		DDPPR_ERR("%s invalid ovl module=%d", __func__, comp->id);
 		return 0;
 	}
 }
+
+resource_size_t mtk_ovl_mmsys_mapping_MT6895(struct mtk_ddp_comp *comp);
 
 resource_size_t mtk_ovl_mmsys_mapping_MT6895(struct mtk_ddp_comp *comp)
 {
@@ -532,10 +536,12 @@ resource_size_t mtk_ovl_mmsys_mapping_MT6895(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_OVL3_2L:
 		return priv->side_config_regs_pa;
 	default:
-		DDPPR_ERR("%s invalid ovl module=%d\n", __func__, comp->id);
+		DDPPR_ERR("%s invalid ovl module=%d", __func__, comp->id);
 		return 0;
 	}
 }
+
+resource_size_t mtk_ovl_mmsys_mapping_MT6879(struct mtk_ddp_comp *comp);
 
 resource_size_t mtk_ovl_mmsys_mapping_MT6879(struct mtk_ddp_comp *comp)
 {
@@ -547,10 +553,12 @@ resource_size_t mtk_ovl_mmsys_mapping_MT6879(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_OVL0_2L_NWCG:
 		return priv->config_regs_pa;
 	default:
-		DDPPR_ERR("%s invalid ovl module=%d\n", __func__, comp->id);
+		DDPPR_ERR("%s invalid ovl module=%d", __func__, comp->id);
 		return 0;
 	}
 }
+
+unsigned int mtk_ovl_aid_sel_MT6983(struct mtk_ddp_comp *comp);
 
 unsigned int mtk_ovl_aid_sel_MT6983(struct mtk_ddp_comp *comp)
 {
@@ -569,10 +577,12 @@ unsigned int mtk_ovl_aid_sel_MT6983(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_OVL3_2L_NWCG:
 		return MT6983_OVL1_2L_NWCG_AID_SEL;
 	default:
-		DDPPR_ERR("%s invalid ovl module=%d\n", __func__, comp->id);
+		DDPPR_ERR("%s invalid ovl module=%d", __func__, comp->id);
 		return 0;
 	}
 }
+
+unsigned int mtk_ovl_aid_sel_MT6895(struct mtk_ddp_comp *comp);
 
 unsigned int mtk_ovl_aid_sel_MT6895(struct mtk_ddp_comp *comp)
 {
@@ -587,10 +597,12 @@ unsigned int mtk_ovl_aid_sel_MT6895(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_OVL3_2L:
 		return MT6895_OVL1_2L_AID_SEL;
 	default:
-		DDPPR_ERR("%s invalid ovl module=%d\n", __func__, comp->id);
+		DDPPR_ERR("%s invalid ovl module=%d", __func__, comp->id);
 		return 0;
 	}
 }
+
+unsigned int mtk_ovl_aid_sel_MT6879(struct mtk_ddp_comp *comp);
 
 unsigned int mtk_ovl_aid_sel_MT6879(struct mtk_ddp_comp *comp)
 {
@@ -602,10 +614,12 @@ unsigned int mtk_ovl_aid_sel_MT6879(struct mtk_ddp_comp *comp)
 	case DDP_COMPONENT_OVL0_2L_NWCG:
 		return MT6879_OVL0_2L_NWCG_AID_SEL;
 	default:
-		DDPPR_ERR("%s invalid ovl module=%d\n", __func__, comp->id);
+		DDPPR_ERR("%s invalid ovl module=%d", __func__, comp->id);
 		return 0;
 	}
 }
+
+int mtk_ovl_aid_bit(struct mtk_ddp_comp *comp, bool is_ext, int id);
 
 int mtk_ovl_aid_bit(struct mtk_ddp_comp *comp, bool is_ext, int id)
 {
@@ -736,7 +750,7 @@ static irqreturn_t mtk_disp_ovl_irq_handler(int irq, void *dev_id)
 		return IRQ_NONE;
 
 	if (mtk_drm_top_clk_isr_get("ovl_irq") == false) {
-		DDPIRQ("%s, top clk off\n", __func__);
+		DDPIRQ("%s, top clk off", __func__);
 		return IRQ_NONE;
 	}
 
@@ -765,25 +779,25 @@ static irqreturn_t mtk_disp_ovl_irq_handler(int irq, void *dev_id)
 	if (val & 0x1e0)
 		DRM_MMP_MARK(abnormal_irq, val, ovl->id);
 
-	DDPIRQ("%s irq, val:0x%x\n", mtk_dump_comp_str(ovl), val);
+	DDPIRQ("%s irq, val:0x%x", mtk_dump_comp_str(ovl), val);
 
 	writel(~val, ovl->regs + DISP_REG_OVL_INTSTA);
 
 	if (val & (1 << 0))
-		DDPIRQ("[IRQ] %s: reg commit!\n", mtk_dump_comp_str(ovl));
+		DDPIRQ("%s: reg commit!", mtk_dump_comp_str(ovl));
 	if (val & (1 << 1)) {
-		DDPIRQ("[IRQ] %s: frame done!\n", mtk_dump_comp_str(ovl));
+		DDPIRQ("%s: frame done!", mtk_dump_comp_str(ovl));
 		dump_ovl_layer_trace(mtk_crtc, ovl);
 	}
 	if (val & (1 << 2)) {
-		DDPPR_ERR("[IRQ] %s: frame underflow! cnt=%d\n",
+		DDPPR_ERR("%s: frame underflow! cnt=%d",
 			  mtk_dump_comp_str(ovl), priv->underflow_cnt);
 		priv->underflow_cnt++;
 //		mtk_ovl_dump(ovl);
 //		mtk_ovl_analysis(ovl);
 	}
 	if (val & (1 << 3))
-		DDPIRQ("[IRQ] %s: sw reset done!\n", mtk_dump_comp_str(ovl));
+		DDPIRQ("%s: sw reset done!", mtk_dump_comp_str(ovl));
 
 	if (mtk_crtc) {
 		drv_priv = mtk_crtc->base.dev->dev_private;
@@ -832,7 +846,7 @@ static void mtk_ovl_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 	const struct compress_info *compr_info = ovl->data->compr_info;
 	unsigned int value = 0, mask = 0;
 
-	DDPDBG("%s+ %s\n", __func__, mtk_dump_comp_str(comp));
+	DDPDBG("%s+ %s", __func__, mtk_dump_comp_str(comp));
 
 	mtk_ovl_io_cmd(comp, handle, IRQ_LEVEL_NORMAL, NULL);
 
@@ -871,12 +885,12 @@ static void mtk_ovl_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 		0xFFFFFFFF, 0xFFFFFFFF);
 
 
-	DDPDBG("%s-\n", __func__);
+	DDPDBG("%s-", __func__);
 }
 
 static void mtk_ovl_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	DDPDBG("%s+\n", __func__);
+	DDPDBG("%s+", __func__);
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_REG_OVL_INTEN, 0, ~0);
@@ -891,7 +905,7 @@ static void mtk_ovl_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 
 	comp->qos_bw = 0;
 	comp->fbdc_bw = 0;
-	DDPDBG("%s-\n", __func__);
+	DDPDBG("%s-", __func__);
 }
 
 static void _store_bg_roi(struct mtk_ddp_comp *comp, int h, int w)
@@ -1079,7 +1093,7 @@ static unsigned int ovl_fmt_convert(struct mtk_disp_ovl *ovl, unsigned int fmt,
 static const char *mtk_ovl_get_transfer_str(enum mtk_ovl_transfer transfer)
 {
 	if (transfer < 0) {
-		DDPPR_ERR("%s: Invalid ovl transfer:%d\n", __func__, transfer);
+		DDPPR_ERR("%s: invalid ovl transfer:%d", __func__, transfer);
 		transfer = 0;
 	}
 
@@ -1101,9 +1115,11 @@ static enum mtk_ovl_colorspace mtk_ovl_map_cs(enum mtk_drm_dataspace ds)
 		cs = OVL_P3;
 		break;
 	case MTK_DRM_DATASPACE_STANDARD_ADOBE_RGB:
-		DDPPR_ERR("%s: ovl get cs ADOBE_RGB\n", __func__);
+		DDPPR_ERR("%s: ovl get cs ADOBE_RGB", __func__);
+		break;
 	case MTK_DRM_DATASPACE_STANDARD_BT2020:
-		DDPPR_ERR("%s: ovl does not support BT2020\n", __func__);
+		DDPPR_ERR("%s: ovl does not support BT2020", __func__);
+		break;
 	default:
 		cs = OVL_SRGB;
 		break;
@@ -1122,10 +1138,12 @@ static enum mtk_ovl_transfer mtk_ovl_map_transfer(enum mtk_drm_dataspace ds)
 		break;
 	case MTK_DRM_DATASPACE_TRANSFER_GAMMA2_6:
 	case MTK_DRM_DATASPACE_TRANSFER_GAMMA2_8:
-		DDPINFO("%s: ovl does not support gamma 2.6/2.8, use gamma 2.2\n", __func__);
+		DDPINFO("%s: ovl does not support gamma 2.6/2.8, use gamma 2.2", __func__);
+		fallthrough;
 	case MTK_DRM_DATASPACE_TRANSFER_ST2084:
 	case MTK_DRM_DATASPACE_TRANSFER_HLG:
-		DDPINFO("%s: HDR transfer\n", __func__);
+		DDPINFO("%s: HDR transfer", __func__);
+		fallthrough;
 	default:
 		xfr = OVL_GAMMA2_2;
 		break;
@@ -1148,7 +1166,7 @@ static int mtk_ovl_do_transfer(unsigned int idx,
 	cs_in = mtk_ovl_map_cs(plane_ds);
 	cs_out = mtk_ovl_map_cs(lcm_ds);
 
-	DDPDBG("%s+ idx:%d transfer:%s->%s\n", __func__, idx,
+	DDPDBG("%s+ idx:%d transfer:%s->%s", __func__, idx,
 	       mtk_ovl_get_transfer_str(xfr_in),
 	       mtk_ovl_get_transfer_str(xfr_out));
 
@@ -1178,12 +1196,12 @@ static u32 *mtk_get_ovl_csc(enum mtk_ovl_colorspace in,
 	static bool inited;
 
 	if (out < 0) {
-		DDPPR_ERR("%s: Invalid ovl colorspace in:%d\n", __func__, out);
+		DDPPR_ERR("%s: invalid ovl colorspace in:%d", __func__, out);
 		out = 0;
 	}
 
 	if (in < 0) {
-		DDPPR_ERR("%s: Invalid ovl colorspace in:%d\n", __func__, in);
+		DDPPR_ERR("%s: invalid ovl colorspace in:%d", __func__, in);
 		in = 0;
 	}
 
@@ -1209,7 +1227,7 @@ static int mtk_ovl_do_csc(unsigned int idx, enum mtk_drm_dataspace plane_ds,
 	in = mtk_ovl_map_cs(plane_ds);
 	out = mtk_ovl_map_cs(lcm_ds);
 
-	DDPDBG("%s+ idx:%d csc:%s->%s\n", __func__, idx,
+	DDPDBG("%s+ idx:%d csc:%s->%s", __func__, idx,
 	       mtk_ovl_get_colorspace_str(in), mtk_ovl_get_colorspace_str(out));
 
 	en = in != out;
@@ -1222,13 +1240,13 @@ static int mtk_ovl_do_csc(unsigned int idx, enum mtk_drm_dataspace plane_ds,
 	if (!en)
 		return 0;
 	if (!csc) {
-		DDPPR_ERR("%s+ invalid csc\n", __func__);
+		DDPPR_ERR("%s+ invalid csc", __func__);
 		return 0;
 	}
 
 	*csc = mtk_get_ovl_csc(in, out);
 	if (!(*csc)) {
-		DDPPR_ERR("%s+ idx:%d no ovl csc %s to %s, disable csc\n",
+		DDPPR_ERR("%s+ idx:%d no ovl csc %s to %s, disable csc",
 			  __func__, idx, mtk_ovl_get_colorspace_str(in),
 			  mtk_ovl_get_colorspace_str(out));
 		*csc_en = false;
@@ -1295,7 +1313,7 @@ static int mtk_ovl_color_manage(struct mtk_ddp_comp *comp, unsigned int idx,
 	plane_ds =
 		(enum mtk_drm_dataspace)pending->prop_val[PLANE_PROP_DATASPACE];
 
-	DDPDBG("%s+ idx:%d ds:0x%08x->0x%08x\n", __func__, idx, plane_ds,
+	DDPDBG("%s+ idx:%d ds:0x%08x->0x%08x", __func__, idx, plane_ds,
 	       lcm_ds);
 
 	mtk_ovl_do_transfer(idx, plane_ds, lcm_ds, &gamma_en, &igamma_en,
@@ -1474,7 +1492,6 @@ static void _ovl_common_config(struct mtk_ddp_comp *comp, unsigned int idx,
 	unsigned int src_size = (dst_h << 16) | dst_w;
 	unsigned int offset = 0;
 	unsigned int clip = 0;
-	unsigned int buf_size = 0;
 	int rotate = 0;
 	struct mtk_disp_ovl *ovl = comp_to_ovl(comp);
 	unsigned int aid_sel_offset = 0;
@@ -1513,9 +1530,6 @@ static void _ovl_common_config(struct mtk_ddp_comp *comp, unsigned int idx,
 		lye_idx = idx;
 
 	src_size = (dst_h << 16) | dst_w;
-
-	buf_size = (dst_h - 1) * pending->pitch +
-		dst_w * mtk_drm_format_plane_cpp(fmt, 0);
 
 	if (ovl->data->mmsys_mapping)
 		mmsys_reg = ovl->data->mmsys_mapping(comp);
@@ -1641,7 +1655,7 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 	if (ovl->data->compr_info && ovl->data->compr_info->l_config) {
 		if (ovl->data->compr_info->l_config(comp,
 			    idx, state, handle)) {
-			DDPPR_ERR("wrong fbdc input config\n");
+			DDPPR_ERR("wrong fbdc input config");
 			return;
 		}
 	} else {
@@ -1665,7 +1679,7 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 
 	if (fmt == DRM_FORMAT_RGB332) {
 		pending->enable = false;
-		DDPINFO("%s: DRM_FORMAT_RGB332 not support, so skip it\n", __func__);
+		DDPINFO("%s: DRM_FORMAT_RGB332 not support, so skip it", __func__);
 	}
 
 	if (!pending->enable)
@@ -1695,7 +1709,7 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 
 	DDPINFO("%s+ id %d, idx:%d, ext_idx:%d, enable:%d, fmt:0x%x, ",
 		__func__, comp->id, idx, ext_lye_idx, pending->enable, pending->format);
-	DDPINFO("addr 0x%lx, compr %d, con 0x%x, mml_mode %d\n",
+	DDPINFO("addr 0x%lx, compr %d, con 0x%x, mml_mode %d",
 		(unsigned long)pending->addr,
 		(unsigned int)pending->prop_val[PLANE_PROP_COMPRESS], con,
 		pending->mml_mode);
@@ -1706,7 +1720,7 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 		_get_bg_roi(comp, &bg_h, &bg_w);
 		offset = ((bg_h - pending->height - pending->dst_y) << 16) +
 			 (bg_w - pending->width - pending->dst_x);
-		DDPINFO("bg(%d,%d) (%d,%d,%dx%d)\n", bg_w, bg_h, pending->dst_x,
+		DDPINFO("bg(%d,%d) (%d,%d,%dx%d)", bg_w, bg_h, pending->dst_x,
 			pending->dst_y, pending->width, pending->height);
 		con |= (CON_HORI_FLIP + CON_VERTICAL_FLIP);
 	} else {
@@ -1786,9 +1800,9 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 		} else
 			ratio_tmp = 125;
 
-		DDPDBG("%s, vrefresh=%d, ratio_tmp=%d\n",
+		DDPDBG("%s, vrefresh=%d, ratio_tmp=%d",
 			__func__, vrefresh, ratio_tmp);
-		DDPDBG("%s, vtotal=%d, vact=%d\n",
+		DDPDBG("%s, vtotal=%d, vact=%d",
 			__func__, vtotal, vact);
 
 		mtk_ovl_layer_on(comp, lye_idx, ext_lye_idx, handle);
@@ -1816,7 +1830,7 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 		temp_bw = temp_bw * vrefresh;
 		do_div(temp_bw, 1000);
 
-		DDPDBG("comp %d bw %llu vtotal:%d vact:%d\n",
+		DDPDBG("comp %d bw %llu vtotal:%d vact:%d",
 			comp->id, temp_bw, vtotal, vact);
 
 		if (pending->mml_mode != MML_MODE_RACING) {
@@ -1842,26 +1856,20 @@ static bool compr_l_config_PVRIC_V3_1(struct mtk_ddp_comp *comp,
 	dma_addr_t addr = pending->addr;
 	unsigned int pitch = pending->pitch & 0xffff;
 	unsigned int vpitch = (unsigned int)pending->prop_val[PLANE_PROP_VPITCH];
-	unsigned int dst_h = pending->height;
-	unsigned int dst_w = pending->width;
 	unsigned int src_x = pending->src_x, src_y = pending->src_y;
 	unsigned int src_w = pending->width, src_h = pending->height;
 	unsigned int fmt = pending->format;
-	unsigned int Bpp = mtk_drm_format_plane_cpp(fmt, 0);
 	unsigned int lye_idx = 0, ext_lye_idx = 0;
 	unsigned int compress = (unsigned int)pending->prop_val[PLANE_PROP_COMPRESS];
 	int rotate = 0;
 
 	/* variable to do calculation */
 	unsigned int tile_w = 16, tile_h = 4;
-	unsigned int tile_body_size = tile_w * tile_h * Bpp;
 	unsigned int src_x_align, src_y_align;
 	unsigned int src_w_align, src_h_align;
 	unsigned int header_offset, tile_offset;
 	dma_addr_t buf_addr;
 	unsigned int src_buf_tile_num = 0;
-	unsigned int buf_size = 0;
-	unsigned int buf_total_size = 0;
 
 	struct mtk_disp_ovl *ovl = comp_to_ovl(comp);
 	unsigned int aid_sel_offset = 0;
@@ -1920,10 +1928,8 @@ static bool compr_l_config_PVRIC_V3_1(struct mtk_ddp_comp *comp,
 	}
 
 	/* 2. pre-calculation */
-	if (fmt == DRM_FORMAT_RGB888 || fmt == DRM_FORMAT_BGR888) {
+	if (fmt == DRM_FORMAT_RGB888 || fmt == DRM_FORMAT_BGR888)
 		pitch = (4 * pitch / 3);
-		Bpp = 4;
-	}
 
 	src_buf_tile_num = ALIGN_TO(pitch / 4, tile_w) *
 			ALIGN_TO(vpitch, tile_h);
@@ -1993,9 +1999,6 @@ static bool compr_l_config_PVRIC_V3_1(struct mtk_ddp_comp *comp,
 	}
 
 	/* 7. config register */
-	buf_size = (dst_h - 1) * pending->pitch +
-		dst_w * mtk_drm_format_plane_cpp(fmt, 0);
-	buf_total_size = header_offset + src_buf_tile_num * tile_body_size;
 
 	if (ovl->data->mmsys_mapping)
 		mmsys_reg = ovl->data->mmsys_mapping(comp);
@@ -2095,8 +2098,6 @@ static bool compr_l_config_AFBC_V1_2(struct mtk_ddp_comp *comp,
 	unsigned int tile_w = AFBC_V1_2_TILE_W;
 	unsigned int tile_h = AFBC_V1_2_TILE_H;
 	unsigned int tile_body_size = tile_w * tile_h * Bpp;
-	unsigned int dst_h = pending->height;
-	unsigned int dst_w = pending->width;
 	unsigned int src_x_align, src_w_align;
 	unsigned int src_y_align, src_y_half_align;
 	unsigned int src_y_end_align, src_y_end_half_align;
@@ -2104,8 +2105,6 @@ static bool compr_l_config_AFBC_V1_2(struct mtk_ddp_comp *comp,
 	unsigned int header_offset, tile_offset;
 	dma_addr_t buf_addr;
 	unsigned int src_buf_tile_num = 0;
-	unsigned int buf_size = 0;
-	unsigned int buf_total_size = 0;
 
 
 	/* variable to config into register */
@@ -2121,10 +2120,10 @@ static bool compr_l_config_AFBC_V1_2(struct mtk_ddp_comp *comp,
 	resource_size_t mmsys_reg = 0;
 	int sec_bit;
 
-	DDPDBG("%s:%d, addr:0x%lx, pitch:%d, vpitch:%d\n",
+	DDPDBG("%s:%d, addr:0x%lx, pitch:%d, vpitch:%d",
 		__func__, __LINE__, (unsigned long)addr,
 		pitch, vpitch);
-	DDPDBG("src:(%d,%d,%d,%d), fmt:%d, Bpp:%d, compress:%d\n",
+	DDPDBG("src:(%d,%d,%d,%d), fmt:%d, Bpp:%d, compress:%d",
 		src_x, src_y,
 		src_w, src_h,
 		fmt, Bpp,
@@ -2277,8 +2276,6 @@ static bool compr_l_config_AFBC_V1_2(struct mtk_ddp_comp *comp,
 	}
 
 	/* 7. config register */
-	buf_size = (dst_h - 1) * pitch + dst_w * Bpp;
-	buf_total_size = header_offset + src_buf_tile_num * tile_body_size;
 
 	if (ovl->data->mmsys_mapping)
 		mmsys_reg = ovl->data->mmsys_mapping(comp);
@@ -2477,13 +2474,16 @@ static void mtk_ovl_connect(struct mtk_ddp_comp *comp,
 }
 
 void mtk_ovl_cal_golden_setting(struct mtk_ddp_config *cfg,
+				struct mtk_ddp_comp *comp, unsigned int *gs);
+
+void mtk_ovl_cal_golden_setting(struct mtk_ddp_config *cfg,
 				struct mtk_ddp_comp *comp, unsigned int *gs)
 {
 	bool is_dc = cfg->p_golden_setting_context->is_dc;
 	struct mtk_disp_ovl *ovl = comp_to_ovl(comp);
 	const struct mtk_disp_ovl_data *data = ovl->data;
 
-	DDPDBG("%s,is_dc:%d\n", __func__, is_dc);
+	DDPDBG("%s,is_dc:%d", __func__, is_dc);
 
 	/* OVL_RDMA_MEM_GMC_SETTING_1 */
 	gs[GS_OVL_RDMA_ULTRA_TH] = 0x3ff;
@@ -2759,7 +2759,7 @@ static void mtk_ovl_backup_info_cmp(struct mtk_ddp_comp *comp, bool *compare)
 		cur_info[i].layer = i;
 		cur_info[i].layer_en = src_on & (0x1 << i);
 		if (!cur_info[i].layer_en) {
-			DDPMSG("%s:layer%d,en %d,size 0x%x,addr 0x%lx\n",
+			DDPMSG("%s:layer%d,en %d,size 0x%x,addr 0x%lx",
 			       __func__, i, cur_info[i].layer_en,
 			       cur_info[i].src_size, (unsigned long)cur_info[i].addr);
 			continue;
@@ -2778,7 +2778,7 @@ static void mtk_ovl_backup_info_cmp(struct mtk_ddp_comp *comp, bool *compare)
 		cur_info[i].data_path_con =
 			readl(DISP_REG_OVL_DATAPATH_CON + Lx_base);
 
-		DDPMSG("%s:layer%d,en %d,size 0x%x, addr 0x%lx\n", __func__, i,
+		DDPMSG("%s:layer%d,en %d,size 0x%x, addr 0x%lx", __func__, i,
 		       cur_info[i].layer_en, cur_info[i].src_size,
 		       (unsigned long)cur_info[i].addr);
 		if (memcmp(&cur_info[i], &ovl->backup_info[i],
@@ -2897,15 +2897,9 @@ static int mtk_ovl_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 		break;
 	}
 	case PMQOS_UPDATE_BW: {
-		struct drm_crtc *crtc;
-		struct mtk_drm_crtc *mtk_crtc;
-
 		if (!mtk_drm_helper_get_opt(priv->helper_opt,
 				MTK_DRM_OPT_MMQOS_SUPPORT))
 			break;
-
-		mtk_crtc = comp->mtk_crtc;
-		crtc = &mtk_crtc->base;
 
 		/* process FBDC */
 		/* qos BW only has one port for one device, no need to separate */
@@ -2919,7 +2913,7 @@ static int mtk_ovl_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 					    DISP_BW_NORMAL_MODE);
 		comp->last_qos_bw = comp->qos_bw;
 
-		DDPDBG("update ovl fbdc_bw to %u, qos bw to %u\n",
+		DDPDBG("update ovl fbdc_bw to %u, qos bw to %u",
 			comp->fbdc_bw, comp->qos_bw);
 		break;
 	}
@@ -2946,7 +2940,7 @@ static int mtk_ovl_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	case OVL_GET_SOURCE_BPC: {
 		struct mtk_disp_ovl *ovl = comp_to_ovl(comp);
 
-		DDPINFO("%s, source_bpc[%d]\n", __func__, ovl->data->source_bpc);
+		DDPINFO("%s, source_bpc[%d]", __func__, ovl->data->source_bpc);
 		return ovl->data->source_bpc;
 		break;
 	}
@@ -2957,6 +2951,8 @@ static int mtk_ovl_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	return ret;
 }
 
+void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp);
+
 void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
@@ -2964,7 +2960,7 @@ void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp)
 	int i = 0;
 	unsigned int value;
 
-	DDPDUMP("-- %s Golden Setting --\n", mtk_dump_comp_str(comp));
+	DDPDUMP("-- %s golden Setting --", mtk_dump_comp_str(comp));
 	for (i = 0; i < mtk_ovl_layer_num(comp); i++) {
 		rg0 = DISP_REG_OVL_RDMA0_MEM_GMC_SETTING
 			+ i * OVL_LAYER_OFFSET;
@@ -2972,21 +2968,21 @@ void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp)
 		rg2 = DISP_REG_OVL_RDMA0_MEM_GMC_S2 + i * 0x4;
 		rg3 = DISP_REG_OVL_RDMAn_BUF_LOW(i);
 		rg4 = DISP_REG_OVL_RDMAn_BUF_HIGH(i);
-		DDPDUMP("0x%03lx:0x%08x 0x%03lx:0x%08x 0x%03lx:0x%08x\n",
+		DDPDUMP("0x%03lx:0x%08x 0x%03lx:0x%08x 0x%03lx:0x%08x",
 			rg0, readl(rg0 + baddr), rg1, readl(rg1 + baddr),
 			rg2, readl(rg2 + baddr));
-		DDPDUMP("0x%03lx:0x%08x 0x%03lx:0x%08x\n",
+		DDPDUMP("0x%03lx:0x%08x 0x%03lx:0x%08x",
 			rg3, readl(rg3 + baddr),
 			rg4, readl(rg4 + baddr));
 	}
 
 	rg0 = DISP_REG_OVL_RDMA_BURST_CON1;
-	DDPDUMP("0x%03lx:0x%08x\n", rg0, readl(rg0 + baddr));
+	DDPDUMP("0x%03lx:0x%08x", rg0, readl(rg0 + baddr));
 
 	rg0 = DISP_REG_OVL_RDMA_GREQ_NUM;
 	rg1 = DISP_REG_OVL_RDMA_GREQ_URG_NUM;
 	rg2 = DISP_REG_OVL_RDMA_ULTRA_SRC;
-	DDPDUMP("0x%03lx:0x%08x 0x%03lx:0x%08x 0x%03lx:0x%08x\n",
+	DDPDUMP("0x%03lx:0x%08x 0x%03lx:0x%08x 0x%03lx:0x%08x",
 		rg0, readl(rg0 + baddr),
 		rg1, readl(rg1 + baddr),
 		rg2, readl(rg2 + baddr));
@@ -2994,14 +2990,14 @@ void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp)
 	rg0 = DISP_REG_OVL_EN;
 	rg1 = DISP_REG_OVL_DATAPATH_CON;
 	rg2 = DISP_REG_OVL_FBDC_CFG1;
-	DDPDUMP("0x%03lx:0x%08x 0x%03lx:0x%08x 0x%03lx:0x%08x\n",
+	DDPDUMP("0x%03lx:0x%08x 0x%03lx:0x%08x 0x%03lx:0x%08x",
 		rg0, readl(rg0 + baddr),
 		rg1, readl(rg1 + baddr),
 		rg2, readl(rg2 + baddr));
 
 	value = readl(DISP_REG_OVL_RDMA0_MEM_GMC_SETTING + baddr);
-	DDPDUMP("RDMA0_MEM_GMC_SETTING1\n");
-	DDPDUMP("[9:0]:%x [25:16]:%x [28]:%x [31]:%x\n",
+	DDPDUMP("RDMA0_MEM_GMC_SETTING1");
+	DDPDUMP(":%x [25:16]:%x [28]:%x [31]:%x",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_MEM_GMC_ULTRA_THRESHOLD, value),
 		REG_FLD_VAL_GET(
 			FLD_OVL_RDMA_MEM_GMC_PRE_ULTRA_THRESHOLD, value),
@@ -3012,14 +3008,14 @@ void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp)
 			value));
 
 	value = readl(DISP_REG_OVL_RDMA0_FIFO_CTRL + baddr);
-	DDPDUMP("RDMA0_FIFO_CTRL\n");
-	DDPDUMP("[9:0]:%u [25:16]:%u\n",
+	DDPDUMP("RDMA0_FIFO_CTRL");
+	DDPDUMP(":%u [25:16]:%u",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_FIFO_THRD, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_FIFO_SIZE, value));
 
 	value = readl(DISP_REG_OVL_RDMA0_MEM_GMC_S2 + baddr);
-	DDPDUMP("RDMA0_MEM_GMC_SETTING2\n");
-	DDPDUMP("[11:0]:%u [27:16]:%u [28]:%u [29]:%u [30]:%u\n",
+	DDPDUMP("RDMA0_MEM_GMC_SETTING2");
+	DDPDUMP(":%u [27:16]:%u [28]:%u [29]:%u [30]:%u",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_MEM_GMC2_ISSUE_REQ_THRES, value),
 		REG_FLD_VAL_GET(
 			FLD_OVL_RDMA_MEM_GMC2_ISSUE_REQ_THRES_URG, value),
@@ -3029,20 +3025,20 @@ void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp)
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_MEM_GMC2_FORCE_REQ_THRES, value));
 
 	value = readl(DISP_REG_OVL_RDMA_BURST_CON1 + baddr);
-	DDPDUMP("OVL_RDMA_BURST_CON1\n");
-	DDPDUMP("[28]:%u\n",
+	DDPDUMP("OVL_RDMA_BURST_CON1");
+	DDPDUMP(":%u",
 		REG_FLD_VAL_GET(FLD_RDMA_BURST_CON1_BURST16_EN, value));
 
 	value = readl(DISP_REG_OVL_RDMA_GREQ_NUM + baddr);
-	DDPDUMP("RDMA_GREQ_NUM\n");
-	DDPDUMP("[3:0]%u [7:4]%u [11:8]%u [15:12]%u [23:16]%x [26:24]%u\n",
+	DDPDUMP("RDMA_GREQ_NUM");
+	DDPDUMP("%u [7:4]%u [11:8]%u [15:12]%u [23:16]%x [26:24]%u",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_LAYER0_GREQ_NUM, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_LAYER1_GREQ_NUM, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_LAYER2_GREQ_NUM, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_LAYER3_GREQ_NUM, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_OSTD_GREQ_NUM, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_GREQ_DIS_CNT, value));
-	DDPDUMP("[27]%u [28]%u [29]%u [30]%u [31]%u\n",
+	DDPDUMP("%u [28]%u [29]%u [30]%u [31]%u",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_STOP_EN, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_GRP_END_STOP, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_GRP_BRK_STOP, value),
@@ -3050,8 +3046,8 @@ void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp)
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_IOBUF_FLUSH_ULTRA, value));
 
 	value = readl(DISP_REG_OVL_RDMA_GREQ_URG_NUM + baddr);
-	DDPDUMP("RDMA_GREQ_URG_NUM\n");
-	DDPDUMP("[3:0]:%u [7:4]:%u [11:8]:%u [15:12]:%u [25:16]:%u [28]:%u\n",
+	DDPDUMP("RDMA_GREQ_URG_NUM");
+	DDPDUMP(":%u [7:4]:%u [11:8]:%u [15:12]:%u [25:16]:%u [28]:%u",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_LAYER0_GREQ_URG_NUM, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_LAYER1_GREQ_URG_NUM, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_LAYER2_GREQ_URG_NUM, value),
@@ -3060,47 +3056,47 @@ void mtk_ovl_dump_golden_setting(struct mtk_ddp_comp *comp)
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_GREQ_ARG_URG_BIAS, value));
 
 	value = readl(DISP_REG_OVL_RDMA_ULTRA_SRC + baddr);
-	DDPDUMP("RDMA_ULTRA_SRC\n");
-	DDPDUMP("[1:0]%u [3:2]%u [5:4]%u [7:6]%u [9:8]%u\n",
+	DDPDUMP("RDMA_ULTRA_SRC");
+	DDPDUMP("%u [3:2]%u [5:4]%u [7:6]%u [9:8]%u",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_PREULTRA_BUF_SRC, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_PREULTRA_SMI_SRC, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_PREULTRA_ROI_END_SRC, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_PREULTRA_RDMA_SRC, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_ULTRA_BUF_SRC, value));
-	DDPDUMP("[11:10]%u [13:12]%u [15:14]%u\n",
+	DDPDUMP("%u [13:12]%u [15:14]%u",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_ULTRA_SMI_SRC, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_ULTRA_ROI_END_SRC, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_ULTRA_RDMA_SRC, value));
 
 	value = readl(DISP_REG_OVL_RDMAn_BUF_LOW(0) + baddr);
-	DDPDUMP("RDMA0_BUF_LOW\n");
-	DDPDUMP("[11:0]:%x [23:12]:%x\n",
+	DDPDUMP("RDMA0_BUF_LOW");
+	DDPDUMP(":%x [23:12]:%x",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_BUF_LOW_ULTRA_TH, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_BUF_LOW_PREULTRA_TH, value));
 
 	value = readl(DISP_REG_OVL_RDMAn_BUF_HIGH(0) + baddr);
-	DDPDUMP("RDMA0_BUF_HIGH\n");
-	DDPDUMP("[23:12]:%x [31]:%x\n",
+	DDPDUMP("RDMA0_BUF_HIGH");
+	DDPDUMP(":%x [31]:%x",
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_BUF_HIGH_PREULTRA_TH, value),
 		REG_FLD_VAL_GET(FLD_OVL_RDMA_BUF_HIGH_PREULTRA_DIS, value));
 
 	value = readl(DISP_REG_OVL_EN + baddr);
-	DDPDUMP("OVL_EN\n");
-	DDPDUMP("[18]:%x [19]:%x\n",
+	DDPDUMP("OVL_EN");
+	DDPDUMP(":%x [19]:%x",
 		REG_FLD_VAL_GET(EN_FLD_BLOCK_EXT_ULTRA, value),
 		REG_FLD_VAL_GET(EN_FLD_BLOCK_EXT_PREULTRA, value));
 
 	value = readl(DISP_REG_OVL_DATAPATH_CON + baddr);
-	DDPDUMP("DATAPATH_CON\n");
-	DDPDUMP("[0]:%u [24]:%u [25]:%u [26]:%u\n",
+	DDPDUMP("DATAPATH_CON");
+	DDPDUMP(":%u [24]:%u [25]:%u [26]:%u",
 		REG_FLD_VAL_GET(DATAPATH_CON_FLD_LAYER_SMI_ID_EN, value),
 		REG_FLD_VAL_GET(DATAPATH_CON_FLD_GCLAST_EN, value),
 		REG_FLD_VAL_GET(DATAPATH_CON_FLD_HDR_GCLAST_EN, value),
 		REG_FLD_VAL_GET(DATAPATH_CON_FLD_OUTPUT_CLAMP, value));
 
 	value = readl(DISP_REG_OVL_FBDC_CFG1 + baddr);
-	DDPDUMP("OVL_FBDC_CFG1\n");
-	DDPDUMP("[24]:%u [28]:%u\n",
+	DDPDUMP("OVL_FBDC_CFG1");
+	DDPDUMP(":%u [28]:%u",
 		REG_FLD_VAL_GET(FLD_FBDC_8XE_MODE, value),
 		REG_FLD_VAL_GET(FLD_FBDC_FILTER_EN, value));
 }
@@ -3114,7 +3110,7 @@ int mtk_ovl_dump(struct mtk_ddp_comp *comp)
 	if (comp->blank_mode)
 		return 0;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 	if (mtk_ddp_comp_helper_get_opt(comp,
 					MTK_DRM_OPT_REG_PARSER_RAW_DUMP)) {
 		unsigned int i = 0;
@@ -3228,70 +3224,70 @@ int mtk_ovl_dump(struct mtk_ddp_comp *comp)
 
 static void ovl_printf_status(unsigned int status)
 {
-	DDPDUMP("- OVL_FLOW_CONTROL_DEBUG -\n");
-	DDPDUMP("addcon_idle:%d,blend_idle:%d\n",
+	DDPDUMP("- OVL_FLOW_CONTROL_DEBUG -");
+	DDPDUMP("addcon_idle:%d,blend_idle:%d",
 		(status >> 10) & (0x1), (status >> 11) & (0x1));
-	DDPDUMP("out_valid:%d,out_ready:%d,out_idle:%d\n",
+	DDPDUMP("out_valid:%d,out_ready:%d,out_idle:%d",
 		(status >> 12) & (0x1), (status >> 13) & (0x1),
 		(status >> 15) & (0x1));
-	DDPDUMP("rdma_idle3-0:(%d,%d,%d,%d),rst:%d\n", (status >> 16) & (0x1),
+	DDPDUMP("rdma_idle3-0:(%d,%d,%d,%d),rst:%d", (status >> 16) & (0x1),
 		(status >> 17) & (0x1), (status >> 18) & (0x1),
 		(status >> 19) & (0x1), (status >> 20) & (0x1));
-	DDPDUMP("trig:%d,frame_hwrst_done:%d\n",
+	DDPDUMP("trig:%d,frame_hwrst_done:%d",
 		(status >> 21) & (0x1), (status >> 23) & (0x1));
-	DDPDUMP("frame_swrst_done:%d,frame_underrun:%d,frame_done:%d\n",
+	DDPDUMP("frame_swrst_done:%d,frame_underrun:%d,frame_done:%d",
 		(status >> 24) & (0x1), (status >> 25) & (0x1),
 		(status >> 26) & (0x1));
-	DDPDUMP("ovl_running:%d,ovl_start:%d,ovl_clr:%d\n",
+	DDPDUMP("ovl_running:%d,ovl_start:%d,ovl_clr:%d",
 		(status >> 27) & (0x1), (status >> 28) & (0x1),
 		(status >> 29) & (0x1));
-	DDPDUMP("reg_update:%d,ovl_upd_reg:%d\n",
+	DDPDUMP("reg_update:%d,ovl_upd_reg:%d",
 		(status >> 30) & (0x1),
 		(status >> 31) & (0x1));
 
-	DDPDUMP("ovl_fms_state:\n");
+	DDPDUMP("ovl_fms_state:");
 	switch (status & 0x3ff) {
 	case 0x1:
-		DDPDUMP("idle\n");
+		DDPDUMP("idle");
 		break;
 	case 0x2:
-		DDPDUMP("wait_SOF\n");
+		DDPDUMP("wait_SOF");
 		break;
 	case 0x4:
-		DDPDUMP("prepare\n");
+		DDPDUMP("prepare");
 		break;
 	case 0x8:
-		DDPDUMP("reg_update\n");
+		DDPDUMP("reg_update");
 		break;
 	case 0x10:
-		DDPDUMP("eng_clr(internal reset)\n");
+		DDPDUMP("eng_clr(internal reset)");
 		break;
 	case 0x20:
-		DDPDUMP("eng_act(processing)\n");
+		DDPDUMP("eng_act(processing)");
 		break;
 	case 0x40:
-		DDPDUMP("h_wait_w_rst\n");
+		DDPDUMP("h_wait_w_rst");
 		break;
 	case 0x80:
-		DDPDUMP("s_wait_w_rst\n");
+		DDPDUMP("s_wait_w_rst");
 		break;
 	case 0x100:
-		DDPDUMP("h_w_rst\n");
+		DDPDUMP("h_w_rst");
 		break;
 	case 0x200:
-		DDPDUMP("s_w_rst\n");
+		DDPDUMP("s_w_rst");
 		break;
 	default:
-		DDPDUMP("ovl_fsm_unknown\n");
+		DDPDUMP("ovl_fsm_unknown");
 		break;
 	}
 }
 
 static void ovl_print_ovl_rdma_status(unsigned int status)
 {
-	DDPDUMP("warm_rst_cs:%d,layer_greq:%d,out_data:0x%x\n", status & 0x7,
+	DDPDUMP("warm_rst_cs:%d,layer_greq:%d,out_data:0x%x", status & 0x7,
 		(status >> 3) & 0x1, (status >> 4) & 0xffffff);
-	DDPDUMP("out_ready:%d,out_valid:%d,smi_busy:%d,smi_greq:%d\n",
+	DDPDUMP("out_ready:%d,out_valid:%d,smi_busy:%d,smi_greq:%d",
 		(status >> 28) & 0x1, (status >> 29) & 0x1,
 		(status >> 30) & 0x1, (status >> 31) & 0x1);
 }
@@ -3321,11 +3317,11 @@ static void ovl_dump_layer_info_compress(struct mtk_ddp_comp *comp, int layer,
 	}
 
 	if (compr_en == 0) {
-		DDPDUMP("compr_en:%u\n", compr_en);
+		DDPDUMP("compr_en:%u", compr_en);
 		return;
 	}
 
-	DDPDUMP("compr_en:%u, pitch_msb:0x%x, hdr_addr:0x%lx, hdr_pitch:0x%x\n",
+	DDPDUMP("compr_en:%u, pitch_msb:0x%x, hdr_addr:0x%lx, hdr_pitch:0x%x",
 		compr_en, pitch_msb, (unsigned long)addr, pitch);
 }
 
@@ -3359,11 +3355,11 @@ static void ovl_dump_layer_info(struct mtk_ddp_comp *comp, int layer,
 	 * REG_FLD_VAL_GET(L_CON_FLD_BTSW, con),
 	 * REG_FLD_VAL_GET(L_CON_FLD_RGB_SWAP, con));
 	 */
-	DDPDUMP("%s_L%d:(%u,%u,%ux%u)\n",
+	DDPDUMP("%s_l%d:(%u,%u,%ux%u)",
 		is_ext_layer ? "ext" : "phy", layer, offset & 0xfff,
 		(offset >> 16) & 0xfff, src_size & 0xfff,
 		(src_size >> 16) & 0xfff);
-	DDPDUMP("pitch=%u,addr=0x%lx,source=%s,aen=%u,alpha=%u,cl=0x%x\n",
+	DDPDUMP("pitch=%u,addr=0x%lx,source=%s,aen=%u,alpha=%u,cl=0x%x",
 		pitch & 0xffff,
 		(unsigned long)addr, /* unified_color_fmt_name(fmt),*/
 		(REG_FLD_VAL_GET(L_CON_FLD_LSRC, con) == 0) ? "mem"
@@ -3371,7 +3367,7 @@ static void ovl_dump_layer_info(struct mtk_ddp_comp *comp, int layer,
 		REG_FLD_VAL_GET(L_CON_FLD_AEN, con),
 		REG_FLD_VAL_GET(L_CON_FLD_APHA, con),
 		clip);
-	DDPDUMP("L0_SYSRAM_CFG:0x%x, L0_SYSRAM_BUF0:0x%x, L0_SYSRAM_BUF1:0x%x\n",
+	DDPDUMP("l0_SYSRAM_CFG:0x%x, L0_SYSRAM_BUF0:0x%x, L0_SYSRAM_BUF1:0x%x",
 			readl(comp->regs + 0x880),
 			readl(comp->regs + 0x884),
 			readl(comp->regs + 0x888));
@@ -3396,18 +3392,18 @@ int mtk_ovl_analysis(struct mtk_ddp_comp *comp)
 	ext_con = readl(DISP_REG_OVL_DATAPATH_EXT_CON + baddr);
 	addcon = readl(DISP_REG_OVL_ADDCON_DBG + baddr);
 
-	DDPDUMP("== %s ANALYSIS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
-	DDPDUMP("ovl_en=%d,layer_en(%d,%d,%d,%d),bg(%dx%d)\n",
+	DDPDUMP("== %s ANALYSIS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("ovl_en=%d,layer_en(%d,%d,%d,%d),bg(%dx%d)",
 		readl(DISP_REG_OVL_EN + baddr) & 0x1, src_con & 0x1,
 		(src_con >> 1) & 0x1, (src_con >> 2) & 0x1,
 		(src_con >> 3) & 0x1,
 		readl(DISP_REG_OVL_ROI_SIZE + baddr) & 0xfff,
 		(readl(DISP_REG_OVL_ROI_SIZE + baddr) >> 16) & 0xfff);
-	DDPDUMP("ext_layer:layer_en(%d,%d,%d),attach_layer(%d,%d,%d)\n",
+	DDPDUMP("ext_layer:layer_en(%d,%d,%d),attach_layer(%d,%d,%d)",
 		ext_con & 0x1, (ext_con >> 1) & 0x1, (ext_con >> 2) & 0x1,
 		(ext_con >> 16) & 0xf, (ext_con >> 20) & 0xf,
 		(ext_con >> 24) & 0xf);
-	DDPDUMP("cur_pos(%u,%u),layer_hit(%u,%u,%u,%u),bg_mode=%s,sta=0x%x\n",
+	DDPDUMP("cur_pos(%u,%u),layer_hit(%u,%u,%u,%u),bg_mode=%s,sta=0x%x",
 		REG_FLD_VAL_GET(ADDCON_DBG_FLD_ROI_X, addcon),
 		REG_FLD_VAL_GET(ADDCON_DBG_FLD_ROI_Y, addcon),
 		REG_FLD_VAL_GET(ADDCON_DBG_FLD_L0_WIN_HIT, addcon),
@@ -3427,11 +3423,11 @@ int mtk_ovl_analysis(struct mtk_ddp_comp *comp)
 		if (src_con & (0x1 << i))
 			ovl_dump_layer_info(comp, i, false);
 		else
-			DDPDUMP("phy_L%d:disabled\n", i);
+			DDPDUMP("phy_L%d:disabled", i);
 
 		Lx_base = i * OVL_LAYER_OFFSET + baddr;
 		rdma_ctrl = readl(Lx_base + DISP_REG_OVL_RDMA0_CTRL);
-		DDPDUMP("ovl rdma%d status:(en=%d,fifo_used:%d,GMC=0x%x)\n", i,
+		DDPDUMP("ovl rdma%d status:(en=%d,fifo_used:%d,GMC=0x%x)", i,
 			REG_FLD_VAL_GET(RDMA0_CTRL_FLD_RDMA_EN, rdma_ctrl),
 			REG_FLD_VAL_GET(RDMA0_CTRL_FLD_RMDA_FIFO_USED_SZ,
 					rdma_ctrl),
@@ -3447,7 +3443,7 @@ int mtk_ovl_analysis(struct mtk_ddp_comp *comp)
 		if (ext_con & (0x1 << i))
 			ovl_dump_layer_info(comp, i, true);
 		else
-			DDPDUMP("ext_L%d:disabled\n", i);
+			DDPDUMP("ext_L%d:disabled", i);
 	}
 	ovl_printf_status(readl(DISP_REG_OVL_FLOW_CTRL_DBG + baddr));
 
@@ -3466,7 +3462,7 @@ static void mtk_ovl_prepare(struct mtk_ddp_comp *comp)
 	if (priv->fbdc_clk != NULL) {
 		ret = clk_prepare_enable(priv->fbdc_clk);
 		if (ret)
-			DDPPR_ERR("clk prepare enable failed:%s\n",
+			DDPPR_ERR("clk prepare enable failed:%s",
 				mtk_dump_comp_str(comp));
 	}
 
@@ -3497,7 +3493,7 @@ mtk_ovl_config_trigger(struct mtk_ddp_comp *comp, struct cmdq_pkt *pkt,
 	switch (flag) {
 	case MTK_TRIG_FLAG_PRE_TRIGGER:
 	{
-		DDPINFO("%s+ %s\n", __func__, mtk_dump_comp_str(comp));
+		DDPINFO("%s+ %s", __func__, mtk_dump_comp_str(comp));
 			cmdq_pkt_write(pkt, comp->cmdq_base,
 					comp->regs_pa + DISP_REG_OVL_RST, 0x1, 0x1);
 			cmdq_pkt_write(pkt, comp->cmdq_base,
@@ -3578,11 +3574,11 @@ mtk_ovl_config_trigger(struct mtk_ddp_comp *comp, struct cmdq_pkt *pkt,
 
 		if (comp->id == DDP_COMPONENT_OVL0_2L) {
 			if (offset >= DISP_SLOT_LAYER_REC_OVL0)
-				DDPMSG("%s:error:ovl0_2l:offset overflow:%u\n",
+				DDPMSG("%s:error:ovl0_2l:offset overflow:%u",
 				       __func__, offset);
 		} else if (comp->id == DDP_COMPONENT_OVL0) {
 			if (offset >= DISP_SLOT_LAYER_REC_END)
-				DDPMSG("%s:error:ovl0:offset overflow:%u\n",
+				DDPMSG("%s:error:ovl0:offset overflow:%u",
 				       __func__, offset);
 		}
 
@@ -3614,11 +3610,13 @@ static const struct mtk_ddp_comp_funcs mtk_disp_ovl_funcs = {
 };
 
 /* TODO: to be refactored */
+int drm_ovl_tf_cb(int port, unsigned long mva, void *data);
+
 int drm_ovl_tf_cb(int port, unsigned long mva, void *data)
 {
 	struct mtk_disp_ovl *ovl = (struct mtk_disp_ovl *)data;
 
-	DDPPR_ERR("%s tf mva: 0x%lx\n", mtk_dump_comp_str(&ovl->ddp_comp), mva);
+	DDPPR_ERR("%s tf mva: 0x%lx", mtk_dump_comp_str(&ovl->ddp_comp), mva);
 
 	mtk_ovl_analysis(&ovl->ddp_comp);
 	mtk_ovl_dump(&ovl->ddp_comp);
@@ -3689,7 +3687,7 @@ static int mtk_disp_ovl_probe(struct platform_device *pdev)
 	int ret, len;
 	const __be32 *ranges = NULL;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -3704,7 +3702,7 @@ static int mtk_disp_ovl_probe(struct platform_device *pdev)
 		return comp_id;
 	}
 
-	DDPINFO("%s comp_id:%d\n", __func__, comp_id);
+	DDPINFO("%s comp_id:%d", __func__, comp_id);
 
 	ret = mtk_ddp_comp_init(dev, dev->of_node, &priv->ddp_comp, comp_id,
 				&mtk_disp_ovl_funcs);
@@ -3730,7 +3728,7 @@ static int mtk_disp_ovl_probe(struct platform_device *pdev)
 			       IRQF_TRIGGER_NONE | IRQF_SHARED, dev_name(dev),
 			       priv);
 	if (ret < 0) {
-		DDPAEE("%s:%d, failed to request irq:%d ret:%d comp_id:%d\n",
+		DDPAEE("%s:%d, failed to request irq:%d ret:%d comp_id:%d",
 				__func__, __LINE__,
 				irq, ret, comp_id);
 		return ret;
@@ -3747,7 +3745,7 @@ static int mtk_disp_ovl_probe(struct platform_device *pdev)
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 	return ret;
 }
 

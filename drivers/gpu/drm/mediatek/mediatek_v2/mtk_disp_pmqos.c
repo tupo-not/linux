@@ -72,9 +72,7 @@ static DEFINE_MUTEX(disp_mmdvfs_lock);
 void mtk_disp_pmqos_get_icc_path_name(char *buf, int buf_len,
 				struct mtk_ddp_comp *comp, char *qos_event)
 {
-	int len;
-
-	len = snprintf(buf, buf_len, "%s_%s", mtk_dump_comp_str(comp), qos_event);
+	snprintf(buf, buf_len, "%s_%s", mtk_dump_comp_str(comp), qos_event);
 }
 
 int __mtk_disp_pmqos_slot_look_up(int comp_id, int mode)
@@ -133,7 +131,7 @@ int __mtk_disp_pmqos_slot_look_up(int comp_id, int mode)
 	case DDP_COMPONENT_WDMA1:
 		return DISP_PMQOS_WDMA1_BW;
 	default:
-		DDPPR_ERR("%s, unknown comp %d\n", __func__, comp_id);
+		DDPPR_ERR("%s, unknown comp %d", __func__, comp_id);
 		break;
 	}
 
@@ -143,7 +141,7 @@ int __mtk_disp_pmqos_slot_look_up(int comp_id, int mode)
 int __mtk_disp_set_module_bw(struct icc_path *request, int comp_id,
 			     unsigned int bandwidth, unsigned int bw_mode)
 {
-	DDPINFO("%s set %d bw = %u\n", __func__, comp_id, bandwidth);
+	DDPINFO("%s set %d bw = %u", __func__, comp_id, bandwidth);
 	bandwidth = bandwidth * 133 / 100;
 
 	mtk_icc_set_bw(request, MBps_to_icc(bandwidth), 0);
@@ -171,12 +169,12 @@ static bool mtk_disp_check_segment(struct mtk_drm_crtc *mtk_crtc,
 	int vrefresh = 0;
 
 	if (IS_ERR_OR_NULL(mtk_crtc)) {
-		DDPPR_ERR("%s, mtk_crtc is NULL\n", __func__);
+		DDPPR_ERR("%s, mtk_crtc is NULL", __func__);
 		return ret;
 	}
 
 	if (IS_ERR_OR_NULL(priv)) {
-		DDPPR_ERR("%s, private is NULL\n", __func__);
+		DDPPR_ERR("%s, private is NULL", __func__);
 		return ret;
 	}
 
@@ -214,7 +212,7 @@ static bool mtk_disp_check_segment(struct mtk_drm_crtc *mtk_crtc,
  */
 
 	if (ret == false)
-		DDPPR_ERR("%s, check sement fail: segment:%d, mode(%d, %d, %d)\n",
+		DDPPR_ERR("%s, check sement fail: segment:%d, mode(%d, %d, %d)",
 			__func__, priv->seg_id, hact, vact, vrefresh);
 
 	return ret;
@@ -254,7 +252,7 @@ int mtk_disp_set_hrt_bw(struct mtk_drm_crtc *mtk_crtc, unsigned int bw)
 
 	mtk_icc_set_bw(priv->hrt_bw_request, 0, MBps_to_icc(tmp));
 	DRM_MMP_MARK(hrt_bw, 0, tmp);
-	DDPINFO("set HRT bw %u\n", tmp);
+	DDPINFO("set HRT bw %u", tmp);
 
 	return ret;
 }
@@ -271,8 +269,11 @@ void mtk_drm_pan_disp_set_hrt_bw(struct drm_crtc *crtc, const char *caller)
 
 	bw = _layering_get_frame_bw(crtc, mode);
 	mtk_disp_set_hrt_bw(mtk_crtc, bw);
-	DDPINFO("%s:pan_disp_set_hrt_bw: %u\n", caller, bw);
+	DDPINFO("%s:pan_disp_set_hrt_bw: %u", caller, bw);
 }
+
+int mtk_disp_hrt_cond_change_cb(struct notifier_block *nb, unsigned long value,
+				void *v);
 
 int mtk_disp_hrt_cond_change_cb(struct notifier_block *nb, unsigned long value,
 				void *v)
@@ -292,9 +293,9 @@ int mtk_disp_hrt_cond_change_cb(struct notifier_block *nb, unsigned long value,
 
 	switch (value) {
 	case BW_THROTTLE_START: /* CAM on */
-		DDPMSG("DISP BW Throttle start\n");
+		DDPMSG("DISP BW Throttle start");
 		/* TODO: concider memory session */
-		DDPINFO("CAM trigger repaint\n");
+		DDPINFO("CAM trigger repaint");
 		hrt_idx = _layering_rule_get_hrt_idx();
 		hrt_idx++;
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
@@ -305,7 +306,7 @@ int mtk_disp_hrt_cond_change_cb(struct notifier_block *nb, unsigned long value,
 				atomic_read(&mtk_crtc->qos_ctx->hrt_cond_sig),
 				HZ / 5);
 			if (ret == 0)
-				DDPINFO("wait repaint timeout %d\n", i);
+				DDPINFO("wait repaint timeout %d", i);
 			atomic_set(&mtk_crtc->qos_ctx->hrt_cond_sig, 0);
 			if (atomic_read(&mtk_crtc->qos_ctx->last_hrt_idx) >=
 			    hrt_idx)
@@ -314,7 +315,7 @@ int mtk_disp_hrt_cond_change_cb(struct notifier_block *nb, unsigned long value,
 		DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 		break;
 	case BW_THROTTLE_END: /* CAM off */
-		DDPMSG("DISP BW Throttle end\n");
+		DDPMSG("DISP BW Throttle end");
 		/* TODO: switch DC */
 		break;
 	default:
@@ -346,7 +347,7 @@ int mtk_disp_hrt_cond_init(struct drm_crtc *crtc)
 	mtk_crtc = to_mtk_crtc(dev_crtc);
 
 	if (IS_ERR_OR_NULL(mtk_crtc)) {
-		DDPPR_ERR("%s:mtk_crtc is NULL\n", __func__);
+		DDPPR_ERR("%s:mtk_crtc is NULL", __func__);
 		return -EINVAL;
 	}
 
@@ -354,7 +355,7 @@ int mtk_disp_hrt_cond_init(struct drm_crtc *crtc)
 
 	mtk_crtc->qos_ctx = vmalloc(sizeof(struct mtk_drm_qos_ctx));
 	if (mtk_crtc->qos_ctx == NULL) {
-		DDPPR_ERR("%s:allocate qos_ctx failed\n", __func__);
+		DDPPR_ERR("%s:allocate qos_ctx failed", __func__);
 		return -ENOMEM;
 	}
 	memset(mtk_crtc->qos_ctx, 0, sizeof(struct mtk_drm_qos_ctx));
@@ -542,7 +543,7 @@ static void mtk_disp_mmdvfs_request(struct mtk_disp_mmdvfs *ctx,
 	int old_level, vote_level, i, ret;
 
 	if (idx >= CRTC_NUM) {
-		DDPPR_ERR("%s: crtc index %u is out of range\n", caller, idx);
+		DDPPR_ERR("%s: crtc index %u is out of range", caller, idx);
 		return;
 	}
 
@@ -568,7 +569,7 @@ static void mtk_disp_mmdvfs_request(struct mtk_disp_mmdvfs *ctx,
 	if (vote_level == ctx->voted_level)
 		return;
 
-	DDPINFO("%s: crtc%u level %d (was %d), rail level %d\n",
+	DDPINFO("%s: crtc%u level %d (was %d), rail level %d",
 		caller, idx, level, old_level, vote_level);
 
 	ret = mtk_disp_mmdvfs_vote(ctx, vote_level);
@@ -580,7 +581,7 @@ static void mtk_disp_mmdvfs_request(struct mtk_disp_mmdvfs *ctx,
 		 */
 		ctx->freq_level[idx] = old_level;
 		ctx->voted_level = MMCLK_LEVEL_INVALID;
-		DDPPR_ERR("%s: crtc%u level %d was not applied: %d\n",
+		DDPPR_ERR("%s: crtc%u level %d was not applied: %d",
 			  caller, idx, level, ret);
 		return;
 	}
@@ -709,7 +710,7 @@ void mtk_drm_set_mmclk_by_pixclk(struct drm_crtc *crtc,
 		/* No pixel clock: hold the lowest step of the table. */
 		level = MMCLK_LEVEL_NONE;
 	} else if (freq > ctx->freq_steps[ctx->step_size - 1]) {
-		DDPMSG("%s: pixel clock %u MHz is above the top step (%u Hz)\n",
+		DDPMSG("%s: pixel clock %u MHz is above the top step (%u Hz)",
 		       caller, pixclk, ctx->freq_steps[ctx->step_size - 1]);
 		level = ctx->step_size - 1;
 	} else {

@@ -57,7 +57,7 @@ void mtk_rect_join(const struct mtk_rect *in1, const struct mtk_rect *in2,
 			fBottom = bottom;
 		mtk_rect_set(out, fLeft, fTop, fRight, fBottom);
 	}
-	DDPDBG("%s (%d,%d,%d,%d) & (%d,%d,%d,%d) to (%d,%d,%d,%d)\n", __func__,
+	DDPDBG("%s (%d,%d,%d,%d) & (%d,%d,%d,%d) to (%d,%d,%d,%d)", __func__,
 	       in1->x, in1->y, in1->width, in1->height, in2_x, in2_y, in2_w,
 	       in2_h, in2->x, in2->y, in2->width, in2->height);
 }

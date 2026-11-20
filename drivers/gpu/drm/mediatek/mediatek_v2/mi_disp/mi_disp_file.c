@@ -3,7 +3,7 @@
  * Copyright (c) 2020, The Linux Foundation. All rights reserved.
  * Copyright (C) 2020 XiaoMi, Inc.
  */
-#define pr_fmt(fmt) "mi_disp_file:[%s:%d] " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/module.h>
 #include <linux/mutex.h>
@@ -165,6 +165,8 @@ put_back_event:
 
 	return ret;
 }
+
+int mi_disp_ioctl_get_version(struct disp_feature_client *client, void *data);
 
 int mi_disp_ioctl_get_version(struct disp_feature_client *client, void *data)
 {

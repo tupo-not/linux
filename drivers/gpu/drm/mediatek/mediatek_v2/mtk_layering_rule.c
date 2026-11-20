@@ -99,7 +99,7 @@ static void layering_rule_scenario_decision(struct drm_device *dev,
 		l_rule_info.addon_scn[HRT_PRIMARY] = MML_SRAM_ONLY;
 	} else if (scn_decision_flag & SCN_MML) {
 		l_rule_info.addon_scn[HRT_PRIMARY] = MML;
-		DDPMSG("%s:%d + addon_scn:%d\n",
+		DDPMSG("%s:%d + addon_scn:%d",
 			__func__, __LINE__, l_rule_info.addon_scn[HRT_PRIMARY]);
 	} else if (scn_decision_flag & SCN_NEED_GAME_PQ)
 		l_rule_info.addon_scn[HRT_PRIMARY] = GAME_PQ;
@@ -395,7 +395,7 @@ static uint16_t get_mapping_table(struct drm_device *dev, int disp_idx,
 	}
 
 	if (!addon_data) {
-		DDPPR_ERR("disp_idx:%d cannot get addon data\n", disp_idx);
+		DDPPR_ERR("disp_idx:%d cannot get addon data", disp_idx);
 		return 0;
 	}
 
@@ -530,7 +530,7 @@ static int layering_get_valid_hrt(struct drm_crtc *crtc, int mode_idx)
 
 	dvfs_bw = mtk_mmqos_get_avail_hrt_bw(HRT_DISP);
 	if (dvfs_bw == 0xffffffffffffffff) {
-		DDPPR_ERR("mm_hrt_get_available_hrt_bw=-1\n");
+		DDPPR_ERR("mm_hrt_get_available_hrt_bw=-1");
 		return 600;
 	}
 
@@ -542,7 +542,7 @@ static int layering_get_valid_hrt(struct drm_crtc *crtc, int mode_idx)
 			mtk_ddp_comp_io_cmd(output_comp, NULL,
 				GET_FRAME_HRT_BW_BY_DATARATE, &tmp);
 	} else {
-		DDPDBG("%s mode_idx:%d\n", __func__, mode_idx);
+		DDPDBG("%s mode_idx:%d", __func__, mode_idx);
 		mtk_crtc->mode_idx = mode_idx;
 		mtk_crtc->res_change = true;
 		tmp = mode_idx;
@@ -552,7 +552,7 @@ static int layering_get_valid_hrt(struct drm_crtc *crtc, int mode_idx)
 	}
 
 	if (!tmp) {
-		DDPPR_ERR("Get frame hrt bw by datarate is zero\n");
+		DDPPR_ERR("get frame hrt bw by datarate is zero");
 		return 600;
 	}
 	dvfs_bw /= tmp * 100;
@@ -561,11 +561,11 @@ static int layering_get_valid_hrt(struct drm_crtc *crtc, int mode_idx)
 	if (dvfs_bw < 200) {
 		// disp_aee_print("avail BW less than 2 layers, BW: %llu\n",
 		//	dvfs_bw);
-		DDPPR_ERR("avail BW less than 2 layers, BW: %llu\n", dvfs_bw);
+		DDPPR_ERR("avail BW less than 2 layers, BW: %llu", dvfs_bw);
 		dvfs_bw = 200;
 	}
 
-	DDPINFO("get avail HRT BW:%u : %llu %llu\n",
+	DDPINFO("get avail HRT BW:%u : %llu %llu",
 		mtk_mmqos_get_avail_hrt_bw(HRT_DISP),
 		dvfs_bw, tmp);
 
@@ -660,7 +660,7 @@ static void backup_input_config(struct drm_mtk_layering_info *disp_info)
 	g_input_config = kzalloc(size, GFP_KERNEL);
 
 	if (g_input_config == 0) {
-		DDPPR_ERR("%s: allocate memory fail\n", __func__);
+		DDPPR_ERR("%s: allocate memory fail", __func__);
 		return;
 	}
 

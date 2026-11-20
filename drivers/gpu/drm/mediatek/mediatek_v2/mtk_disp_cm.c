@@ -137,7 +137,7 @@ static void mtk_cm_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 				CM_EN, handle);
 	//}
 
-	DDPINFO("%s, cm_start:0x%x\n",
+	DDPINFO("%s, cm_start:0x%x",
 		mtk_dump_comp_str(comp), readl(baddr + DISP_REG_CM_EN));
 }
 
@@ -146,14 +146,14 @@ static void mtk_cm_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 	void __iomem *baddr = comp->regs;
 
 	mtk_ddp_write_mask(comp, 0x0, DISP_REG_CM_EN, CM_EN, handle);
-	DDPINFO("%s, cm_stop:0x%x\n",
+	DDPINFO("%s, cm_stop:0x%x",
 		mtk_dump_comp_str(comp), readl(baddr + DISP_REG_CM_EN));
 }
 
 static void mtk_cm_prepare(struct mtk_ddp_comp *comp)
 {
 	//struct mtk_disp_cm *cm = comp_to_cm(comp);
-	DDPINFO("%s,\n", __func__);
+	DDPINFO("%s,", __func__);
 	mtk_ddp_comp_clk_prepare(comp);
 
 	/* Bypass shadow register and read shadow register */
@@ -182,10 +182,10 @@ static void mtk_cm_config(struct mtk_ddp_comp *comp,
 	else
 		width = cfg->w;
 
-	DDPINFO("%s,\n", __func__);
+	DDPINFO("%s,", __func__);
 	if (!comp->mtk_crtc || !comp->mtk_crtc->panel_ext)
 		return;
-	DDPMSG("mtk_cm_config111\n");
+	DDPMSG("mtk_cm_config111");
 	cm_params = &comp->mtk_crtc->panel_ext->params->cm_params;
 	cm_tune_params = comp->mtk_crtc->panel_cm_params;
 
@@ -243,16 +243,16 @@ void mtk_cm_dump(struct mtk_ddp_comp *comp)
 	void __iomem *baddr = comp->regs;
 	int i;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 
-	DDPDUMP("en=%d, cm_bypass=%d\n",
+	DDPDUMP("en=%d, cm_bypass=%d",
 		 DISP_REG_GET_FIELD(CON_FLD_DISP_CM_EN,
 				baddr + DISP_REG_CM_EN),
 		 DISP_REG_GET_FIELD(CON_FLD_DISP_CM_RELAY_MODE,
 				baddr + DISP_REG_CM_CFG));
-	DDPDUMP("-- Start dump cm registers --\n");
+	DDPDUMP("-- start dump cm registers --");
 	for (i = 0; i < 300; i += 16) {
-		DDPDUMP("CM+%x: 0x%x 0x%x 0x%x 0x%x\n", i, readl(baddr + i),
+		DDPDUMP("CM+%x: 0x%x 0x%x 0x%x 0x%x", i, readl(baddr + i),
 			 readl(baddr + i + 0x4), readl(baddr + i + 0x8),
 			 readl(baddr + i + 0xc));
 	}
@@ -262,8 +262,8 @@ int mtk_cm_analysis(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s ANALYSIS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
-	DDPDUMP("en=%d, cm_bypass=%d\n",
+	DDPDUMP("== %s ANALYSIS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("en=%d, cm_bypass=%d",
 		 DISP_REG_GET_FIELD(CON_FLD_DISP_CM_EN,
 				baddr + DISP_REG_CM_EN),
 		 DISP_REG_GET_FIELD(CON_FLD_DISP_CM_RELAY_MODE,
@@ -287,7 +287,7 @@ static int mtk_disp_cm_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component %s: %d\n",
@@ -320,7 +320,7 @@ static int mtk_disp_cm_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 
-	DDPMSG("%s+\n", __func__);
+	DDPMSG("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -355,7 +355,7 @@ static int mtk_disp_cm_probe(struct platform_device *pdev)
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 
-	DDPMSG("%s-\n", __func__);
+	DDPMSG("%s-", __func__);
 	return ret;
 }
 

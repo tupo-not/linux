@@ -81,6 +81,8 @@ static ISP_TILE_MESSAGE_ENUM tile_check_x_end_pos_with_flag(TILE_REG_MAP_STRUCT 
 static ISP_TILE_MESSAGE_ENUM tile_check_y_end_pos_with_flag(TILE_REG_MAP_STRUCT *ptr_tile_reg_map, FUNC_DESCRIPTION_STRUCT *ptr_tile_func_param,
 													   bool *ptr_y_end_flag);
 
+const char *tile_print_error_message(ISP_TILE_MESSAGE_ENUM err);
+
 const char *tile_print_error_message(ISP_TILE_MESSAGE_ENUM err)
 {
 	const char *name;

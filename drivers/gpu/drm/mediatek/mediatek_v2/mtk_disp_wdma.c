@@ -249,7 +249,7 @@ static irqreturn_t mtk_wdma_irq_handler(int irq, void *dev_id)
 		return IRQ_NONE;
 
 	if (mtk_drm_top_clk_isr_get("wdma_irq") == false) {
-		DDPIRQ("%s, top clk off\n", __func__);
+		DDPIRQ("%s, top clk off", __func__);
 		return IRQ_NONE;
 	}
 
@@ -266,14 +266,14 @@ static irqreturn_t mtk_wdma_irq_handler(int irq, void *dev_id)
 	if (val & 0x2)
 		DRM_MMP_MARK(abnormal_irq, val, wdma->id);
 
-	DDPIRQ("%s irq, val:0x%x\n", mtk_dump_comp_str(wdma), val);
+	DDPIRQ("%s irq, val:0x%x", mtk_dump_comp_str(wdma), val);
 
 	writel(~val, wdma->regs + DISP_REG_WDMA_INTSTA);
 
 	if (val & (1 << 0)) {
 		struct mtk_drm_crtc *mtk_crtc = wdma->mtk_crtc;
 
-		DDPIRQ("[IRQ] %s: frame complete!\n",
+		DDPIRQ("%s: frame complete!",
 			mtk_dump_comp_str(wdma));
 		drm_priv = mtk_crtc->base.dev->dev_private;
 		cwb_info = mtk_crtc->cwb_info;
@@ -294,7 +294,7 @@ static irqreturn_t mtk_wdma_irq_handler(int irq, void *dev_id)
 		MMPathTraceDRM(wdma);
 	}
 	if (val & (1 << 1))
-		DDPPR_ERR("[IRQ] %s: frame underrun!\n",
+		DDPPR_ERR("%s: frame underrun!",
 			  mtk_dump_comp_str(wdma));
 
 	ret = IRQ_HANDLED;
@@ -310,6 +310,8 @@ static inline struct mtk_disp_wdma *comp_to_wdma(struct mtk_ddp_comp *comp)
 	return container_of(comp, struct mtk_disp_wdma, ddp_comp);
 }
 
+resource_size_t mtk_wdma_check_sec_reg_MT6983(struct mtk_ddp_comp *comp);
+
 resource_size_t mtk_wdma_check_sec_reg_MT6983(struct mtk_ddp_comp *comp)
 {
 	switch (comp->id) {
@@ -322,6 +324,8 @@ resource_size_t mtk_wdma_check_sec_reg_MT6983(struct mtk_ddp_comp *comp)
 	}
 }
 
+unsigned int mtk_wdma_aid_sel_MT6895(struct mtk_ddp_comp *comp);
+
 unsigned int mtk_wdma_aid_sel_MT6895(struct mtk_ddp_comp *comp)
 {
 	switch (comp->id) {
@@ -331,6 +335,8 @@ unsigned int mtk_wdma_aid_sel_MT6895(struct mtk_ddp_comp *comp)
 		return 0;
 	}
 }
+
+unsigned int mtk_wdma_aid_sel_MT6879(struct mtk_ddp_comp *comp);
 
 unsigned int mtk_wdma_aid_sel_MT6879(struct mtk_ddp_comp *comp)
 {
@@ -421,9 +427,9 @@ static int mtk_wdma_is_busy(struct mtk_ddp_comp *comp)
 	int ret, tmp;
 
 	tmp = readl(comp->regs + DISP_REG_WDMA_FLOW_CTRL_DBG);
-	ret = ((tmp & FLOW_CTRL_DBG_FLD_WDMA_STA_FLOW_CTRL) != 0x1) ? 1 : 0;
+	ret = (REG_FLD_VAL_GET(FLOW_CTRL_DBG_FLD_WDMA_STA_FLOW_CTRL, tmp) != 0x1) ? 1 : 0;
 
-	DDPINFO("%s:%d is:%d regs:0x%x\n", __func__, __LINE__, ret, tmp);
+	DDPINFO("%s:%d is:%d regs:0x%x", __func__, __LINE__, ret, tmp);
 
 	return ret;
 }
@@ -668,7 +674,7 @@ static void mtk_wdma_golden_setting(struct mtk_ddp_comp *comp,
 	unsigned int value = 0;
 
 	if (!gsc) {
-		DDPPR_ERR("golden setting is null, %s,%d\n", __FILE__,
+		DDPPR_ERR("golden setting is null, %s,%d", __FILE__,
 			  __LINE__);
 		return;
 	}
@@ -987,14 +993,14 @@ static void mtk_wdma_config(struct mtk_ddp_comp *comp,
 
 	if (!comp->fb) {
 		if (crtc_idx != 2)
-			DDPPR_ERR("%s fb is empty, CRTC%d\n",
+			DDPPR_ERR("%s fb is empty, CRTC%d",
 				__func__, crtc_idx);
 		return;
 	}
 
 	addr = mtk_fb_get_dma(comp->fb);
 	if (!addr) {
-		DDPPR_ERR("%s:%d C%d no dma_buf\n",
+		DDPPR_ERR("%s:%d c%d no dma_buf",
 				__func__, __LINE__,
 				crtc_idx);
 		return;
@@ -1003,10 +1009,10 @@ static void mtk_wdma_config(struct mtk_ddp_comp *comp,
 
 	addr += comp->fb->offsets[0];
 	con = wdma_fmt_convert(comp->fb->format->format);
-	DDPINFO("%s fmt:0x%x, con:0x%x addr:0x%lx\n", __func__,
+	DDPINFO("%s fmt:0x%x, con:0x%x addr:0x%lx", __func__,
 		comp->fb->format->format, con, (unsigned long)addr);
 	if (!addr) {
-		DDPPR_ERR("%s wdma dst addr is zero\n", __func__);
+		DDPPR_ERR("%s wdma dst addr is zero", __func__);
 		return;
 	}
 
@@ -1110,7 +1116,7 @@ static void mtk_wdma_addon_config(struct mtk_ddp_comp *comp,
 
 	comp->fb = addon_config->addon_wdma_config.fb;
 	if (!comp->fb) {
-		DDPPR_ERR("%s fb is empty, CRTC%d\n", __func__, crtc_idx);
+		DDPPR_ERR("%s fb is empty, CRTC%d", __func__, crtc_idx);
 		return;
 	}
 
@@ -1118,7 +1124,7 @@ static void mtk_wdma_addon_config(struct mtk_ddp_comp *comp,
 
 	addr = addon_config->addon_wdma_config.addr;
 	if (!addr) {
-		DDPPR_ERR("%s:%d C%d no dma_buf\n", __func__,
+		DDPPR_ERR("%s:%d c%d no dma_buf", __func__,
 				__LINE__, crtc_idx);
 		return;
 	}
@@ -1159,12 +1165,14 @@ static void mtk_wdma_addon_config(struct mtk_ddp_comp *comp,
 	gsc = addon_config->addon_wdma_config.p_golden_setting_context;
 	mtk_wdma_golden_setting(comp, gsc, handle);
 
-	DDPINFO("[capture] config addr:0x%lx, roi:(%d,%d,%d,%d)\n",
+	DDPINFO("config addr:0x%lx, roi:(%d,%d,%d,%d)",
 		(unsigned long)addr, clip_x, clip_y, clip_w, clip_h);
 	cfg_info->width = clip_w;
 	cfg_info->height = clip_h;
 	cfg_info->fmt = comp->fb->format->format;
 }
+
+void mtk_wdma_dump_golden_setting(struct mtk_ddp_comp *comp);
 
 void mtk_wdma_dump_golden_setting(struct mtk_ddp_comp *comp)
 {
@@ -1172,16 +1180,16 @@ void mtk_wdma_dump_golden_setting(struct mtk_ddp_comp *comp)
 	unsigned int value;
 	int i;
 
-	DDPDUMP("-- %s Golden Setting --\n", mtk_dump_comp_str(comp));
+	DDPDUMP("-- %s golden Setting --", mtk_dump_comp_str(comp));
 	if (comp->mtk_crtc && comp->mtk_crtc->sec_on) {
-		DDPDUMP("Skip dump secure wdma!\n");
+		DDPDUMP("skip dump secure wdma!");
 		return;
 	}
-	DDPDUMP("0x%03x:0x%08x 0x%03x:0x%08x\n",
+	DDPDUMP("0x%03x:0x%08x 0x%03x:0x%08x",
 		0x10, readl(DISP_REG_WDMA_SMI_CON + baddr),
 		0x38, readl(DISP_REG_WDMA_BUF_CON1 + baddr));
 	for (i = 0; i < 3; i++)
-		DDPDUMP("0x%03x:0x%08x 0x%08x 0x%08x 0x%08x\n",
+		DDPDUMP("0x%03x:0x%08x 0x%08x 0x%08x 0x%08x",
 			0x200 + i * 0x10,
 			readl(DISP_REG_WDMA_BUF_CON5 +
 				     baddr + i * 0x10),
@@ -1191,132 +1199,132 @@ void mtk_wdma_dump_golden_setting(struct mtk_ddp_comp *comp)
 				     baddr + i * 0x10),
 			readl(DISP_REG_WDMA_BUF_CON8 +
 				     baddr + i * 0x10));
-	DDPDUMP("0x%03x:0x%08x 0x%08x\n",
+	DDPDUMP("0x%03x:0x%08x 0x%08x",
 		0x230, readl(DISP_REG_WDMA_BUF_CON17 + baddr),
 		readl(DISP_REG_WDMA_BUF_CON18 + baddr));
-	DDPDUMP("0x%03x:0x%08x 0x%08x 0x%08x 0x%08x\n",
+	DDPDUMP("0x%03x:0x%08x 0x%08x 0x%08x 0x%08x",
 		0x250, readl(DISP_REG_WDMA_DRS_CON0 + baddr),
 		readl(DISP_REG_WDMA_DRS_CON1 + baddr),
 		readl(DISP_REG_WDMA_DRS_CON2 + baddr),
 		readl(DISP_REG_WDMA_DRS_CON3 + baddr));
-	DDPDUMP("0x%03x:0x%08x 0x%08x\n",
+	DDPDUMP("0x%03x:0x%08x 0x%08x",
 		0x104, readl(DISP_REG_WDMA_BUF_CON3 + baddr),
 		readl(DISP_REG_WDMA_BUF_CON4 + baddr));
 
 	value = readl(DISP_REG_WDMA_SMI_CON + baddr);
-	DDPDUMP("WDMA_SMI_CON:[3:0]:%x [4:4]:%x [7:5]:%x [15:8]:%x\n",
+	DDPDUMP("WDMA_SMI_CON:[3:0]:%x [4:4]:%x [7:5]:%x [15:8]:%x",
 		REG_FLD_VAL_GET(SMI_CON_FLD_THRESHOLD, value),
 		REG_FLD_VAL_GET(SMI_CON_FLD_SLOW_ENABLE, value),
 		REG_FLD_VAL_GET(SMI_CON_FLD_SLOW_LEVEL, value),
 		REG_FLD_VAL_GET(SMI_CON_FLD_SLOW_COUNT, value));
-	DDPDUMP("WDMA_SMI_CON:[19:16]:%u [23:20]:%u [27:24]:%u [28]:%u\n",
+	DDPDUMP("WDMA_SMI_CON:[19:16]:%u [23:20]:%u [27:24]:%u [28]:%u",
 		REG_FLD_VAL_GET(SMI_CON_FLD_SMI_Y_REPEAT_NUM, value),
 		REG_FLD_VAL_GET(SMI_CON_FLD_SMI_U_REPEAT_NUM, value),
 		REG_FLD_VAL_GET(SMI_CON_FLD_SMI_V_REPEAT_NUM, value),
 		REG_FLD_VAL_GET(SMI_CON_FLD_SMI_OBUF_FULL_REQ, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON1 + baddr);
-	DDPDUMP("WDMA_BUF_CON1:[31]:%x [30]:%x [28]:%x [26]%d\n",
+	DDPDUMP("WDMA_BUF_CON1:[31]:%x [30]:%x [28]:%x [26]%d",
 		REG_FLD_VAL_GET(BUF_CON1_FLD_ULTRA_ENABLE, value),
 		REG_FLD_VAL_GET(BUF_CON1_FLD_PRE_ULTRA_ENABLE, value),
 		REG_FLD_VAL_GET(BUF_CON1_FLD_FRAME_END_ULTRA, value),
 		REG_FLD_VAL_GET(BUF_CON1_FLD_URGENT_EN, value));
-	DDPDUMP("WDMA_BUF_CON1:[18:10]:%d [9:0]:%d\n",
+	DDPDUMP("WDMA_BUF_CON1:[18:10]:%d [9:0]:%d",
 		REG_FLD_VAL_GET(BUF_CON1_FLD_FIFO_PSEUDO_SIZE_UV, value),
 		REG_FLD_VAL_GET(BUF_CON1_FLD_FIFO_PSEUDO_SIZE, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON5 + baddr);
-	DDPDUMP("WDMA_BUF_CON5:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON5:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_LOW, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_LOW, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON6 + baddr);
-	DDPDUMP("WDMA_BUF_CON6:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON6:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_HIGH, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_HIGH, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON7 + baddr);
-	DDPDUMP("WDMA_BUF_CON7:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON7:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_LOW, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_LOW, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON8 + baddr);
-	DDPDUMP("WDMA_BUF_CON8:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON8:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_HIGH, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_HIGH, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON9 + baddr);
-	DDPDUMP("WDMA_BUF_CON9:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON9:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_LOW, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_LOW, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON10 + baddr);
-	DDPDUMP("WDMA_BUF_CON10:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON10:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_HIGH, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_HIGH, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON11 + baddr);
-	DDPDUMP("WDMA_BUF_CON11:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON11:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_LOW, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_LOW, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON12 + baddr);
-	DDPDUMP("WDMA_BUF_CON12:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON12:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_HIGH, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_HIGH, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON13 + baddr);
-	DDPDUMP("WDMA_BUF_CON13:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON13:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_LOW, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_LOW, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON14 + baddr);
-	DDPDUMP("WDMA_BUF_CON14:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON14:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_HIGH, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_HIGH, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON15 + baddr);
-	DDPDUMP("WDMA_BUF_CON15:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON15:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_LOW, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_LOW, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON16 + baddr);
-	DDPDUMP("WDMA_BUF_CON16:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON16:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON_FLD_PRE_ULTRA_HIGH, value),
 		REG_FLD_VAL_GET(BUF_CON_FLD_ULTRA_HIGH, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON17 + baddr);
-	DDPDUMP("WDMA_BUF_CON17:[0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON17:[0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON17_FLD_WDMA_DVFS_EN, value),
 		REG_FLD_VAL_GET(BUF_CON17_FLD_DVFS_TH_Y, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON18 + baddr);
-	DDPDUMP("WDMA_BUF_CON18:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON18:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON18_FLD_DVFS_TH_U, value),
 		REG_FLD_VAL_GET(BUF_CON18_FLD_DVFS_TH_V, value));
 
 	value = readl(DISP_REG_WDMA_URGENT_CON0 + baddr);
-	DDPDUMP("WDMA_URGENT_CON0:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_URGENT_CON0:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(FLD_WDMA_URGENT_LOW_Y, value),
 		REG_FLD_VAL_GET(FLD_WDMA_URGENT_HIGH_Y, value));
 
 	value = readl(DISP_REG_WDMA_URGENT_CON1 + baddr);
-	DDPDUMP("WDMA_URGENT_CON1:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_URGENT_CON1:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(FLD_WDMA_URGENT_LOW_U, value),
 		REG_FLD_VAL_GET(FLD_WDMA_URGENT_HIGH_U, value));
 
 	value = readl(DISP_REG_WDMA_URGENT_CON2 + baddr);
-	DDPDUMP("WDMA_URGENT_CON2:[9:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_URGENT_CON2:[9:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(FLD_WDMA_URGENT_LOW_V, value),
 		REG_FLD_VAL_GET(FLD_WDMA_URGENT_HIGH_V, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON3 + baddr);
-	DDPDUMP("WDMA_BUF_CON3:[8:0]:%d [25:16]:%d\n",
+	DDPDUMP("WDMA_BUF_CON3:[8:0]:%d [25:16]:%d",
 		REG_FLD_VAL_GET(BUF_CON3_FLD_ISSUE_REQ_TH_Y, value),
 		REG_FLD_VAL_GET(BUF_CON3_FLD_ISSUE_REQ_TH_U, value));
 
 	value = readl(DISP_REG_WDMA_BUF_CON4 + baddr);
-	DDPDUMP("WDMA_BUF_CON4:[8:0]:%d\n",
+	DDPDUMP("WDMA_BUF_CON4:[8:0]:%d",
 		REG_FLD_VAL_GET(BUF_CON4_FLD_ISSUE_REQ_TH_V, value));
 }
 
@@ -1325,10 +1333,10 @@ int mtk_wdma_dump(struct mtk_ddp_comp *comp)
 	void __iomem *baddr = comp->regs;
 	struct mtk_disp_wdma *wdma = comp_to_wdma(comp);
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 
 	if (comp->mtk_crtc && comp->mtk_crtc->sec_on) {
-		DDPDUMP("Skip dump secure wdma!\n");
+		DDPDUMP("skip dump secure wdma!");
 		return 0;
 	}
 
@@ -1339,52 +1347,52 @@ int mtk_wdma_dump(struct mtk_ddp_comp *comp)
 		for (i = 0; i < 0x300; i += 0x10)
 			mtk_serial_dump_reg(baddr, i, 4);
 	} else {
-		DDPDUMP("0x000:0x%08x 0x%08x 0x%08x 0x%08x\n",
+		DDPDUMP("0x000:0x%08x 0x%08x 0x%08x 0x%08x",
 			readl(DISP_REG_WDMA_INTEN + baddr),
 			readl(DISP_REG_WDMA_INTSTA + baddr),
 			readl(DISP_REG_WDMA_EN + baddr),
 			readl(DISP_REG_WDMA_RST + baddr));
 
-		DDPDUMP("0x010:0x%08x 0x%08x 0x%08x 0x%08x\n",
+		DDPDUMP("0x010:0x%08x 0x%08x 0x%08x 0x%08x",
 			readl(DISP_REG_WDMA_SMI_CON + baddr),
 			readl(DISP_REG_WDMA_CFG + baddr),
 			readl(DISP_REG_WDMA_SRC_SIZE + baddr),
 			readl(DISP_REG_WDMA_CLIP_SIZE + baddr));
 
-		DDPDUMP("0x020:0x%08x 0x%08x 0x%08x 0x%08x\n",
+		DDPDUMP("0x020:0x%08x 0x%08x 0x%08x 0x%08x",
 			readl(DISP_REG_WDMA_CLIP_COORD + baddr),
 			readl(DISP_REG_WDMA_SHADOW_CTRL + baddr),
 			readl(DISP_REG_WDMA_DST_WIN_BYTE + baddr),
 			readl(DISP_REG_WDMA_ALPHA + baddr));
 
-		DDPDUMP("0x038:0x%08x 0x078:0x%08x\n",
+		DDPDUMP("0x038:0x%08x 0x078:0x%08x",
 			readl(DISP_REG_WDMA_BUF_CON1 + baddr),
 			readl(DISP_REG_WDMA_DST_UV_PITCH + baddr));
 
-		DDPDUMP("0x080:0x%08x 0x%08x 0x%08x\n",
+		DDPDUMP("0x080:0x%08x 0x%08x 0x%08x",
 			readl(DISP_REG_WDMA_DST_ADDR_OFFSETX(0) + baddr),
 			readl(DISP_REG_WDMA_DST_ADDR_OFFSETX(1) + baddr),
 			readl(DISP_REG_WDMA_DST_ADDR_OFFSETX(2) + baddr));
 
 		if (wdma->data->is_support_34bits)
-			DDPDUMP("0xf30:0x%08x 0x%08x 0x%08x\n",
+			DDPDUMP("0xf30:0x%08x 0x%08x 0x%08x",
 				readl(DISP_REG_WDMA_DST_ADDR_OFFSETX_MSB(0) + baddr),
 				readl(DISP_REG_WDMA_DST_ADDR_OFFSETX_MSB(1) + baddr),
 				readl(DISP_REG_WDMA_DST_ADDR_OFFSETX_MSB(2) + baddr));
 
-		DDPDUMP("0x0a0:0x%08x 0x%08x 0x%08x 0x0b8:0x%08x\n",
+		DDPDUMP("0x0a0:0x%08x 0x%08x 0x%08x 0x0b8:0x%08x",
 			readl(DISP_REG_WDMA_FLOW_CTRL_DBG + baddr),
 			readl(DISP_REG_WDMA_EXEC_DBG + baddr),
 			readl(DISP_REG_WDMA_INPUT_CNT_DBG + baddr),
 			readl(DISP_REG_WDMA_DEBUG + baddr));
 
-		DDPDUMP("0xf00:0x%08x 0x%08x 0x%08x\n",
+		DDPDUMP("0xf00:0x%08x 0x%08x 0x%08x",
 			readl(DISP_REG_WDMA_DST_ADDRX(0) + baddr),
 			readl(DISP_REG_WDMA_DST_ADDRX(1) + baddr),
 			readl(DISP_REG_WDMA_DST_ADDRX(2) + baddr));
 
 		if (wdma->data->is_support_34bits)
-			DDPDUMP("0xf20:0x%08x 0x%08x 0x%08x\n",
+			DDPDUMP("0xf20:0x%08x 0x%08x 0x%08x",
 				readl(DISP_REG_WDMA_DST_ADDRX_MSB(0) + baddr),
 				readl(DISP_REG_WDMA_DST_ADDRX_MSB(1) + baddr),
 				readl(DISP_REG_WDMA_DST_ADDRX_MSB(2) + baddr));
@@ -1426,13 +1434,13 @@ int mtk_wdma_analysis(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== DISP %s ANALYSIS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== DISP %s ANALYSIS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 
 	if (comp->mtk_crtc && comp->mtk_crtc->sec_on) {
-		DDPDUMP("Skip dump secure wdma!\n");
+		DDPDUMP("skip dump secure wdma!");
 		return 0;
 	}
-	DDPDUMP("en=%d,src(%dx%d),clip=(%d,%d,%dx%d)\n",
+	DDPDUMP("en=%d,src(%dx%d),clip=(%d,%d,%dx%d)",
 		readl(baddr + DISP_REG_WDMA_EN) & 0x01,
 		readl(baddr + DISP_REG_WDMA_SRC_SIZE) & 0x3fff,
 		(readl(baddr + DISP_REG_WDMA_SRC_SIZE) >> 16) & 0x3fff,
@@ -1440,20 +1448,20 @@ int mtk_wdma_analysis(struct mtk_ddp_comp *comp)
 		(readl(baddr + DISP_REG_WDMA_CLIP_COORD) >> 16) & 0x3fff,
 		readl(baddr + DISP_REG_WDMA_CLIP_SIZE) & 0x3fff,
 		(readl(baddr + DISP_REG_WDMA_CLIP_SIZE) >> 16) & 0x3fff);
-	DDPDUMP("pitch=(W=%d,UV=%d),addr=(0x%x,0x%x,0x%x),cfg=0x%x\n",
+	DDPDUMP("pitch=(W=%d,UV=%d),addr=(0x%x,0x%x,0x%x),cfg=0x%x",
 		readl(baddr + DISP_REG_WDMA_DST_WIN_BYTE),
 		readl(baddr + DISP_REG_WDMA_DST_UV_PITCH),
 		read_dst_addr(comp, 0),
 		read_dst_addr(comp, 1),
 		read_dst_addr(comp, 2),
 		readl(baddr + DISP_REG_WDMA_CFG));
-	DDPDUMP("state=%s,in_req=%d(prev sent data)\n",
+	DDPDUMP("state=%s,in_req=%d(prev sent data)",
 		wdma_get_state(DISP_REG_GET_FIELD(
 			FLOW_CTRL_DBG_FLD_WDMA_STA_FLOW_CTRL,
 			baddr + DISP_REG_WDMA_FLOW_CTRL_DBG)),
 		REG_FLD_VAL_GET(FLOW_CTRL_DBG_FLD_WDMA_IN_VALID,
 				readl(baddr + DISP_REG_WDMA_FLOW_CTRL_DBG)));
-	DDPDUMP("in_ack=%d(ask data to prev),start=%d,end=%d,pos:in(%d,%d)\n",
+	DDPDUMP("in_ack=%d(ask data to prev),start=%d,end=%d,pos:in(%d,%d)",
 		REG_FLD_VAL_GET(FLOW_CTRL_DBG_FLD_WDMA_IN_READY,
 				readl(baddr + DISP_REG_WDMA_FLOW_CTRL_DBG)),
 		readl(baddr + DISP_REG_WDMA_EXEC_DBG) & 0x3f,
@@ -1505,7 +1513,7 @@ static int mtk_wdma_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 		h = (val >> 16) & 0x3fff;
 		cwb_info->copy_w = w;
 		cwb_info->copy_h = h;
-		DDPDBG("[capture] sof get (w,h)=(%d,%d)\n", w, h);
+		DDPDBG("sof get (w,h)=(%d,%d)", w, h);
 	}
 		break;
 	case IRQ_LEVEL_IDLE: {
@@ -1555,7 +1563,7 @@ static int mtk_disp_wdma_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component %s: %d\n",
@@ -1587,7 +1595,7 @@ static int mtk_disp_wdma_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 
-	DDPMSG("%s+\n", __func__);
+	DDPMSG("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -1615,7 +1623,7 @@ static int mtk_disp_wdma_probe(struct platform_device *pdev)
 			       IRQF_TRIGGER_NONE | IRQF_SHARED, dev_name(dev),
 			       priv);
 	if (ret < 0) {
-		DDPAEE("%s:%d, failed to request irq:%d ret:%d comp_id:%d\n",
+		DDPAEE("%s:%d, failed to request irq:%d ret:%d comp_id:%d",
 				__func__, __LINE__,
 				irq, ret, comp_id);
 		return ret;
@@ -1634,7 +1642,7 @@ static int mtk_disp_wdma_probe(struct platform_device *pdev)
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 
-	DDPMSG("%s-\n", __func__);
+	DDPMSG("%s-", __func__);
 
 	return ret;
 }

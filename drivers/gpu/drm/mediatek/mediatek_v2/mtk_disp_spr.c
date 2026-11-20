@@ -497,7 +497,7 @@ static void mtk_spr_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 				SPR_LUT_EN, handle);
 	//}
 
-	DDPINFO("%s, spr_start:0x%x\n",
+	DDPINFO("%s, spr_start:0x%x",
 		mtk_dump_comp_str(comp), readl(baddr + DISP_REG_SPR_EN));
 }
 
@@ -507,7 +507,7 @@ static void mtk_spr_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 
 	mtk_ddp_write_mask(comp, 0x0, DISP_REG_SPR_EN, SPR_EN, handle);
 	mtk_ddp_write_mask(comp, 0x0, DISP_REG_SPR_EN, SPR_LUT_EN, handle);
-	DDPINFO("%s, spr_stop:0x%x\n",
+	DDPINFO("%s, spr_stop:0x%x",
 		mtk_dump_comp_str(comp), readl(baddr + DISP_REG_SPR_EN));
 }
 
@@ -543,18 +543,18 @@ static void mtk_spr_color_tune_config(struct mtk_ddp_comp *comp,
 
 	if (!comp->mtk_crtc || !comp->mtk_crtc->panel_ext)
 		return;
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	spr_params_tune = comp->mtk_crtc->panel_spr_params;
 	if (!spr_params_tune)
 		return;
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 	spr_params = &comp->mtk_crtc->panel_ext->params->spr_params;
 
 	for (j = 0; j < SPR_COLOR_PARAMS_TYPE_NUM; j++) {
 		spr_color_params = &spr_params->spr_color_params[j];
 		spr_color_params_tune = &spr_params_tune->spr_color_params[j];
-		DDPINFO("%s, spr_color:0x%x\n", mtk_dump_comp_str(comp),
+		DDPINFO("%s, spr_color:0x%x", mtk_dump_comp_str(comp),
 			spr_color_params->spr_color_params_type);
 		switch (spr_color_params->spr_color_params_type) {
 		case SPR_WEIGHT_SET:
@@ -571,7 +571,7 @@ static void mtk_spr_color_tune_config(struct mtk_ddp_comp *comp,
 					((spr_color_params_tune->tune_list[i+3] == 1 ?
 					spr_color_params_tune->para_list[i+3] :
 					spr_color_params->para_list[i+3]) << 24);
-				DDPINFO("%s, spr_weight:0x%x count:%d\n", mtk_dump_comp_str(comp),
+				DDPINFO("%s, spr_weight:0x%x count:%d", mtk_dump_comp_str(comp),
 					reg_val, spr_color_params->count);
 				mtk_ddp_write_relaxed(comp, reg_val,
 					DISP_REG_SPR_WEIGHT0 + 0x4 * i/4, handle);
@@ -637,7 +637,7 @@ static void mtk_spr_color_tune_config(struct mtk_ddp_comp *comp,
 					((spr_color_params_tune->tune_list[i+3] == 1 ?
 					spr_color_params_tune->para_list[i+3] :
 					spr_color_params->para_list[i+3]) << 24);
-				DDPINFO("%s, spr_weight:0x%x count:%d\n", mtk_dump_comp_str(comp),
+				DDPINFO("%s, spr_weight:0x%x count:%d", mtk_dump_comp_str(comp),
 					reg_val, spr_color_params->count);
 				mtk_ddp_write_relaxed(comp, reg_val,
 					DISP_REG_SPR_SPE0 + 0x4 * i/4, handle);
@@ -659,13 +659,13 @@ static void mtk_spr_color_config(struct mtk_ddp_comp *comp,
 
 	if (!comp->mtk_crtc || !comp->mtk_crtc->panel_ext)
 		return;
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	spr_params = &comp->mtk_crtc->panel_ext->params->spr_params;
 
 	for (j = 0; j < SPR_COLOR_PARAMS_TYPE_NUM; j++) {
 		spr_color_params = &spr_params->spr_color_params[j];
-		DDPINFO("%s, spr_color:0x%x\n", mtk_dump_comp_str(comp),
+		DDPINFO("%s, spr_color:0x%x", mtk_dump_comp_str(comp),
 			spr_color_params->spr_color_params_type);
 		switch (spr_color_params->spr_color_params_type) {
 		case SPR_WEIGHT_SET:
@@ -674,7 +674,7 @@ static void mtk_spr_color_config(struct mtk_ddp_comp *comp,
 					(spr_color_params->para_list[i+1] << 8) |
 					(spr_color_params->para_list[i+2] << 16) |
 					(spr_color_params->para_list[i+3] << 24);
-				DDPINFO("%s, spr_weight:0x%x count:%d\n", mtk_dump_comp_str(comp),
+				DDPINFO("%s, spr_weight:0x%x count:%d", mtk_dump_comp_str(comp),
 					reg_val, spr_color_params->count);
 				mtk_ddp_write_relaxed(comp, reg_val,
 					DISP_REG_SPR_WEIGHT0 + 0x4 * i/4, handle);
@@ -708,7 +708,7 @@ static void mtk_spr_color_config(struct mtk_ddp_comp *comp,
 					(spr_color_params->para_list[i+1] << 8) |
 					(spr_color_params->para_list[i+2] << 16) |
 					(spr_color_params->para_list[i+3] << 24);
-				DDPINFO("%s, spr_weight:0x%x count:%d\n", mtk_dump_comp_str(comp),
+				DDPINFO("%s, spr_weight:0x%x count:%d", mtk_dump_comp_str(comp),
 					reg_val, spr_color_params->count);
 				mtk_ddp_write_relaxed(comp, reg_val,
 					DISP_REG_SPR_SPE0 + 0x4 * i/4, handle);
@@ -736,7 +736,7 @@ static void mtk_spr_config(struct mtk_ddp_comp *comp,
 
 	if (!comp->mtk_crtc || !comp->mtk_crtc->panel_ext)
 		return;
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	spr_params = &comp->mtk_crtc->panel_ext->params->spr_params;
 	spr_params_tune = comp->mtk_crtc->panel_spr_params;
@@ -828,15 +828,15 @@ void mtk_spr_dump(struct mtk_ddp_comp *comp)
 	void __iomem *baddr = comp->regs;
 	int i;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
-	DDPDUMP("-- Start dump spr registers --\n");
-	DDPDUMP("en=%d, spr_bypass=%d\n",
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("-- start dump spr registers --");
+	DDPDUMP("en=%d, spr_bypass=%d",
 		 DISP_REG_GET_FIELD(CON_FLD_SPR_EN,
 				baddr + DISP_REG_SPR_EN),
 		 DISP_REG_GET_FIELD(CON_FLD_DISP_SPR_RELAY_MODE,
 				baddr + DISP_REG_SPR_EN));
 	for (i = 0; i < 0x350; i += 16) {
-		DDPDUMP("SPR+%x: 0x%x 0x%x 0x%x 0x%x\n", i, readl(baddr + i),
+		DDPDUMP("SPR+%x: 0x%x 0x%x 0x%x 0x%x", i, readl(baddr + i),
 			 readl(baddr + i + 0x4), readl(baddr + i + 0x8),
 			 readl(baddr + i + 0xc));
 	}
@@ -846,8 +846,8 @@ int mtk_spr_analysis(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s ANALYSIS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
-	DDPDUMP("en=%d, spr_bypass=%d\n",
+	DDPDUMP("== %s ANALYSIS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("en=%d, spr_bypass=%d",
 		 DISP_REG_GET_FIELD(CON_FLD_SPR_EN,
 				baddr + DISP_REG_SPR_EN),
 		 DISP_REG_GET_FIELD(CON_FLD_DISP_SPR_RELAY_MODE,
@@ -871,7 +871,7 @@ static int mtk_disp_spr_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component %s: %d\n",
@@ -904,14 +904,14 @@ static int mtk_disp_spr_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 
-	DDPMSG("%s+\n", __func__);
+	DDPMSG("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0) {
-		DDPMSG("%s+ irq error\n", __func__);
+		DDPMSG("%s+ irq error", __func__);
 		return irq;
 		}
 	comp_id = mtk_ddp_comp_get_id(dev->of_node, MTK_DISP_SPR);
@@ -940,7 +940,7 @@ static int mtk_disp_spr_probe(struct platform_device *pdev)
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 
-	DDPMSG("%s-\n", __func__);
+	DDPMSG("%s-", __func__);
 	return ret;
 }
 

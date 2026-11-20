@@ -52,7 +52,7 @@ static void mtk_mmlsys_bypass_addon_config(struct mtk_ddp_comp *comp,
 				 union mtk_addon_config *addon_config,
 				 struct cmdq_pkt *handle)
 {
-	DDPINFO("%s +\n", __func__);
+	DDPINFO("%s +", __func__);
 	cmdq_util_prebuilt_init(CMDQ_PREBUILT_MML);
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		comp->regs_pa + MDPSYS_CG_SET0,
@@ -78,7 +78,7 @@ static void mtk_mmlsys_bypass_addon_config(struct mtk_ddp_comp *comp,
 
 	// mutex
 	{
-		DDPINFO("%s cmdq_pkt_write mutex +\n", __func__);
+		DDPINFO("%s cmdq_pkt_write mutex +", __func__);
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			(resource_size_t)(0x1F801000) + 0x000, 0x00010001, ~0);
 		cmdq_pkt_write(handle, comp->cmdq_base,
@@ -89,55 +89,55 @@ static void mtk_mmlsys_bypass_addon_config(struct mtk_ddp_comp *comp,
 			(resource_size_t)(0x1F801000) + DISP_MUTEX0_CTL, 0x00000041, ~0);
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			(resource_size_t)(0x1F801000) + DISP_MUTEX0_MOD0, 0x000F0000, ~0);
-		DDPINFO("%s cmdq_pkt_write mutex -\n", __func__);
+		DDPINFO("%s cmdq_pkt_write mutex -", __func__);
 	}
 }
 
 void mtk_mmlsys_bypass_dump(struct mtk_ddp_comp *comp)
 {
-	DDPINFO("%s\n", __func__);
-	DDPDUMP("== DISP %s REGS ==\n", mtk_dump_comp_str(comp));
-	DDPDUMP("MDP_DLI0_SEL_IN 0x%08x: 0x%08x\n",
+	DDPINFO("%s", __func__);
+	DDPDUMP("== DISP %s REGS ==", mtk_dump_comp_str(comp));
+	DDPDUMP("MDP_DLI0_SEL_IN 0x%08x: 0x%08x",
 		MDP_DLI0_SEL_IN, readl(comp->regs + MDP_DLI0_SEL_IN));
-	DDPDUMP("MDP_RDMA0_MOUT_EN 0x%08x: 0x%08x\n",
+	DDPDUMP("MDP_RDMA0_MOUT_EN 0x%08x: 0x%08x",
 		MDP_RDMA0_MOUT_EN, readl(comp->regs + MDP_RDMA0_MOUT_EN));
-	DDPDUMP("MDP_WROT0_SEL_IN 0x%08x: 0x%08x\n",
+	DDPDUMP("MDP_WROT0_SEL_IN 0x%08x: 0x%08x",
 		MDP_WROT0_SEL_IN, readl(comp->regs + MDP_WROT0_SEL_IN));
-	DDPDUMP("MDP_DLO0_SOUT_SEL 0x%08x: 0x%08x\n",
+	DDPDUMP("MDP_DLO0_SOUT_SEL 0x%08x: 0x%08x",
 		MDP_DLO0_SOUT_SEL, readl(comp->regs + MDP_DLO0_SOUT_SEL));
-	DDPDUMP("MDPSYS_CG_CON0 0x%08x: 0x%08x\n",
+	DDPDUMP("MDPSYS_CG_CON0 0x%08x: 0x%08x",
 		MDPSYS_CG_CON0, readl(comp->regs + MDPSYS_CG_CON0));
-	DDPDUMP("0xFE0: 0x%08x 0x%08x 0x%08x\n", readl(comp->regs + 0xFE0),
+	DDPDUMP("0xFE0: 0x%08x 0x%08x 0x%08x", readl(comp->regs + 0xFE0),
 		readl(comp->regs + 0xFE4), readl(comp->regs + 0xFE8));
-	DDPDUMP("0xFF0: 0x%08x 0x%08x 0x%08x\n", readl(comp->regs + 0xFF0),
+	DDPDUMP("0xFF0: 0x%08x 0x%08x 0x%08x", readl(comp->regs + 0xFF0),
 		readl(comp->regs + 0xFF4), readl(comp->regs + 0xFF8));
-	DDPDUMP("== DISP %s REGS ==\n", mtk_dump_comp_str(comp));
+	DDPDUMP("== DISP %s REGS ==", mtk_dump_comp_str(comp));
 }
 
 int mtk_mmlsys_bypass_analysis(struct mtk_ddp_comp *comp)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	return 0;
 }
 
 static void mtk_mmlsys_bypass_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 }
 
 static void mtk_mmlsys_bypass_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 }
 
 static void mtk_mmlsys_bypass_prepare(struct mtk_ddp_comp *comp)
 {
-	DDPINFO("%s +\n", __func__);
+	DDPINFO("%s +", __func__);
 }
 
 static void mtk_mmlsys_bypass_unprepare(struct mtk_ddp_comp *comp)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	mtk_ddp_comp_clk_unprepare(comp);
 }
 
@@ -156,7 +156,7 @@ static int mtk_mmlsys_bypass_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component %s: %d\n",
@@ -173,7 +173,7 @@ static void mtk_mmlsys_bypass_unbind(struct device *dev, struct device *master,
 	struct mtk_mmlsys_bypass *priv = dev_get_drvdata(dev);
 	struct drm_device *drm_dev = data;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	mtk_ddp_comp_unregister(drm_dev, &priv->ddp_comp);
 }
 
@@ -188,7 +188,7 @@ static int mtk_mmlsys_bypass_probe(struct platform_device *pdev)
 	enum mtk_ddp_comp_id comp_id;
 	int ret;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -219,7 +219,7 @@ static int mtk_mmlsys_bypass_probe(struct platform_device *pdev)
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return ret;
 }

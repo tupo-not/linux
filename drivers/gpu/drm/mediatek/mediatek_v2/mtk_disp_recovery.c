@@ -53,13 +53,13 @@ long _set_state(struct drm_crtc *crtc, const char *name)
 	/* TODO: race condition issue for pctrl handle */
 	/* SO Far _set_state() only process once */
 	if (!priv->pctrl) {
-		DDPPR_ERR("this pctrl is null\n");
+		DDPPR_ERR("this pctrl is null");
 		return -1;
 	}
 
 	pState = pinctrl_lookup_state(priv->pctrl, name);
 	if (IS_ERR(pState)) {
-		DDPPR_ERR("lookup state '%s' failed\n", name);
+		DDPPR_ERR("lookup state '%s' failed", name);
 		ret = PTR_ERR(pState);
 		goto exit;
 	}
@@ -83,7 +83,7 @@ long disp_dts_gpio_init(struct device *dev, struct mtk_drm_private *private)
 	/* retrieve */
 	pctrl = devm_pinctrl_get(dev);
 	if (IS_ERR(pctrl)) {
-		DDPPR_ERR("Cannot find disp pinctrl!");
+		DDPPR_ERR("cannot find disp pinctrl!");
 		ret = PTR_ERR(pctrl);
 		goto exit;
 	}
@@ -149,15 +149,17 @@ static void esd_cmdq_timeout_cb(struct cmdq_cb_data data)
 	struct mtk_drm_esd_ctx *esd_ctx = mtk_crtc->esd_ctx;
 
 	if (!crtc) {
-		DDPMSG("%s find crtc fail\n", __func__);
+		DDPMSG("%s find crtc fail", __func__);
 		return;
 	}
 
-	DDPMSG("read flush fail\n");
+	DDPMSG("read flush fail");
 	esd_ctx->chk_sta = 0xff;
 	mtk_drm_crtc_analysis(crtc);
 	mtk_drm_crtc_dump(crtc);
 }
+
+int _mtk_esd_check_read(struct drm_crtc *crtc);
 
 int _mtk_esd_check_read(struct drm_crtc *crtc)
 {
@@ -169,12 +171,12 @@ int _mtk_esd_check_read(struct drm_crtc *crtc)
 	struct mtk_drm_private *priv = crtc->dev->dev_private;
 	int ret = 0;
 
-	DDPINFO("[ESD]ESD read panel\n");
+	DDPINFO("ESD read panel");
 
 
 	output_comp = mtk_ddp_comp_request_output(mtk_crtc);
 	if (unlikely(!output_comp)) {
-		DDPPR_ERR("%s:invalid output comp\n", __func__);
+		DDPPR_ERR("%s:invalid output comp", __func__);
 		return -EINVAL;
 	}
 
@@ -182,13 +184,13 @@ int _mtk_esd_check_read(struct drm_crtc *crtc)
 		return 0;
 	if (mtk_drm_helper_get_opt(priv->helper_opt,
 				   MTK_DRM_OPT_ESD_CHECK_SWITCH)) {
-		DDPINFO("[ESD]ESD read panel closed for helper\n");
+		DDPINFO("ESD read panel closed for helper");
 		return 0;
 	}
 
 	mtk_ddp_comp_io_cmd(output_comp, NULL, REQ_PANEL_EXT, &panel_ext);
 	if (unlikely(!(panel_ext && panel_ext->params))) {
-		DDPPR_ERR("%s:can't find panel_ext handle\n", __func__);
+		DDPPR_ERR("%s:can't find panel_ext handle", __func__);
 		return -EINVAL;
 	}
 
@@ -317,10 +319,10 @@ static int _mtk_esd_check_eint(struct drm_crtc *crtc)
 	struct mtk_drm_private *priv = crtc->dev->dev_private;
 	int ret = 1;
 
-	DDPINFO("[ESD]ESD check eint\n");
+	DDPINFO("ESD check eint");
 
 	if (unlikely(!esd_ctx)) {
-		DDPPR_ERR("%s:invalid ESD context\n", __func__);
+		DDPPR_ERR("%s:invalid ESD context", __func__);
 		return -EINVAL;
 	}
 
@@ -360,26 +362,26 @@ static int mtk_drm_request_eint(struct drm_crtc *crtc)
 	int ret = 0;
 
 	if (unlikely(!esd_ctx)) {
-		DDPPR_ERR("%s:invalid ESD context\n", __func__);
+		DDPPR_ERR("%s:invalid ESD context", __func__);
 		return -EINVAL;
 	}
 
 	output_comp = mtk_ddp_comp_request_output(mtk_crtc);
 
 	if (unlikely(!output_comp)) {
-		DDPPR_ERR("%s:invalid output comp\n", __func__);
+		DDPPR_ERR("%s:invalid output comp", __func__);
 		return -EINVAL;
 	}
 
 	mtk_ddp_comp_io_cmd(output_comp, NULL, REQ_ESD_EINT_COMPAT,
 			    &compat_str);
 	if (unlikely(!compat_str)) {
-		DDPPR_ERR("%s: invalid compat string\n", __func__);
+		DDPPR_ERR("%s: invalid compat string", __func__);
 		return -EINVAL;
 	}
 	node = of_find_compatible_node(NULL, NULL, compat_str);
 	if (unlikely(!node)) {
-		DDPPR_ERR("can't find ESD TE eint compatible node\n");
+		DDPPR_ERR("can't find ESD TE eint compatible node");
 		return -EINVAL;
 	}
 
@@ -389,7 +391,7 @@ static int mtk_drm_request_eint(struct drm_crtc *crtc)
 	ret = request_irq(esd_ctx->eint_irq, _esd_check_ext_te_irq_handler,
 			  IRQF_TRIGGER_RISING, "ESD_TE-eint", esd_ctx);
 	if (ret) {
-		DDPPR_ERR("eint irq line not available!\n");
+		DDPPR_ERR("eint irq line not available!");
 		return ret;
 	}
 
@@ -411,14 +413,14 @@ static int mtk_drm_esd_check(struct drm_crtc *crtc)
 
 	if (mtk_crtc->enabled == 0) {
 		CRTC_MMP_MARK(drm_crtc_index(crtc), esd_check, 0, 99);
-		DDPINFO("[ESD] CRTC %d disable. skip esd check\n",
+		DDPINFO("CRTC %d disable. skip esd check",
 			drm_crtc_index(crtc));
 		goto done;
 	}
 
 	panel_ext = mtk_crtc->panel_ext;
 	if (unlikely(!(panel_ext && panel_ext->params))) {
-		DDPPR_ERR("can't find panel_ext handle\n");
+		DDPPR_ERR("can't find panel_ext handle");
 		ret = -EINVAL;
 		goto done;
 	}
@@ -445,10 +447,14 @@ done:
 }
 
 static atomic_t panel_dead;
+int get_panel_dead_flag(void);
+
 int get_panel_dead_flag(void) {
 	return atomic_read(&panel_dead);
 }
 EXPORT_SYMBOL(get_panel_dead_flag);
+
+void set_panel_dead_flag(int value);
 
 void set_panel_dead_flag(int value) {
 	atomic_set(&panel_dead, value);
@@ -466,14 +472,14 @@ static int mtk_drm_esd_recover(struct drm_crtc *crtc)
 
 	CRTC_MMP_EVENT_START(drm_crtc_index(crtc), esd_recovery, 0, 0);
 	if (crtc->state && !crtc->state->active) {
-		DDPMSG("%s: crtc is inactive\n", __func__);
+		DDPMSG("%s: crtc is inactive", __func__);
 		return 0;
 	}
 	CRTC_MMP_MARK(drm_crtc_index(crtc), esd_recovery, 0, 1);
 	output_comp = mtk_ddp_comp_request_output(mtk_crtc);
 
 	if (unlikely(!output_comp)) {
-		DDPPR_ERR("%s: invalid output comp\n", __func__);
+		DDPPR_ERR("%s: invalid output comp", __func__);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -548,7 +554,7 @@ static int mtk_drm_esd_check_worker_kthread(void *data)
 	sched_setscheduler(current, SCHED_RR, &param);
 
 	if (!crtc) {
-		DDPPR_ERR("%s invalid CRTC context, stop thread\n", __func__);
+		DDPPR_ERR("%s invalid CRTC context, stop thread", __func__);
 
 		return -EINVAL;
 	}
@@ -563,7 +569,7 @@ static int mtk_drm_esd_check_worker_kthread(void *data)
 			(atomic_read(&esd_ctx->target_time) ||
 				esd_ctx->chk_mode == READ_EINT));
 		if (ret < 0) {
-			DDPINFO("[ESD]check thread waked up accidently\n");
+			DDPINFO("check thread waked up accidently");
 			continue;
 		}
 
@@ -588,7 +594,7 @@ static int mtk_drm_esd_check_worker_kthread(void *data)
 				break;
 
 			DDPPR_ERR(
-				"[ESD]esd check fail, will do esd recovery. try=%d\n",
+				"esd check fail, will do esd recovery. try=%d",
 				i);
 			mtk_drm_esd_recover(crtc);
 			recovery_flg = 1;
@@ -596,14 +602,14 @@ static int mtk_drm_esd_check_worker_kthread(void *data)
 
 		if (ret != 0) {
 			DDPPR_ERR(
-				"[ESD]after esd recovery %d times, still fail, disable esd check\n",
+				"after esd recovery %d times, still fail, disable esd check",
 				ESD_TRY_CNT);
 			mtk_disp_esd_check_switch(crtc, false);
 			DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 			mutex_unlock(&private->commit.lock);
 			break;
 		} else if (recovery_flg) {
-			DDPINFO("[ESD] esd recovery success\n");
+			DDPINFO("esd recovery success");
 			recovery_flg = 0;
 		}
 		mtk_drm_trace_end();
@@ -628,7 +634,7 @@ void mtk_disp_esd_check_switch(struct drm_crtc *crtc, bool enable)
 		return;
 
 	if (unlikely(!esd_ctx)) {
-		DDPINFO("%s:invalid ESD context, crtc id:%d\n",
+		DDPINFO("%s:invalid ESD context, crtc id:%d",
 			__func__, drm_crtc_index(crtc));
 		return;
 	}
@@ -671,7 +677,7 @@ int mtk_disp_recover_all(struct drm_device *drm)
 		if (!crtc->state || !crtc->state->active)
 			continue;
 
-		DDPMSG("%s: recovering crtc%d\n", __func__,
+		DDPMSG("%s: recovering crtc%d", __func__,
 		       drm_crtc_index(crtc));
 		mtk_drm_esd_recover(crtc);
 		done++;
@@ -687,7 +693,7 @@ static void mtk_disp_esd_chk_deinit(struct drm_crtc *crtc)
 	struct mtk_drm_esd_ctx *esd_ctx = mtk_crtc->esd_ctx;
 
 	if (unlikely(!esd_ctx)) {
-		DDPPR_ERR("%s:invalid ESD context\n", __func__);
+		DDPPR_ERR("%s:invalid ESD context", __func__);
 		return;
 	}
 
@@ -708,18 +714,18 @@ static void mtk_disp_esd_chk_init(struct drm_crtc *crtc)
 
 	panel_ext = mtk_crtc->panel_ext;
 	if (!(panel_ext && panel_ext->params)) {
-		DDPMSG("can't find panel_ext handle\n");
+		DDPMSG("can't find panel_ext handle");
 		return;
 	}
 
 	if (_lcm_need_esd_check(panel_ext) == 0)
 		return;
 
-	DDPINFO("create ESD thread\n");
+	DDPINFO("create ESD thread");
 	/* primary display check thread init */
 	esd_ctx = kzalloc(sizeof(*esd_ctx), GFP_KERNEL);
 	if (!esd_ctx) {
-		DDPPR_ERR("allocate ESD context failed!\n");
+		DDPPR_ERR("allocate ESD context failed!");
 		return;
 	}
 	mtk_crtc->esd_ctx = esd_ctx;
@@ -741,6 +747,8 @@ static void mtk_disp_esd_chk_init(struct drm_crtc *crtc)
 
 	wake_up_process(esd_ctx->disp_esd_chk_task);
 }
+
+void mtk_disp_chk_recover_deinit(struct drm_crtc *crtc);
 
 void mtk_disp_chk_recover_deinit(struct drm_crtc *crtc)
 {

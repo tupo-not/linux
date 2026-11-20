@@ -4,7 +4,7 @@
  * Copyright (C) 2020 XiaoMi, Inc.
  */
 
-#define pr_fmt(fmt) "mi_disp_log:[%s:%d] " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/module.h>
 #include <linux/mutex.h>
@@ -76,6 +76,9 @@ struct disp_log *g_disp_log = NULL;
 
 
 static int mi_disp_log_printk_func(struct log_buf *log_buf,
+		const char *fmt, va_list args) __attribute__((format(printf, 2, 0)));
+
+static int mi_disp_log_printk_func(struct log_buf *log_buf,
 		const char *fmt, va_list args)
 {
 	static char textbuf[256];
@@ -108,6 +111,7 @@ static int mi_disp_log_printk_func(struct log_buf *log_buf,
 	return text_len;
 }
 
+__printf(1, 2)
 static int mi_disp_log_kenrel_printk(const char *fmt, ...)
 {
 	va_list args;
@@ -129,6 +133,7 @@ static int mi_disp_log_kenrel_printk(const char *fmt, ...)
 	return r;
 }
 
+__printf(2, 3)
 static int mi_disp_log_user_printk(struct log_buf *log_buf,
 		const char *fmt, ...)
 {
@@ -333,6 +338,8 @@ exit:
 }
 
 
+int mi_disp_log_debugfs_open(struct inode *inode, struct file *file);
+
 int mi_disp_log_debugfs_open(struct inode *inode, struct file *file)
 {
 	struct disp_log_read *read_ptr = NULL;
@@ -455,6 +462,8 @@ out:
 	mutex_unlock(&disp_log->lock);
 	return ret;
 }
+
+int mi_disp_log_open(struct inode *inode, struct file *file);
 
 int mi_disp_log_open(struct inode *inode, struct file *file)
 {

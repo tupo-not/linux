@@ -132,6 +132,9 @@ static void mtk_rsz_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 }
 
 int mtk_rsz_calc_tile_params(u32 frm_in_len, u32 frm_out_len, bool tile_mode,
+			     struct rsz_tile_params t[]);
+
+int mtk_rsz_calc_tile_params(u32 frm_in_len, u32 frm_out_len, bool tile_mode,
 			     struct rsz_tile_params t[])
 {
 	u32 tile_loss = 0;
@@ -181,7 +184,7 @@ int mtk_rsz_calc_tile_params(u32 frm_in_len, u32 frm_out_len, bool tile_mode,
 	t[0].in_len = tile_in_len[0];
 	t[0].out_len = tile_out_len;
 
-	DDPDBG("%s:%s:step:%u,offset:%u.%u,len:%u->%u\n", __func__,
+	DDPDBG("%s:%s:step:%u,offset:%u.%u,len:%u->%u", __func__,
 	       tile_mode ? "dual" : "single", t[0].step, t[0].int_offset,
 	       t[0].sub_offset, t[0].in_len, t[0].out_len);
 
@@ -200,7 +203,7 @@ int mtk_rsz_calc_tile_params(u32 frm_in_len, u32 frm_out_len, bool tile_mode,
 	if (int_offset[1] & 0x1) {
 		int_offset[1]++;
 		tile_in_len[1]++;
-		DDPMSG("right tile int_offset: make odd to even\n");
+		DDPMSG("right tile int_offset: make odd to even");
 	}
 
 	t[1].step = step;
@@ -209,7 +212,7 @@ int mtk_rsz_calc_tile_params(u32 frm_in_len, u32 frm_out_len, bool tile_mode,
 	t[1].in_len = tile_in_len[1];
 	t[1].out_len = tile_out_len;
 
-	DDPDBG("%s:%s:step:%u,offset:%u.%u,len:%u->%u\n", __func__,
+	DDPDBG("%s:%s:step:%u,offset:%u.%u,len:%u->%u", __func__,
 	       tile_mode ? "dual" : "single", t[1].step, t[1].int_offset,
 	       t[1].sub_offset, t[1].in_len, t[1].out_len);
 
@@ -234,7 +237,7 @@ static int mtk_rsz_set_color_format(enum mtk_rsz_color_format fmt)
 		reg_val |= REG_FLD_VAL(FLD_RSZ_RGB_BIT_MODE, 0x1);
 		break;
 	default:
-		DDPMSG("unknown resize color format\n");
+		DDPMSG("unknown resize color format");
 		break;
 	}
 	return reg_val;
@@ -246,7 +249,7 @@ static int mtk_rsz_check_params(struct mtk_rsz_config_struct *rsz_config,
 	if ((rsz_config->frm_in_w != rsz_config->frm_out_w ||
 	     rsz_config->frm_in_h != rsz_config->frm_out_h) &&
 	    rsz_config->frm_in_w > tile_length) {
-		DDPPR_ERR("%s:need rsz but input width(%u) > limit(%u)\n",
+		DDPPR_ERR("%s:need rsz but input width(%u) > limit(%u)",
 			  __func__, rsz_config->frm_in_w, tile_length);
 		return -EINVAL;
 	}
@@ -271,7 +274,7 @@ static void mtk_rsz_addon_config(struct mtk_ddp_comp *comp,
 
 	rsz_config = kzalloc(sizeof(struct mtk_rsz_config_struct), GFP_KERNEL);
 	if (!rsz_config) {
-		DDPPR_ERR("fail to create rsz_config!\n");
+		DDPPR_ERR("fail to create rsz_config!");
 		return;
 	}
 
@@ -309,7 +312,7 @@ static void mtk_rsz_addon_config(struct mtk_ddp_comp *comp,
 	out_h = rsz_config->th[0].out_len;
 
 	if (in_w > out_w || in_h > out_h) {
-		DDPPR_ERR("DISP_RSZ only supports scale-up,(%ux%u)->(%ux%u)\n",
+		DDPPR_ERR("DISP_RSZ only supports scale-up,(%ux%u)->(%ux%u)",
 			  in_w, in_h, out_w, out_h);
 		kfree(rsz_config);
 		return;
@@ -320,12 +323,12 @@ static void mtk_rsz_addon_config(struct mtk_ddp_comp *comp,
 	reg_val |= REG_FLD_VAL(FLD_RSZ_VERTICAL_EN, (in_h != out_h));
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		       comp->regs_pa + DISP_REG_RSZ_CONTROL_1, reg_val, ~0);
-	DDPDBG("%s:CONTROL_1:0x%x\n", __func__, reg_val);
+	DDPDBG("%s:CONTROL_1:0x%x", __func__, reg_val);
 
 	reg_val = mtk_rsz_set_color_format(fmt);
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		       comp->regs_pa + DISP_REG_RSZ_CONTROL_2, reg_val, ~0);
-	DDPDBG("%s:CONTROL_2:0x%x\n", __func__, reg_val);
+	DDPDBG("%s:CONTROL_2:0x%x", __func__, reg_val);
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		       comp->regs_pa + DISP_REG_RSZ_INPUT_IMAGE,
@@ -333,7 +336,7 @@ static void mtk_rsz_addon_config(struct mtk_ddp_comp *comp,
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		       comp->regs_pa + DISP_REG_RSZ_OUTPUT_IMAGE,
 		       out_h << 16 | out_w, ~0);
-	DDPDBG("%s:%s:(%ux%u)->(%ux%u)\n", __func__, mtk_dump_comp_str(comp),
+	DDPDBG("%s:%s:(%ux%u)->(%ux%u)", __func__, mtk_dump_comp_str(comp),
 	       in_w, in_h, out_w, out_h);
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
@@ -367,14 +370,14 @@ int mtk_rsz_dump(struct mtk_ddp_comp *comp)
 	void __iomem *baddr = comp->regs;
 	int i = 0;
 
-	DDPDUMP("== DISP %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== DISP %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 	for (i = 0; i < 3; i++) {
-		DDPDUMP("0x%03X: 0x%08x 0x%08x 0x%08x 0x%08x\n", i * 0x10,
+		DDPDUMP("0x%03X: 0x%08x 0x%08x 0x%08x 0x%08x", i * 0x10,
 			readl(baddr + i * 0x10), readl(baddr + i * 0x10 + 0x4),
 			readl(baddr + i * 0x10 + 0x8),
 			readl(baddr + i * 0x10 + 0xC));
 	}
-	DDPDUMP("0x044: 0x%08x 0x%08x; 0x0F0: 0x%08x\n", readl(baddr + 0x44),
+	DDPDUMP("0x044: 0x%08x 0x%08x; 0x0F0: 0x%08x", readl(baddr + 0x44),
 		readl(baddr + 0x48), readl(baddr + 0xF0));
 
 	return 0;
@@ -404,7 +407,7 @@ int mtk_rsz_analysis(struct mtk_ddp_comp *comp)
 	in_pos = readl(baddr + DISP_REG_RSZ_DEBUG);
 	shadow = readl(baddr + DISP_REG_RSZ_SHADOW_CTRL);
 
-	DDPDUMP("== DISP %s ANALYSIS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== DISP %s ANALYSIS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 
 	writel(0x3, baddr + DISP_REG_RSZ_DEBUG_SEL);
 	n = snprintf(msg, LEN,
@@ -528,7 +531,7 @@ static int mtk_disp_rsz_probe(struct platform_device *pdev)
 	enum mtk_ddp_comp_id comp_id;
 	int ret;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -561,7 +564,7 @@ static int mtk_disp_rsz_probe(struct platform_device *pdev)
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return ret;
 }

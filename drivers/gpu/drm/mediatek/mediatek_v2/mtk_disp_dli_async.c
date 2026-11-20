@@ -35,7 +35,7 @@ static void mtk_dli_async_addon_config(struct mtk_ddp_comp *comp,
 				 union mtk_addon_config *addon_config,
 				 struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 }
 
 void mtk_dli_async_dump(struct mtk_ddp_comp *comp)
@@ -43,40 +43,40 @@ void mtk_dli_async_dump(struct mtk_ddp_comp *comp)
 	struct mtk_drm_crtc *mtk_crtc = comp->mtk_crtc;
 	void __iomem *baddr = mtk_crtc->config_regs;
 
-	DDPINFO("%s\n", __func__);
-	DDPDUMP("== DISP %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), mtk_crtc->config_regs_pa);
-	DDPDUMP("0x26C: 0x%08x\n", readl(baddr + 0x26C));
-	DDPDUMP("0x2C8: 0x%08x 0x%08x\n", readl(baddr + 0x2C8),
+	DDPINFO("%s", __func__);
+	DDPDUMP("== DISP %s REGS:0x%x ==", mtk_dump_comp_str(comp), mtk_crtc->config_regs_pa);
+	DDPDUMP("0x26C: 0x%08x", readl(baddr + 0x26C));
+	DDPDUMP("0x2C8: 0x%08x 0x%08x", readl(baddr + 0x2C8),
 		readl(baddr + 0x2CC));
 }
 
 int mtk_dli_async_analysis(struct mtk_ddp_comp *comp)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	return 0;
 }
 
 static void mtk_dli_async_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	// nothig to do
 }
 
 static void mtk_dli_async_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	// nothig to do
 }
 
 static void mtk_dli_async_prepare(struct mtk_ddp_comp *comp)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	mtk_ddp_comp_clk_prepare(comp);
 }
 
 static void mtk_dli_async_unprepare(struct mtk_ddp_comp *comp)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	mtk_ddp_comp_clk_unprepare(comp);
 }
 
@@ -95,7 +95,7 @@ static int mtk_disp_dli_async_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s &priv->ddp_comp:0x%x\n", __func__, &priv->ddp_comp);
+	DDPINFO("%s &priv->ddp_comp:0x%x", __func__, &priv->ddp_comp);
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component %s: %d\n",
@@ -112,7 +112,7 @@ static void mtk_disp_dli_async_unbind(struct device *dev, struct device *master,
 	struct mtk_disp_dli_async *priv = dev_get_drvdata(dev);
 	struct drm_device *drm_dev = data;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	mtk_ddp_comp_unregister(drm_dev, &priv->ddp_comp);
 }
 
@@ -127,7 +127,7 @@ static int mtk_disp_dli_async_probe(struct platform_device *pdev)
 	enum mtk_ddp_comp_id comp_id;
 	int ret;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -165,7 +165,7 @@ static int mtk_disp_dli_async_probe(struct platform_device *pdev)
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return ret;
 }

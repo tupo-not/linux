@@ -75,14 +75,14 @@ enum mml_mode mml_drm_query_cap(struct mml_drm_ctx *ctx,
 	}
 
 	if (!info->src.format) {
-		mml_err("[drm]invalid src mml color format %#010x", info->src.format);
+		mml_err("invalid src mml color format %#010x", info->src.format);
 		goto not_support;
 	}
 
 	if (MML_FMT_BLOCK(info->src.format)) {
 		if ((info->src.width & 0x0f) || (info->src.height & 0x1f)) {
 			mml_err(
-				"[drm]invalid blk width %u height %u must alignment width 16x height 32x",
+				"invalid blk width %u height %u must alignment width 16x height 32x",
 				info->src.width, info->src.height);
 			goto not_support;
 		}
@@ -122,14 +122,14 @@ enum mml_mode mml_drm_query_cap(struct mml_drm_ctx *ctx,
 
 		if (srcw / destw > 20 || srch / desth > 255 ||
 			destw / srcw > 32 || desth / srch > 32) {
-			mml_err("[drm]exceed HW limitation src %ux%u dest %ux%u",
+			mml_err("exceed HW limitation src %ux%u dest %ux%u",
 				srcw, srch, destw, desth);
 			goto not_support;
 		}
 
 		/* check crop and pq combination */
 		if (dest->pq_config.en && dest->crop.r.width < 48) {
-			mml_err("[drm]exceed HW limitation crop width %u < 48 with pq",
+			mml_err("exceed HW limitation crop width %u < 48 with pq",
 				dest->crop.r.width);
 			goto not_support;
 		}
@@ -238,7 +238,7 @@ static u32 afbc_drm_to_mml(u32 drm_format)
 	case MML_FMT_NV21_10L:
 		return MML_FMT_YVU420_10P_AFBC;
 	default:
-		mml_err("[drm]%s unknown drm format %#x", __func__, drm_format);
+		mml_err("%s unknown drm format %#x", __func__, drm_format);
 		return drm_format;
 	}
 }
@@ -294,7 +294,7 @@ static struct mml_frame_config *frame_config_find_reuse(
 done:
 	if (cfg && idx) {
 		if (mode != cfg->info.mode)
-			mml_log("[drm]mode change to %hhu", cfg->info.mode);
+			mml_log("mode change to %hhu", cfg->info.mode);
 		list_rotate_to_front(&cfg->entry, &ctx->configs);
 	}
 
@@ -319,27 +319,27 @@ static void frame_config_destroy(struct mml_frame_config *cfg)
 {
 	struct mml_task *task, *tmp;
 
-	mml_msg("[drm]%s frame config %p", __func__, cfg);
+	mml_msg("%s frame config %p", __func__, cfg);
 
 	if (WARN_ON(!list_empty(&cfg->await_tasks))) {
-		mml_err("[drm]still waiting tasks in wq during destroy config");
+		mml_err("still waiting tasks in wq during destroy config");
 		list_for_each_entry_safe(task, tmp, &cfg->await_tasks, entry) {
 			/* unable to handling error,
 			 * print error but not destroy
 			 */
-			mml_err("[drm]busy task:%p", task);
+			mml_err("busy task:%p", task);
 			list_del_init(&task->entry);
 			task->config = NULL;
 		}
 	}
 
 	if (WARN_ON(!list_empty(&cfg->tasks))) {
-		mml_err("[drm]still busy tasks during destroy config");
+		mml_err("still busy tasks during destroy config");
 		list_for_each_entry_safe(task, tmp, &cfg->tasks, entry) {
 			/* unable to handling error,
 			 * print error but not destroy
 			 */
-			mml_err("[drm]busy task:%p", task);
+			mml_err("busy task:%p", task);
 			list_del_init(&task->entry);
 			task->config = NULL;
 		}
@@ -348,7 +348,7 @@ static void frame_config_destroy(struct mml_frame_config *cfg)
 	mml_core_deinit_config(cfg);
 	kfree(cfg);
 
-	mml_msg("[drm]%s frame config %p destroy done", __func__, cfg);
+	mml_msg("%s frame config %p destroy done", __func__, cfg);
 }
 
 static void frame_config_destroy_work(struct work_struct *work)
@@ -431,7 +431,7 @@ static s32 frame_buf_to_task_buf(struct mml_file_buf *fbuf,
 
 	if (user_buf->fence >= 0) {
 		fbuf->fence = sync_file_get_fence(user_buf->fence);
-		mml_msg("[drm]get dma fence %p by %d", fbuf->fence, user_buf->fence);
+		mml_msg("get dma fence %p by %d", fbuf->fence, user_buf->fence);
 	}
 
 	return ret;
@@ -446,13 +446,13 @@ static void task_move_to_running(struct mml_task *task)
 	if (task->state != MML_TASK_INITIAL &&
 		task->state != MML_TASK_DUPLICATE &&
 		task->state != MML_TASK_REUSE) {
-		mml_msg("[drm]%s task %p state conflict %u",
+		mml_msg("%s task %p state conflict %u",
 			__func__, task, task->state);
 		return;
 	}
 
 	if (list_empty(&task->entry)) {
-		mml_err("[drm]%s task %p already leave config",
+		mml_err("%s task %p already leave config",
 			__func__, task);
 		return;
 	}
@@ -463,7 +463,7 @@ static void task_move_to_running(struct mml_task *task)
 	list_add_tail(&task->entry, &task->config->tasks);
 	task->config->run_task_cnt++;
 
-	mml_msg("[drm]%s task cnt (%u %u %hhu)",
+	mml_msg("%s task cnt (%u %u %hhu)",
 		__func__,
 		task->config->await_task_cnt,
 		task->config->run_task_cnt,
@@ -486,7 +486,7 @@ static void task_move_to_idle(struct mml_task *task)
 		task->config->run_task_cnt--;
 	} else {
 		/* unknown state transition */
-		mml_err("[drm]%s state conflict %d", __func__, task->state);
+		mml_err("%s state conflict %d", __func__, task->state);
 	}
 
 	list_del_init(&task->entry);
@@ -498,7 +498,7 @@ static void task_move_to_idle(struct mml_task *task)
 	if (cfg->info.mode == MML_MODE_RACING)
 		atomic_dec(&ctx->racing_cnt);
 
-	mml_msg("[drm]%s task cnt (%u %u %hhu) racing %d",
+	mml_msg("%s task cnt (%u %u %hhu) racing %d",
 		__func__,
 		task->config->await_task_cnt,
 		task->config->run_task_cnt,
@@ -521,7 +521,7 @@ static void task_submit_done(struct mml_task *task)
 {
 	struct mml_drm_ctx *ctx = (struct mml_drm_ctx *)task->ctx;
 
-	mml_msg("[drm]%s task %p state %u", __func__, task, task->state);
+	mml_msg("%s task %p state %u", __func__, task, task->state);
 
 	mml_mmp(submit_cb, MMPROFILE_FLAG_PULSE, task->job.jobid, 0);
 
@@ -540,13 +540,13 @@ static void task_buf_put(struct mml_task *task)
 
 	mml_trace_ex_begin("%s_putbuf", __func__);
 	for (i = 0; i < task->buf.dest_cnt; i++) {
-		mml_msg("[drm]release dest %hhu iova %#011llx",
+		mml_msg("release dest %hhu iova %#011llx",
 			i, task->buf.dest[i].dma[0].iova);
 		mml_buf_put(&task->buf.dest[i]);
 		if (task->buf.dest[i].fence)
 			dma_fence_put(task->buf.dest[i].fence);
 	}
-	mml_msg("[drm]release src iova %#011llx",
+	mml_msg("release src iova %#011llx",
 		task->buf.src.dma[0].iova);
 	mml_buf_put(&task->buf.src);
 	if (task->buf.src.fence)
@@ -598,7 +598,7 @@ static void task_frame_done(struct mml_task *task)
 
 	mml_trace_ex_begin("%s", __func__);
 
-	mml_msg("[drm]frame done task %p state %u job %u",
+	mml_msg("frame done task %p state %u job %u",
 		task, task->state, task->job.jobid);
 
 	/* clean up */
@@ -608,7 +608,7 @@ static void task_frame_done(struct mml_task *task)
 
 	if (unlikely(!task->pkts[0] || (cfg->dual && !task->pkts[1]))) {
 		task_state_dec(cfg, task, __func__);
-		mml_err("[drm]%s task cnt (%u %u %hhu) error from state %d",
+		mml_err("%s task cnt (%u %u %hhu) error from state %d",
 			__func__,
 			cfg->await_task_cnt,
 			cfg->run_task_cnt,
@@ -625,7 +625,7 @@ static void task_frame_done(struct mml_task *task)
 		task = list_first_entry(&cfg->done_tasks, typeof(*task), entry);
 		list_del_init(&task->entry);
 		cfg->done_task_cnt--;
-		mml_msg("[drm]%s task cnt (%u %u %hhu)",
+		mml_msg("%s task cnt (%u %u %hhu)",
 			__func__,
 			task->config->await_task_cnt,
 			task->config->run_task_cnt,
@@ -646,7 +646,7 @@ static void task_frame_done(struct mml_task *task)
 		task_put_idles(cfg);
 		kref_put(&cfg->ref, frame_config_queue_destroy);
 		ctx->config_cnt--;
-		mml_msg("[drm]config %p send destroy remain %u",
+		mml_msg("config %p send destroy remain %u",
 			cfg, ctx->config_cnt);
 
 		/* check cache num again */
@@ -670,11 +670,11 @@ static void dump_pq_en(u32 idx, struct mml_pq_param *pq_param,
 	memcpy(&pqen, pq_config, min(sizeof(*pq_config), sizeof(pqen)));
 
 	if (pq_param)
-		mml_msg("[drm]PQ %u config %#x param en %u %s",
+		mml_msg("PQ %u config %#x param en %u %s",
 			idx, pqen, pq_param->enable,
 			mml_pq_disable ? "FORCE DISABLE" : "");
 	else
-		mml_msg("[drm]PQ %u config %#x param NULL %s",
+		mml_msg("PQ %u config %#x param NULL %s",
 			idx, pqen,
 			mml_pq_disable ? "FORCE DISABLE" : "");
 }
@@ -774,7 +774,7 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 
 	cfg = frame_config_find_reuse(ctx, submit);
 	if (cfg) {
-		mml_msg("[drm]%s reuse config %p", __func__, cfg);
+		mml_msg("%s reuse config %p", __func__, cfg);
 		task = task_get_idle(cfg);
 		if (task) {
 			/* reuse case change state IDLE to REUSE */
@@ -782,7 +782,7 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 			init_completion(&task->pkts[0]->cmplt);
 			if (task->pkts[1])
 				init_completion(&task->pkts[1]->cmplt);
-			mml_msg("[drm]reuse task %p pkt %p %p",
+			mml_msg("reuse task %p pkt %p %p",
 				task, task->pkts[0], task->pkts[1]);
 		} else {
 			task = mml_core_create_task();
@@ -798,7 +798,7 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 		}
 	} else {
 		cfg = frame_config_create(ctx, &submit->info);
-		mml_msg("[drm]%s create config %p", __func__, cfg);
+		mml_msg("%s create config %p", __func__, cfg);
 		if (IS_ERR(cfg)) {
 			result = PTR_ERR(cfg);
 			mml_err("%s create frame config fail", __func__);
@@ -838,7 +838,7 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 	cfg->last_jobid = task->job.jobid;
 	list_add_tail(&task->entry, &cfg->await_tasks);
 	cfg->await_task_cnt++;
-	mml_msg("[drm]%s task cnt (%u %u %hhu) racing %d",
+	mml_msg("%s task cnt (%u %u %hhu) racing %d",
 		__func__,
 		task->config->await_task_cnt,
 		task->config->run_task_cnt,
@@ -858,7 +858,7 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 			      &submit->buffer.src,
 			      "mml_rdma");
 	if (result) {
-		mml_err("[drm]%s get src dma buf fail", __func__);
+		mml_err("%s get src dma buf fail", __func__);
 		goto err_buf_exit;
 	}
 	task->buf.dest_cnt = submit->buffer.dest_cnt;
@@ -867,7 +867,7 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 				      &submit->buffer.dest[i],
 				      "mml_wrot");
 		if (result) {
-			mml_err("[drm]%s get dest %u dma buf fail", __func__, i);
+			mml_err("%s get dest %u dma buf fail", __func__, i);
 			goto err_buf_exit;
 		}
 	}
@@ -881,7 +881,7 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 	} else {
 		task->job.fence = -1;
 	}
-	mml_msg("[drm]mml job %u fence fd %d task %p fence %p config %p mode %hhu%s act_t %u",
+	mml_msg("mml job %u fence fd %d task %p fence %p config %p mode %hhu%s act_t %u",
 		task->job.jobid, task->job.fence, task, task->fence, cfg,
 		cfg->info.mode,
 		(cfg->info.mode == MML_MODE_RACING && cfg->disp_dual) ? " disp dual" : "",
@@ -939,11 +939,11 @@ s32 mml_drm_stop(struct mml_drm_ctx *ctx, struct mml_submit *submit, bool force)
 
 	cfg = frame_config_find_reuse(ctx, submit);
 	if (!cfg) {
-		mml_err("[drm]The submit info not found for stop");
+		mml_err("the submit info not found for stop");
 		goto done;
 	}
 
-	mml_log("[drm]stop config %p", cfg);
+	mml_log("stop config %p", cfg);
 	mml_core_stop_racing(cfg, force);
 
 done:
@@ -963,7 +963,7 @@ void mml_drm_config_rdone(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 
 	cfg = frame_config_find_reuse(ctx, submit);
 	if (!cfg) {
-		mml_err("[drm]The submit info not found for stop");
+		mml_err("the submit info not found for stop");
 		goto done;
 	}
 
@@ -980,7 +980,7 @@ EXPORT_SYMBOL_GPL(mml_drm_config_rdone);
 
 void mml_drm_dump(struct mml_drm_ctx *ctx, struct mml_submit *submit)
 {
-	mml_log("[drm]dump threads for mml, submit job %u",
+	mml_log("dump threads for mml, submit job %u",
 		submit->job ? submit->job->jobid : 0);
 	mml_dump_thread(ctx->mml);
 }
@@ -993,14 +993,14 @@ static s32 dup_task(struct mml_task *task, u32 pipe)
 	struct mml_task *src;
 
 	if (task->pkts[pipe]) {
-		mml_err("[drm]%s task %p pipe %hhu already has pkt before dup",
+		mml_err("%s task %p pipe %hhu already has pkt before dup",
 			__func__, task, pipe);
 		return -EINVAL;
 	}
 
 	mutex_lock(&ctx->config_mutex);
 
-	mml_msg("[drm]%s task cnt (%u %u %hhu) task %p pipe %u config %p",
+	mml_msg("%s task cnt (%u %u %hhu) task %p pipe %u config %p",
 		__func__,
 		task->config->await_task_cnt,
 		task->config->run_task_cnt,
@@ -1016,7 +1016,7 @@ static s32 dup_task(struct mml_task *task, u32 pipe)
 	/* check running tasks, have to check it is valid task */
 	list_for_each_entry(src, &cfg->tasks, entry) {
 		if (!src->pkts[0] || (src->config->dual && !src->pkts[1])) {
-			mml_err("[drm]%s error running task %p not able to copy",
+			mml_err("%s error running task %p not able to copy",
 				__func__, src);
 			continue;
 		}
@@ -1026,12 +1026,12 @@ static s32 dup_task(struct mml_task *task, u32 pipe)
 	list_for_each_entry_reverse(src, &cfg->await_tasks, entry) {
 		/* the first one should be current task, skip it */
 		if (src == task) {
-			mml_msg("[drm]%s await task %p pkt %p",
+			mml_msg("%s await task %p pkt %p",
 				__func__, src, src->pkts[pipe]);
 			continue;
 		}
 		if (!src->pkts[0] || (src->config->dual && !src->pkts[1])) {
-			mml_err("[drm]%s error await task %p not able to copy",
+			mml_err("%s error await task %p not able to copy",
 				__func__, src);
 			continue;
 		}
@@ -1055,7 +1055,7 @@ dup_command:
 		cmdq_reuse_refresh(task->pkts[pipe], task->reuse[pipe].labels,
 			task->reuse[pipe].label_idx);
 	} else {
-		mml_err("[drm]copy reuse labels fail");
+		mml_err("copy reuse labels fail");
 	}
 
 	mutex_unlock(&ctx->config_mutex);
@@ -1084,12 +1084,12 @@ static void kt_setsched(void *adaptor_ctx)
 		return;
 
 	ret = sched_setscheduler(ctx->kt_done_task, SCHED_FIFO, &kt_param);
-	mml_log("[drm]%s set kt done priority %d ret %d",
+	mml_log("%s set kt done priority %d ret %d",
 		__func__, kt_param.sched_priority, ret);
 	ctx->kt_priority = true;
 }
 
-const static struct mml_task_ops drm_task_ops = {
+static const struct mml_task_ops drm_task_ops = {
 	.queue = task_queue,
 	.submit_done = task_submit_done,
 	.frame_done = task_frame_done,
@@ -1119,7 +1119,7 @@ static struct mml_drm_ctx *drm_ctx_create(struct mml_dev *mml,
 	struct mml_drm_ctx *ctx;
 	struct task_struct *taskdone_task;
 
-	mml_msg("[drm]%s on dev %p", __func__, mml);
+	mml_msg("%s on dev %p", __func__, mml);
 
 	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
 	if (!ctx)
@@ -1129,7 +1129,7 @@ static struct mml_drm_ctx *drm_ctx_create(struct mml_dev *mml,
 	kthread_init_worker(&ctx->kt_done);
 	taskdone_task = kthread_run(kthread_worker_fn, &ctx->kt_done, "mml_drm_done");
 	if (IS_ERR(taskdone_task)) {
-		mml_err("[drm]fail to create kt taskdone %d", (s32)PTR_ERR(taskdone_task));
+		mml_err("fail to create kt taskdone %d", (s32)PTR_ERR(taskdone_task));
 		kfree(ctx);
 		return ERR_PTR(-EIO);
 	}
@@ -1140,19 +1140,19 @@ static struct mml_drm_ctx *drm_ctx_create(struct mml_dev *mml,
 	ctx->mml = mml;
 	ctx->task_ops = &drm_task_ops;
 	ctx->cfg_ops = &drm_config_ops;
-	ctx->wq_destroy = alloc_ordered_workqueue("mml_destroy", 0, 0);
+	ctx->wq_destroy = alloc_ordered_workqueue("mml_destroy", 0);
 	ctx->disp_dual = disp->dual;
 	ctx->disp_vdo = disp->vdo_mode;
 	ctx->submit_cb = disp->submit_cb;
 	ctx->panel_pixel = MML_DEFAULT_PANEL_PX;
-	ctx->wq_config[0] = alloc_ordered_workqueue("mml_work0", WORK_CPU_UNBOUND | WQ_HIGHPRI, 0);
-	ctx->wq_config[1] = alloc_ordered_workqueue("mml_work1", WORK_CPU_UNBOUND | WQ_HIGHPRI, 0);
+	ctx->wq_config[0] = alloc_ordered_workqueue("mml_work0", WORK_CPU_UNBOUND | WQ_HIGHPRI);
+	ctx->wq_config[1] = alloc_ordered_workqueue("mml_work1", WORK_CPU_UNBOUND | WQ_HIGHPRI);
 
 	ctx->timeline = mtk_sync_timeline_create("mml_timeline");
 	if (!ctx->timeline)
-		mml_err("[drm]fail to create timeline");
+		mml_err("fail to create timeline");
 	else
-		mml_msg("[drm]timeline for mml %p", ctx->timeline);
+		mml_msg("timeline for mml %p", ctx->timeline);
 
 	/* return info to display */
 	disp->racing_height = mml_sram_get_racing_height(mml);
@@ -1165,9 +1165,9 @@ struct mml_drm_ctx *mml_drm_get_context(struct platform_device *pdev,
 {
 	struct mml_dev *mml = platform_get_drvdata(pdev);
 
-	mml_msg("[drm]%s", __func__);
+	mml_msg("%s", __func__);
 	if (!mml) {
-		mml_err("[drm]%s not init mml", __func__);
+		mml_err("%s not init mml", __func__);
 		return ERR_PTR(-EPERM);
 	}
 	return mml_dev_get_drm_ctx(mml, disp, drm_ctx_create);
@@ -1200,7 +1200,7 @@ static void drm_ctx_release(struct mml_drm_ctx *ctx)
 	struct mml_frame_config *cfg, *tmp;
 	u32 i, j;
 
-	mml_msg("[drm]%s on ctx %p", __func__, ctx);
+	mml_msg("%s on ctx %p", __func__, ctx);
 
 	mutex_lock(&ctx->config_mutex);
 	list_for_each_entry_safe_reverse(cfg, tmp, &ctx->configs, entry) {
@@ -1230,7 +1230,7 @@ void mml_drm_put_context(struct mml_drm_ctx *ctx)
 {
 	if (IS_ERR_OR_NULL(ctx))
 		return;
-	mml_log("[drm]%s", __func__);
+	mml_log("%s", __func__);
 	mml_dev_put_drm_ctx(ctx->mml, drm_ctx_release);
 }
 EXPORT_SYMBOL_GPL(mml_drm_put_context);
@@ -1254,7 +1254,7 @@ s32 mml_drm_racing_config_sync(struct mml_drm_ctx *ctx, struct cmdq_pkt *pkt)
 {
 	struct cmdq_operand lhs, rhs;
 
-	mml_msg("[drm]%s for disp", __func__);
+	mml_msg("%s for disp", __func__);
 
 	/* debug current task idx */
 	cmdq_pkt_assign_command(pkt, CMDQ_THR_SPR_IDX3,

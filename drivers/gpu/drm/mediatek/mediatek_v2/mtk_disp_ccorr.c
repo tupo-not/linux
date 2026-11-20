@@ -75,7 +75,7 @@ unsigned int disp_ccorr_linear;
 bool disp_aosp_ccorr;
 static bool g_prim_ccorr_force_linear;
 static bool g_prim_ccorr_pq_nonlinear;
-static bool g_zero_backlight = false;
+static bool g_zero_backlight __maybe_unused = false;
 #define index_of_ccorr(module) ((module == DDP_COMPONENT_CCORR0) ? 0 : \
 		((module == DDP_COMPONENT_CCORR1) ? 1 : \
 		((module == DDP_COMPONENT_CCORR2) ? 2 : 3)))
@@ -228,7 +228,7 @@ static void disp_ccorr_multiply_3x3(unsigned int ccorrCoef[3][3],
 	}
 
 	for (i = 0; i < 3; i += 1) {
-		DDPINFO("signedCcorrCoef[%d][0-2] = {%d, %d, %d}\n", i,
+		DDPINFO("signedCcorrCoef[%d][0-2] = {%d, %d, %d}", i,
 			signedCcorrCoef[i][0],
 			signedCcorrCoef[i][1],
 			signedCcorrCoef[i][2]);
@@ -289,7 +289,7 @@ static void disp_ccorr_multiply_3x3(unsigned int ccorrCoef[3][3],
 		ccorr_fullbit_mask;
 
 	for (i = 0; i < 3; i += 1) {
-		DDPINFO("resultCoef[%d][0-2] = {0x%x, 0x%x, 0x%x}\n", i,
+		DDPINFO("resultCoef[%d][0-2] = {0x%x, 0x%x, 0x%x}", i,
 			resultCoef[i][0],
 			resultCoef[i][1],
 			resultCoef[i][2]);
@@ -327,10 +327,10 @@ static int disp_ccorr_write_coef_reg(struct mtk_ddp_comp *comp,
 		mutex_lock(&g_ccorr_global_lock);
 
 	ccorr = g_disp_ccorr_coef[id];
-	DDPINFO("%s:ccorr id:%d,aosp ccorr:%d,nonlinear:%d\n", __func__, id,
+	DDPINFO("%s:ccorr id:%d,aosp ccorr:%d,nonlinear:%d", __func__, id,
 		disp_aosp_ccorr, g_disp_ccorr_without_gamma);
 	if (ccorr == NULL) {
-		DDPINFO("%s: [%d] is not initialized\n", __func__, id);
+		DDPINFO("%s: [%d] is not initialized", __func__, id);
 		ret = -EFAULT;
 		goto ccorr_write_coef_unlock;
 	}
@@ -438,7 +438,7 @@ static int disp_ccorr_write_coef_reg(struct mtk_ddp_comp *comp,
 			(ccorr->offset[2] & CCORR_COLOR_OFFSET_MASK), ~0);
 	}
 
-	DDPINFO("%s: finish\n", __func__);
+	DDPINFO("%s: finish", __func__);
 ccorr_write_coef_unlock:
 	if (lock)
 		mutex_unlock(&g_ccorr_global_lock);
@@ -455,7 +455,7 @@ void disp_ccorr_on_end_of_frame(struct mtk_ddp_comp *comp)
 	spin_lock_irqsave(&g_ccorr_clock_lock, flags);
 
 	if (atomic_read(&g_ccorr_is_clock_on[index]) != 1) {
-		DDPINFO("%s: clock is off. enabled:%d\n", __func__, 0);
+		DDPINFO("%s: clock is off. enabled:%d", __func__, 0);
 
 		spin_unlock_irqrestore(&g_ccorr_clock_lock, flags);
 		return;
@@ -486,7 +486,7 @@ static void disp_ccorr_set_interrupt(struct mtk_ddp_comp *comp,
 	else {
 		mtk_crtc_user_cmd(&(comp->mtk_crtc->base), comp,
 			SET_INTERRUPT, &enabled);
-		DDPINFO("[mtk_debug] to SET_INTERRUPT");
+		DDPINFO("to SET_INTERRUPT");
 	}
 }
 
@@ -502,7 +502,7 @@ static void disp_ccorr_clear_irq_only(struct mtk_ddp_comp *comp)
 		DDPDBG("%s @ %d......... spin_trylock_irqsave -- ",
 			__func__, __LINE__);
 		if (atomic_read(&g_ccorr_is_clock_on[index]) != 1) {
-			DDPINFO("%s: clock is off. enabled:%d\n", __func__, 0);
+			DDPINFO("%s: clock is off. enabled:%d", __func__, 0);
 
 			spin_unlock_irqrestore(&g_ccorr_clock_lock, flags);
 			DDPDBG("%s @ %d......... spin_unlock_irqrestore -- ",
@@ -511,7 +511,7 @@ static void disp_ccorr_clear_irq_only(struct mtk_ddp_comp *comp)
 		}
 		intsta = readl(comp->regs + DISP_REG_CCORR_INTSTA);
 
-		DDPINFO("%s: intsta: 0x%x\n", __func__, intsta);
+		DDPINFO("%s: intsta: 0x%x", __func__, intsta);
 
 		if (intsta & 0x2) { /* End of frame */
 			writel(intsta & ~0x3, comp->regs
@@ -521,7 +521,7 @@ static void disp_ccorr_clear_irq_only(struct mtk_ddp_comp *comp)
 		DDPDBG("%s @ %d......... spin_unlock_irqrestore -- ",
 			__func__, __LINE__);
 	} else {
-		DDPINFO("%s @ %d......... Failed to spin_trylock_irqsave -- ",
+		DDPINFO("%s @ %d......... failed to spin_trylock_irqsave -- ",
 			__func__, __LINE__);
 	}
 
@@ -535,7 +535,7 @@ static void disp_ccorr_clear_irq_only(struct mtk_ddp_comp *comp)
 		DDPDBG("%s @ %d......... spin_trylock_irqsave -- ",
 			__func__, __LINE__);
 		if (atomic_read(&g_ccorr_is_clock_on[index]) != 1) {
-			DDPINFO("%s: clock is off. enabled:%d\n", __func__, 0);
+			DDPINFO("%s: clock is off. enabled:%d", __func__, 0);
 
 			spin_unlock_irqrestore(&g_ccorr_clock_lock, flags);
 			DDPDBG("%s @ %d......... spin_unlock_irqrestore -- ",
@@ -546,13 +546,13 @@ static void disp_ccorr_clear_irq_only(struct mtk_ddp_comp *comp)
 		{
 			/* Disable output frame end interrupt */
 			writel(0x0, comp->regs + DISP_REG_CCORR_INTEN);
-			DDPINFO("%s: Interrupt disabled\n", __func__);
+			DDPINFO("%s: interrupt disabled", __func__);
 		}
 			spin_unlock_irqrestore(&g_ccorr_clock_lock, flags);
 			DDPDBG("%s @ %d......... spin_unlock_irqrestore -- ",
 				__func__, __LINE__);
 	} else {
-		DDPINFO("%s @ %d......... Failed to spin_trylock_irqsave -- ",
+		DDPINFO("%s @ %d......... failed to spin_trylock_irqsave -- ",
 			__func__, __LINE__);
 	}
 
@@ -605,7 +605,7 @@ static int disp_pq_copy_backlight_to_user(int *backlight)
 
 	memcpy(backlight, &g_pq_backlight_db, sizeof(int));
 
-	DDPINFO("%s: %d\n", __func__, ret);
+	DDPINFO("%s: %d", __func__, ret);
 
 	return ret;
 }
@@ -622,16 +622,16 @@ void disp_pq_notify_backlight_changed(int bl_1024)
 	if (atomic_read(&g_ccorr_is_init_valid) != 1)
 		return;
 
-	DDPINFO("%s: %d\n", __func__, bl_1024);
+	DDPINFO("%s: %d", __func__, bl_1024);
 
 #if CONFIG_MI_DISP
 	mi_disp_feature_event_notify_by_type(mi_get_disp_id("primary"), MI_DISP_EVENT_BACKLIGHT, sizeof(bl_1024), bl_1024);
 #endif
 	if (m_new_pq_persist_property[DISP_PQ_CCORR_SILKY_BRIGHTNESS]) {
-		DDPINFO("[mtk_debug] g_ccorr_relay_value = %d\n", g_ccorr_relay_value[index_of_ccorr(default_comp->id)]);
+		DDPINFO("g_ccorr_relay_value = %d", g_ccorr_relay_value[index_of_ccorr(default_comp->id)]);
 		if (default_comp != NULL &&
 			g_ccorr_relay_value[index_of_ccorr(default_comp->id)] != 1) {
-			DDPINFO("[mtk_debug] before disp_ccorr_set_interrupt");
+			DDPINFO("before disp_ccorr_set_interrupt");
 			disp_ccorr_set_interrupt(default_comp, 1);
 
 			if (default_comp != NULL &&
@@ -669,7 +669,7 @@ static int disp_ccorr_set_coef(
 	int i;
 	ccorr = kmalloc(sizeof(struct DRM_DISP_CCORR_COEF_T), GFP_KERNEL);
 	if (ccorr == NULL) {
-		DDPPR_ERR("%s: no memory\n", __func__);
+		DDPPR_ERR("%s: no memory", __func__);
 		return -EFAULT;
 	}
 
@@ -698,13 +698,13 @@ static int disp_ccorr_set_coef(
 						(ccorr_offset_base << 1) << ccorr_offset_mask;
 			}
 			*/
-			DDPINFO("%s: Set module(%d) coef", __func__, id);
+			DDPINFO("%s: set module(%d) coef", __func__, id);
 			if (disp_aosp_ccorr)
 				disp_aosp_ccorr = false;
 
 			ret = disp_ccorr_write_coef_reg(comp, handle, 0);
 			for (i = 0; i < 3; i += 1) {
-				DDPINFO("disp_ccorr_set_coef g_ccorr_color_matrix[%d][0-2] = {%d, %d, %d}\n",
+				DDPINFO("disp_ccorr_set_coef g_ccorr_color_matrix[%d][0-2] = {%d, %d, %d}",
 				i,
 				g_ccorr_color_matrix[id][i][0],
 				g_ccorr_color_matrix[id][i][1],
@@ -717,7 +717,7 @@ static int disp_ccorr_set_coef(
 
 			mtk_crtc_check_trigger(comp->mtk_crtc, false, false);
 		} else {
-			DDPPR_ERR("%s: invalid ID = %d\n", __func__, id);
+			DDPPR_ERR("%s: invalid ID = %d", __func__, id);
 			ret = -EFAULT;
 			kfree(ccorr);
 		}
@@ -733,12 +733,12 @@ static int mtk_disp_ccorr_set_interrupt(struct mtk_ddp_comp *comp, void *data)
 	int index = index_of_ccorr(comp->id);
 	int ret = 0;
 
-	DDPDBG("%s @ %d......... spin_lock_irqsave ++ %d\n", __func__, __LINE__, index);
+	DDPDBG("%s @ %d......... spin_lock_irqsave ++ %d", __func__, __LINE__, index);
 	spin_lock_irqsave(&g_ccorr_clock_lock, flags);
 	DDPDBG("%s @ %d......... spin_lock_irqsave -- ",
 		__func__, __LINE__);
 	if (atomic_read(&g_ccorr_is_clock_on[index]) != 1) {
-		DDPINFO("%s: clock is off. enabled:%d\n",
+		DDPINFO("%s: clock is off. enabled:%d",
 			__func__, enabled);
 
 		spin_unlock_irqrestore(&g_ccorr_clock_lock, flags);
@@ -750,15 +750,15 @@ static int mtk_disp_ccorr_set_interrupt(struct mtk_ddp_comp *comp, void *data)
 	if (enabled || g_old_pq_backlight != g_pq_backlight) {
 		if (readl(comp->regs + DISP_REG_CCORR_EN) == 0) {
 			/* Print error message */
-			DDPINFO("[WARNING] DISP_REG_CCORR_EN not enabled!\n");
+			DDPINFO("DISP_REG_CCORR_EN not enabled!");
 		}
 		/* Enable output frame end interrupt */
 		writel(0x2, comp->regs + DISP_REG_CCORR_INTEN);
-		DDPINFO("%s: Interrupt enabled\n", __func__);
+		DDPINFO("%s: interrupt enabled", __func__);
 	} else {
 		/* Disable output frame end interrupt */
 		writel(0x0, comp->regs + DISP_REG_CCORR_INTEN);
-		DDPINFO("%s: Interrupt disabled\n", __func__);
+		DDPINFO("%s: interrupt disabled", __func__);
 	}
 	spin_unlock_irqrestore(&g_ccorr_clock_lock, flags);
 	DDPDBG("%s @ %d......... spin_unlock_irqrestore -- ",
@@ -780,14 +780,14 @@ int disp_ccorr_set_color_matrix(struct mtk_ddp_comp *comp,
 	struct DRM_DISP_CCORR_COEF_T *ccorr;
 
 	if (handle == NULL) {
-		DDPPR_ERR("%s: cmdq can not be NULL\n", __func__);
+		DDPPR_ERR("%s: cmdq can not be NULL", __func__);
 		return -EFAULT;
 	}
 
 	if (g_disp_ccorr_coef[id] == NULL) {
 		ccorr = kmalloc(sizeof(struct DRM_DISP_CCORR_COEF_T), GFP_KERNEL);
 		if (ccorr == NULL) {
-			DDPPR_ERR("%s: no memory\n", __func__);
+			DDPPR_ERR("%s: no memory", __func__);
 			return -EFAULT;
 		}
 		g_disp_ccorr_coef[id] = ccorr;
@@ -837,7 +837,7 @@ int disp_ccorr_set_color_matrix(struct mtk_ddp_comp *comp,
 				bypass_color1 = false;
 			}
 		} else {
-			DDPINFO("%s, id is invalid!\n", __func__);
+			DDPINFO("%s, id is invalid!", __func__);
 		}
 	} else {
 		if (id == 0) {
@@ -857,7 +857,7 @@ int disp_ccorr_set_color_matrix(struct mtk_ddp_comp *comp,
 				bypass_color1 = true;
 			}
 		} else {
-			DDPINFO("%s, id is invalid!\n", __func__);
+			DDPINFO("%s, id is invalid!", __func__);
 		}
 	}
 
@@ -888,14 +888,14 @@ int disp_ccorr_set_color_matrix(struct mtk_ddp_comp *comp,
 	}
 
 	for (i = 0; i < 3; i += 1) {
-		DDPDBG("g_ccorr_color_matrix[%d][0-2] = {%d, %d, %d}\n",
+		DDPDBG("g_ccorr_color_matrix[%d][0-2] = {%d, %d, %d}",
 				i,
 				g_ccorr_color_matrix[id][i][0],
 				g_ccorr_color_matrix[id][i][1],
 				g_ccorr_color_matrix[id][i][2]);
 	}
 
-	DDPDBG("g_ccorr_color_matrix offset {%d, %d, %d}, hint: %d\n",
+	DDPDBG("g_ccorr_color_matrix offset {%d, %d, %d}, hint: %d",
 		g_disp_ccorr_coef[id]->offset[0],
 		g_disp_ccorr_coef[id]->offset[1],
 		g_disp_ccorr_coef[id]->offset[2], hint);
@@ -919,14 +919,14 @@ int disp_ccorr_set_color_matrix(struct mtk_ddp_comp *comp,
 	}
 
 	for (i = 0; i < 3; i += 1) {
-		DDPINFO("g_ccorr_color_matrix[%d][0-2] = {%d, %d, %d}\n",
+		DDPINFO("g_ccorr_color_matrix[%d][0-2] = {%d, %d, %d}",
 				i,
 				g_ccorr_color_matrix[id][i][0],
 				g_ccorr_color_matrix[id][i][1],
 				g_ccorr_color_matrix[id][i][2]);
 	}
 
-	DDPINFO("g_disp_ccorr_without_gamma: [%d], need_refresh: [%d]\n",
+	DDPINFO("g_disp_ccorr_without_gamma: [%d], need_refresh: [%d]",
 		g_disp_ccorr_without_gamma, need_refresh);
 
 	mutex_unlock(&g_ccorr_global_lock);
@@ -1089,7 +1089,7 @@ int led_brightness_changed_event_to_pq(struct notifier_block *nb, unsigned long 
 		else
 			g_zero_backlight = false;
 		disp_pq_notify_backlight_changed(trans_level);
-		DDPINFO("%s: brightness changed: %d(%d)\n",
+		DDPINFO("%s: brightness changed: %d(%d)",
 			__func__, trans_level, led_conf->cdev.brightness);
 		break;
 	case LED_STATUS_SHUTDOWN:
@@ -1121,7 +1121,7 @@ int mtk_drm_ioctl_ccorr_eventctl(struct drm_device *dev, void *data,
 		mtk_crtc_check_trigger(comp->mtk_crtc, false, true);
 
 	//mtk_crtc_user_cmd(crtc, comp, EVENTCTL, data);
-	DDPINFO("ccorr_eventctl, enabled = %d\n", *enabled);
+	DDPINFO("ccorr_eventctl, enabled = %d", *enabled);
 
 	if ((!atomic_read(&g_irq_backlight_change)) || (*enabled == 1))
 		disp_ccorr_set_interrupt(comp, *enabled);
@@ -1212,7 +1212,7 @@ int mtk_set_ccorr_caps(struct drm_mtk_ccorr_caps *ccorr_caps)
 	if (ccorr_caps->ccorr_linear != disp_ccorr_caps.ccorr_linear) {
 		disp_ccorr_caps.ccorr_linear = ccorr_caps->ccorr_linear;
 		disp_ccorr_linear = disp_ccorr_caps.ccorr_linear;
-		DDPINFO("%s:update ccorr 0 linear by DORA API\n", __func__);
+		DDPINFO("%s:update ccorr 0 linear by DORA API", __func__);
 	}
 	return 0;
 }
@@ -1228,14 +1228,14 @@ static void mtk_ccorr_config(struct mtk_ddp_comp *comp,
 	else
 		width = cfg->w;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	if (cfg->source_bpc == 8)
 		g_ccorr_8bit_switch[index_of_ccorr(comp->id)] = 1;
 	else if (cfg->source_bpc == 10)
 		g_ccorr_8bit_switch[index_of_ccorr(comp->id)] = 0;
 	else
-		DDPINFO("Disp CCORR's bit is : %u\n", cfg->bpc);
+		DDPINFO("disp CCORR's bit is : %u", cfg->bpc);
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		       comp->regs_pa + DISP_REG_CCORR_SIZE,
@@ -1244,7 +1244,7 @@ static void mtk_ccorr_config(struct mtk_ddp_comp *comp,
 
 static void mtk_ccorr_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	disp_aosp_ccorr = false;
 	g_disp_ccorr_without_gamma = CCORR_INVERSE_GAMMA;
@@ -1275,7 +1275,7 @@ static void mtk_ccorr_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 static void mtk_ccorr_bypass(struct mtk_ddp_comp *comp, int bypass,
 	struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		       comp->regs_pa + DISP_REG_CCORR_CFG, bypass, 0x1);
 	g_ccorr_relay_value[index_of_ccorr(comp->id)] = bypass;
@@ -1284,7 +1284,7 @@ static void mtk_ccorr_bypass(struct mtk_ddp_comp *comp, int bypass,
 static int mtk_ccorr_user_cmd(struct mtk_ddp_comp *comp,
 	struct cmdq_pkt *handle, unsigned int cmd, void *data)
 {
-	DDPINFO("%s: cmd: %d\n", __func__, cmd);
+	DDPINFO("%s: cmd: %d", __func__, cmd);
 	switch (cmd) {
 	case SET_CCORR:
 	{
@@ -1293,7 +1293,7 @@ static int mtk_ccorr_user_cmd(struct mtk_ddp_comp *comp,
 
 		if (disp_ccorr_set_coef(config,
 			comp, handle) < 0) {
-			DDPPR_ERR("DISP_IOCTL_SET_CCORR: failed\n");
+			DDPPR_ERR("DISP_IOCTL_SET_CCORR: failed");
 			return -EFAULT;
 		}
 		if (comp->mtk_crtc->is_dual_pipe) {
@@ -1305,7 +1305,7 @@ static int mtk_ccorr_user_cmd(struct mtk_ddp_comp *comp,
 				comp_ccorr1 = priv->ddp_comp[DDP_COMPONENT_CCORR3];
 
 			if (disp_ccorr_set_coef(config, comp_ccorr1, handle) < 0) {
-				DDPPR_ERR("DISP_IOCTL_SET_CCORR: failed\n");
+				DDPPR_ERR("DISP_IOCTL_SET_CCORR: failed");
 				return -EFAULT;
 			}
 		}
@@ -1364,7 +1364,7 @@ static int mtk_ccorr_user_cmd(struct mtk_ddp_comp *comp,
 	break;
 
 	default:
-		DDPPR_ERR("%s: error cmd: %d\n", __func__, cmd);
+		DDPPR_ERR("%s: error cmd: %d", __func__, cmd);
 		return -EINVAL;
 	}
 	return 0;
@@ -1390,7 +1390,7 @@ static void mtk_ccorr_prepare(struct mtk_ddp_comp *comp)
 {
 	struct mtk_disp_ccorr *ccorr = comp_to_ccorr(comp);
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	mtk_ddp_comp_clk_prepare(comp);
 	atomic_set(&g_ccorr_is_clock_on[index_of_ccorr(comp->id)], 1);
@@ -1418,7 +1418,7 @@ static void mtk_ccorr_unprepare(struct mtk_ddp_comp *comp)
 	ddp_ccorr_backup(comp);
 	mtk_ddp_comp_clk_unprepare(comp);
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 }
 
@@ -1438,7 +1438,7 @@ static int mtk_disp_ccorr_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
@@ -1469,7 +1469,7 @@ void mtk_ccorr_dump(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 	mtk_cust_dump_reg(baddr, 0x0, 0x20, 0x30, -1);
 	mtk_cust_dump_reg(baddr, 0x24, 0x28, -1, -1);
 
@@ -1510,21 +1510,21 @@ static void mtk_get_ccorr_property(struct device_node *node)
 
 	ret = of_property_read_u32(node, "ccorr_bit", &disp_ccorr_caps.ccorr_bit);
 	if (ret)
-		DDPPR_ERR("read ccorr_bit failed\n");
+		DDPPR_ERR("read ccorr_bit failed");
 
 	ret = of_property_read_u32(node, "ccorr_num_per_pipe", &disp_ccorr_caps.ccorr_number);
 	if (ret)
-		DDPPR_ERR("read ccorr_number failed\n");
+		DDPPR_ERR("read ccorr_number failed");
 
 	ret = of_property_read_u32(node, "ccorr_linear_per_pipe", &disp_ccorr_caps.ccorr_linear);
 	if (ret)
-		DDPPR_ERR("read ccorr_linear failed\n");
+		DDPPR_ERR("read ccorr_linear failed");
 
 	ret = of_property_read_u32(node, "ccorr_prim_force_linear", &ccorr0_force_linear);
 	if (ret)
-		DDPPR_ERR("read ccorr_prim_force_linear failed\n");
+		DDPPR_ERR("read ccorr_prim_force_linear failed");
 
-	DDPINFO("%s:ccorr_bit:%d,ccorr_number:%d,ccorr_linear:%d,ccorr0 force linear:%d\n",
+	DDPINFO("%s:ccorr_bit:%d,ccorr_number:%d,ccorr_linear:%d,ccorr0 force linear:%d",
 		__func__, disp_ccorr_caps.ccorr_bit, disp_ccorr_caps.ccorr_number,
 		disp_ccorr_caps.ccorr_linear, ccorr0_force_linear);
 
@@ -1548,7 +1548,7 @@ static int mtk_disp_ccorr_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (priv == NULL)
@@ -1560,7 +1560,7 @@ static int mtk_disp_ccorr_probe(struct platform_device *pdev)
 
 	comp_id = mtk_ddp_comp_get_id(dev->of_node, MTK_DISP_CCORR);
 	if ((int)comp_id < 0) {
-		DDPPR_ERR("Failed to identify by alias: %d\n", comp_id);
+		DDPPR_ERR("failed to identify by alias: %d", comp_id);
 		return comp_id;
 	}
 
@@ -1582,7 +1582,7 @@ static int mtk_disp_ccorr_probe(struct platform_device *pdev)
 	ret = mtk_ddp_comp_init(dev, dev->of_node, &priv->ddp_comp, comp_id,
 				&mtk_disp_ccorr_funcs);
 	if (ret != 0) {
-		DDPPR_ERR("Failed to initialize component: %d\n", ret);
+		DDPPR_ERR("failed to initialize component: %d", ret);
 		return ret;
 	}
 
@@ -1609,7 +1609,7 @@ static int mtk_disp_ccorr_probe(struct platform_device *pdev)
 	if (comp_id == DDP_COMPONENT_CCORR0)
 		mtk_leds_register_notifier(&leds_init_notifier);
 #endif
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return ret;
 }

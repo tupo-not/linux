@@ -50,7 +50,7 @@ extern bool g_trace_log;
 	} \
 } while (0)
 
-void mtk_drm_print_trace(char *fmt, ...);
+void mtk_drm_print_trace(char *fmt, ...) __printf(1, 2);
 void drm_trace_tag_start(const char *tag);
 void drm_trace_tag_end(const char *tag);
 void drm_trace_tag_mark(const char *tag);

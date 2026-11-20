@@ -27,17 +27,20 @@ enum DPREC_LOGGER_PR_TYPE {
 	DPREC_LOGGER_PR_NUM
 };
 
-int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
+int mtk_dprec_logger_pr(unsigned int type, const char *fmt, ...) __printf(2, 3);
 
+/* Mainline-style logging: standard levels, no [DISP] tags or
+ * function/line suffixes. The dprec ring buffer is kept intact.
+ */
 #define DDPINFO(fmt, arg...)                                                   \
 	do {                                                                   \
 		mtk_dprec_logger_pr(DPREC_LOGGER_DEBUG, fmt, ##arg);           \
 		if (g_mobile_log)                                              \
-			pr_info("[DISP]" pr_fmt(fmt), ##arg);     \
+			pr_debug(fmt, ##arg);                                  \
 	} while (0)
 
-#define DDPFUNC(fmt, arg...)		\
-	pr_info("[DISP][%s line:%d]"pr_fmt(fmt), __func__, __LINE__, ##arg)
+#define DDPFUNC(fmt, arg...)                                                   \
+	pr_debug("%s: " fmt, __func__, ##arg)
 
 #define DDPDBG(fmt, arg...)                                                    \
 	do {                                                                   \
@@ -45,7 +48,7 @@ int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
 			break;                                                 \
 		mtk_dprec_logger_pr(DPREC_LOGGER_DEBUG, fmt, ##arg);           \
 		if (g_mobile_log)                                              \
-			pr_debug("[DISP]" pr_fmt(fmt), ##arg);     \
+			pr_debug(fmt, ##arg);                                  \
 	} while (0)
 
 #define DDP_PROFILE(fmt, arg...)                                               \
@@ -54,33 +57,33 @@ int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
 			break;                                                 \
 		mtk_dprec_logger_pr(DPREC_LOGGER_DEBUG, fmt, ##arg);           \
 		if (g_mobile_log)                                              \
-			pr_info("[DISP]" pr_fmt(fmt), ##arg);     \
+			pr_debug(fmt, ##arg);                                  \
 	} while (0)
 
 #define DDPMSG(fmt, arg...)                                                    \
 	do {                                                                   \
 		mtk_dprec_logger_pr(DPREC_LOGGER_DEBUG, fmt, ##arg);           \
-		pr_debug("[DISP]" pr_fmt(fmt), ##arg);             \
+		pr_debug(fmt, ##arg);                                      \
 	} while (0)
 
 #define DDPDUMP(fmt, arg...)                                                   \
 	do {                                                                   \
 		mtk_dprec_logger_pr(DPREC_LOGGER_DUMP, fmt, ##arg);            \
 		if (g_mobile_log)                                              \
-			pr_info("[DISP]" pr_fmt(fmt), ##arg);     \
+			pr_debug(fmt, ##arg);                                  \
 	} while (0)
 
 #define DDPFENCE(fmt, arg...)                                                  \
 	do {                                                                   \
 		mtk_dprec_logger_pr(DPREC_LOGGER_FENCE, fmt, ##arg);           \
 		if (g_fence_log)                                               \
-			pr_info("[DISP]" pr_fmt(fmt), ##arg);     \
+			pr_debug(fmt, ##arg);                                  \
 	} while (0)
 
 #define DDPPR_ERR(fmt, arg...)                                                 \
 	do {                                                                   \
 		mtk_dprec_logger_pr(DPREC_LOGGER_ERROR, fmt, ##arg);           \
-		pr_err("[DISP][E]" pr_fmt(fmt), ##arg);              \
+		pr_err(fmt, ##arg);                                        \
 	} while (0)
 
 #define DDPIRQ(fmt, arg...)                                                    \
@@ -91,7 +94,7 @@ int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
 
 #define DDP_MUTEX_LOCK(lock, name, line)                                       \
 	do {                                                                   \
-		DDPINFO("M_LOCK:%s[%d] +\n", name, line);		   \
+		DDPINFO("m_LOCK:%s[%d] +", name, line);		   \
 		DRM_MMP_EVENT_START(mutex_lock, (unsigned long)lock,	   \
 				line);	   \
 		mutex_lock(lock);		   \
@@ -105,7 +108,7 @@ int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
 		mutex_time_end = sched_clock();		   \
 		mutex_time_period = mutex_time_end - mutex_time_start;   \
 		if (mutex_time_period > 1000000000) {		   \
-			DDPPR_ERR("M_ULOCK:%s[%d] timeout:<%lld ns>!\n",   \
+			DDPPR_ERR("m_ULOCK:%s[%d] timeout:<%lld ns>!",   \
 				name, line, mutex_time_period);		   \
 			DRM_MMP_MARK(mutex_lock,		   \
 				(unsigned long)mutex_time_period, 0);   \
@@ -114,19 +117,19 @@ int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
 		mutex_unlock(lock);		   \
 		DRM_MMP_EVENT_END(mutex_lock, (unsigned long)lock,	   \
 			line);	   \
-		DDPINFO("M_ULOCK:%s[%d] -\n", name, line);		   \
+		DDPINFO("m_ULOCK:%s[%d] -", name, line);		   \
 	} while (0)
 
 #define DDP_MUTEX_LOCK_NESTED(lock, i, name, line)                             \
 	do {                                                                   \
-		DDPINFO("M_LOCK_NST[%d]:%s[%d] +\n", i, name, line);   \
+		DDPINFO("m_LOCK_NST[%d]:%s[%d] +", i, name, line);   \
 		mutex_lock_nested(lock, i);		   \
 	} while (0)
 
 #define DDP_MUTEX_UNLOCK_NESTED(lock, i, name, line)                           \
 	do {                                                                   \
 		mutex_unlock(lock);		   \
-		DDPINFO("M_ULOCK_NST[%d]:%s[%d] -\n", i, name, line);	\
+		DDPINFO("m_ULOCK_NST[%d]:%s[%d] -", i, name, line);	\
 	} while (0)
 
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
@@ -142,7 +145,7 @@ int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
 				       DB_OPT_DEFAULT |                        \
 					       DB_OPT_MMPROFILE_BUFFER,        \
 				       str, string, ##args);                   \
-		DDPPR_ERR("[DDP Error]" string, ##args);                       \
+		DDPPR_ERR("" string, ##args);                       \
 	} while (0)
 #else /* !CONFIG_MTK_AEE_FEATURE */
 #define DDPAEE(string, args...)                                                \

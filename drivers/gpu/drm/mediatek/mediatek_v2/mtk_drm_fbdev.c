@@ -41,7 +41,7 @@ unsigned int mtk_drm_fb_fm_auto_test(struct fb_info *info)
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 			typeof(*crtc), head);
 	if (!crtc) {
-		DDPPR_ERR("find crtc fail\n");
+		DDPPR_ERR("find crtc fail");
 		return -1;
 	}
 	mtk_crtc = to_mtk_crtc(crtc);
@@ -49,7 +49,7 @@ unsigned int mtk_drm_fb_fm_auto_test(struct fb_info *info)
 	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 
 	if (!mtk_crtc->enabled || mtk_crtc->ddp_mode == DDP_NO_USE) {
-		DDPINFO("crtc 0 is already sleep, skip\n");
+		DDPINFO("crtc 0 is already sleep, skip");
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 		return 0;
 	}
@@ -69,9 +69,9 @@ unsigned int mtk_drm_fb_fm_auto_test(struct fb_info *info)
 	DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 
 	if (ret == 0)
-		DDPPR_ERR("ATA LCM failed\n");
+		DDPPR_ERR("ATA LCM failed");
 	else
-		DDPPR_ERR("ATA LCM passed\n");
+		DDPPR_ERR("ATA LCM passed");
 
 	return ret;
 }
@@ -85,13 +85,13 @@ static int mtk_drm_fb_ioctl(struct fb_info *info, unsigned int cmd,
 		unsigned int result = 0;
 		void __user *argp = (void __user *)arg;
 
-		DDPMSG("factory mode: lcm auto test\n");
+		DDPMSG("factory mode: lcm auto test");
 		result = mtk_drm_fb_fm_auto_test(info);
 		return copy_to_user(argp, &result, sizeof(result)) ?
 					-EFAULT : 0;
 	}
 	default:
-		DDPINFO("%s: Not support:info=0x%p, cmd=0x%08x, arg=0x%08lx\n",
+		DDPINFO("%s: not support:info=0x%p, cmd=0x%08x, arg=0x%08lx",
 			     __func__, info, (unsigned int)cmd, arg);
 		break;
 	}
@@ -114,7 +114,7 @@ static int mtk_drm_fb_pan_display(struct fb_var_screeninfo *var,
 			typeof(*crtc), head);
 
 	if (!crtc) {
-		DDPPR_ERR("find crtc fail\n");
+		DDPPR_ERR("find crtc fail");
 		return ret;
 	}
 	mtk_crtc = to_mtk_crtc(crtc);
@@ -144,7 +144,7 @@ void disp_get_fb_address(unsigned long *fbVirAddr)
 {
 	*fbVirAddr = (unsigned long)debug_info->screen_base;
 	DDPMSG(
-		  "%s fbdev->fb_va_base = 0x%p\n",
+		  "%s fbdev->fb_va_base = 0x%p",
 		  __func__, debug_info->screen_base);
 }
 
@@ -171,7 +171,7 @@ int pan_display_test(int frame_num, int bpp)
 	h = debug_info->var.yres;
 	fb_h = fb_size / (ALIGN_TO(w, 32) * Bpp) - 10;
 
-	DDPMSG("%s: frame_num=%d,bpp=%d, w=%d,h=%d,fb_h=%d\n",
+	DDPMSG("%s: frame_num=%d,bpp=%d, w=%d,h=%d,fb_h=%d",
 		__func__, frame_num, bpp, w, h, fb_h);
 
 	for (i = 0; i < fb_h; i++)
@@ -199,7 +199,7 @@ int pan_display_test(int frame_num, int bpp)
 		mtk_drm_fb_pan_display(&debug_info->var, debug_info);
 	}
 
-	DDPMSG("%s, %d--\n", __func__, __LINE__);
+	DDPMSG("%s, %d--", __func__, __LINE__);
 	return 0;
 }
 
@@ -247,9 +247,9 @@ bool mtk_drm_lcm_is_connect(void)
 		if (videolfb_tag)
 			return videolfb_tag->islcmfound;
 
-		DDPINFO("[DT][videolfb] videolfb_tag not found\n");
+		DDPINFO("videolfb_tag not found");
 	} else {
-		DDPINFO("[DT][videolfb] of_chosen not found\n");
+		DDPINFO("of_chosen not found");
 	}
 
 	return false;
@@ -280,18 +280,18 @@ int _parse_tag_videolfb(unsigned int *vramsize, phys_addr_t *fb_base,
 			return 0;
 		}
 
-		DDPINFO("[DT][videolfb] videolfb_tag not found\n");
+		DDPINFO("videolfb_tag not found");
 		goto found;
 	} else {
-		DDPINFO("[DT][videolfb] of_chosen not found\n");
+		DDPINFO("of_chosen not found");
 	}
 	return -1;
 
 found:
-	DDPINFO("[DT][videolfb] fb_base    = 0x%lx\n", (unsigned long)*fb_base);
-	DDPINFO("[DT][videolfb] vram       = 0x%x (%d)\n", *vramsize,
+	DDPINFO("fb_base    = 0x%lx", (unsigned long)*fb_base);
+	DDPINFO("vram       = 0x%x (%d)", *vramsize,
 		*vramsize);
-	DDPINFO("[DT][videolfb] fps	   = %d\n", *fps);
+	DDPINFO("fps	   = %d", *fps);
 
 	return 0;
 #endif
@@ -307,7 +307,7 @@ int free_fb_buf(void)
 	_parse_tag_videolfb(&vramsize, &fb_base, &fps);
 
 	if (!fb_base) {
-		DDPINFO("%s:get fb pa error\n", __func__);
+		DDPINFO("%s:get fb pa error", __func__);
 		return -1;
 	}
 
@@ -318,7 +318,7 @@ int free_fb_buf(void)
 		//		   (void *)va_end, 0xff, "fbmem");
 		;
 	else
-		DDPINFO("%s:va invalid\n", __func__);
+		DDPINFO("%s:va invalid", __func__);
 
 	return 0;
 }
@@ -337,17 +337,17 @@ static int mtk_fbdev_probe(struct drm_fb_helper *helper,
 	int err;
 	phys_addr_t fb_base = 0;
 
-	DDPMSG("%s+\n", __func__);
+	DDPMSG("%s+", __func__);
 	bytes_per_pixel = DIV_ROUND_UP(sizes->surface_bpp, 8);
 	mode.pixel_format = drm_mode_legacy_fb_format(sizes->surface_bpp,
 						      sizes->surface_depth);
 
 	if (_parse_tag_videolfb(&vramsize, &fb_base, &fps) < 0) {
-		DDPINFO("[DT][videolfb] fb_base   = 0x%lx\n",
+		DDPINFO("fb_base   = 0x%lx",
 			(unsigned long)fb_base);
-		DDPINFO("[DT][videolfb] vram	  = 0x%x (%d)\n",
+		DDPINFO("vram	  = 0x%x (%d)",
 			vramsize, vramsize);
-		DDPINFO("[DT][videolfb] fps	    = %d\n", fps);
+		DDPINFO("fps	    = %d", fps);
 
 		mode.width = sizes->surface_width;
 		mode.height = sizes->surface_height;
@@ -410,7 +410,7 @@ static int mtk_fbdev_probe(struct drm_fb_helper *helper,
 
 	info->skip_vt_switch = true;
 
-	DDPMSG("%s-\n", __func__);
+	DDPMSG("%s-", __func__);
 	return 0;
 
 err_release_fbi:
@@ -458,7 +458,7 @@ int mtk_fbdev_init(struct drm_device *dev)
 	struct drm_fb_helper *helper = &priv->fb_helper;
 	int ret;
 
-	DDPMSG("%s+\n", __func__);
+	DDPMSG("%s+", __func__);
 	if (!dev->mode_config.num_crtc || !dev->mode_config.num_connector)
 		return -EINVAL;
 
@@ -483,7 +483,7 @@ int mtk_fbdev_init(struct drm_device *dev)
 			ret);
 		goto fini;
 	}
-	DDPMSG("%s-\n", __func__);
+	DDPMSG("%s-", __func__);
 
 	return 0;
 

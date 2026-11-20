@@ -43,7 +43,7 @@
 #include "mtk_drm_mmp.h"
 
 #undef pr_fmt
-#define pr_fmt(fmt) "[disp_aal]" fmt
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 // It's a work around for no comp assigned in functions.
 static struct mtk_ddp_comp *default_comp;
@@ -299,6 +299,8 @@ static char g_aal_log_buffer[256] = "";
 static int g_aal_log_index;
 struct timespec64 g_aal_log_prevtime = {0};
 
+bool disp_aal_is_support(void);
+
 bool disp_aal_is_support(void)
 {
 	if (g_aal_fo->mtk_aal_support)
@@ -419,6 +421,8 @@ static void disp_aal_notify_backlight_log(int bl_1024)
 
 	memcpy(&g_aal_log_prevtime, &aal_time, sizeof(struct timespec64));
 }
+
+void disp_aal_refresh_by_kernel(void);
 
 void disp_aal_refresh_by_kernel(void)
 {
@@ -622,6 +626,9 @@ static void mtk_disp_aal_refresh_trigger(struct work_struct *work_item)
 }
 
 void disp_aal_flip_sram(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
+	const char *caller);
+
+void disp_aal_flip_sram(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	const char *caller)
 {
 	u32 hist_apb = 0, hist_int = 0, sram_cfg = 0;
@@ -781,7 +788,7 @@ static void mtk_aal_config(struct mtk_ddp_comp *comp,
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_AAL_CFG, (0x0 << 8), (0x1 << 8));
 	else
-		DDPINFO("Display AAL's bit is : %u\n", cfg->bpc);
+		DDPINFO("display AAL's bit is : %u", cfg->bpc);
 
 	if (atomic_read(&g_aal_force_relay) == 1) {
 		// Set reply mode
@@ -929,6 +936,8 @@ static int disp_aal_copy_hist_to_user(struct DISP_AAL_HIST *hist)
 
 	return ret;
 }
+
+void dump_hist(struct DISP_AAL_HIST *data);
 
 void dump_hist(struct DISP_AAL_HIST *data)
 {
@@ -1154,6 +1163,8 @@ static int disp_aal_write_init_regs(struct mtk_ddp_comp *comp,
 }
 
 #define PRINT_INIT_REG(x1) pr_notice("[INIT]%s=0x%x\n", #x1, data->x1)
+void dump_init_reg(struct DISP_AAL_INITREG *data);
+
 void dump_init_reg(struct DISP_AAL_INITREG *data)
 {
 	PRINT_INIT_REG(dre_s_lower);
@@ -1363,6 +1374,8 @@ static int disp_aal_write_param_to_reg(struct mtk_ddp_comp *comp,
 	return 0;
 }
 
+void dump_param(const struct DISP_AAL_PARAM *param);
+
 void dump_param(const struct DISP_AAL_PARAM *param)
 {
 	int i = 0;
@@ -1413,6 +1426,9 @@ void dump_param(const struct DISP_AAL_PARAM *param)
 }
 
 static bool debug_dump_input_param;
+int disp_aal_set_param(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
+		struct DISP_AAL_PARAM *param);
+
 int disp_aal_set_param(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 		struct DISP_AAL_PARAM *param)
 {
@@ -1468,6 +1484,8 @@ int disp_aal_set_param(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	pr_notice("[3] AAL_DUMP 0x%x=0x%x 0x%x=0x%x 0x%x=0x%x 0x%x=0x%x\n", \
 		x1, readl(dre3_va + x1), x2, readl(dre3_va + x2), \
 		x3, readl(dre3_va + x3), x4, readl(dre3_va + x4))
+bool dump_reg(struct mtk_ddp_comp *comp, bool locked);
+
 bool dump_reg(struct mtk_ddp_comp *comp, bool locked)
 {
 	unsigned long flags = 0;
@@ -2580,11 +2598,17 @@ static void mtk_aal_unprepare(struct mtk_ddp_comp *comp)
 }
 
 void mtk_aal_first_cfg(struct mtk_ddp_comp *comp,
+	       struct mtk_ddp_config *cfg, struct cmdq_pkt *handle);
+
+void mtk_aal_first_cfg(struct mtk_ddp_comp *comp,
 	       struct mtk_ddp_config *cfg, struct cmdq_pkt *handle)
 {
 	AALFLOW_LOG("\n");
 	mtk_aal_config(comp, cfg, handle);
 }
+
+int mtk_aal_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
+	      enum mtk_ddp_io_cmd cmd, void *params);
 
 int mtk_aal_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	      enum mtk_ddp_io_cmd cmd, void *params)
@@ -2653,7 +2677,7 @@ void mtk_aal_dump(struct mtk_ddp_comp *comp)
 {
 	void __iomem  *baddr = comp->regs;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 	mtk_cust_dump_reg(baddr, 0x0, 0x8, 0x10, 0x20);
 	mtk_cust_dump_reg(baddr, 0x30, 0xFC, 0x160, 0x200);
 	mtk_cust_dump_reg(baddr, 0x204, 0x20C, 0x3B4, 0x45C);
@@ -2662,7 +2686,7 @@ void mtk_aal_dump(struct mtk_ddp_comp *comp)
 	if (g_aal_fo->mtk_dre30_support) {
 		void __iomem  *dre3_va = mtk_aal_dre3_va(comp);
 
-		DDPDUMP("dre30 dump\n");
+		DDPDUMP("dre30 dump");
 		mtk_cust_dump_reg(dre3_va, 0x0, 0x8, 0x10, 0x20);
 		mtk_cust_dump_reg(dre3_va, 0x30, 0x34, 0x38, 0xC4);
 		mtk_cust_dump_reg(dre3_va, 0xC8, 0xF4, 0xF8, 0x200);
@@ -2674,6 +2698,8 @@ void mtk_aal_dump(struct mtk_ddp_comp *comp)
 		mtk_cust_dump_reg(dre3_va, 0x4D4, 0x4EC, 0x4F0, 0x53C);
 	}
 }
+
+void disp_aal_on_end_of_frame(struct mtk_ddp_comp *comp);
 
 void disp_aal_on_end_of_frame(struct mtk_ddp_comp *comp)
 {
@@ -2865,6 +2891,7 @@ static int mtk_aal_sof_irq_trigger(void *data)
 		disp_aal_wait_sof_irq();
 		atomic_set(&g_aal_sof_irq_available, 0);
 	}
+	return 0;
 }
 
 static irqreturn_t mtk_disp_aal_irq_handler(int irq, void *dev_id)
@@ -2914,7 +2941,7 @@ static int mtk_disp_aal_probe(struct platform_device *pdev)
 	struct sched_param param = {.sched_priority = 85 };
 	struct cpumask mask;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (priv == NULL)

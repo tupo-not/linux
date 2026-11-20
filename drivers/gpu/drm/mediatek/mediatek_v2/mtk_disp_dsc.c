@@ -141,7 +141,7 @@ static irqreturn_t mtk_dsc_irq_handler(int irq, void *dev_id)
 		return IRQ_NONE;
 
 	if (mtk_drm_top_clk_isr_get("dsc_irq") == false) {
-		DDPIRQ("%s, top clk off\n", __func__);
+		DDPIRQ("%s, top clk off", __func__);
 		return IRQ_NONE;
 	}
 
@@ -151,31 +151,31 @@ static irqreturn_t mtk_dsc_irq_handler(int irq, void *dev_id)
 		goto out;
 	}
 
-	DDPIRQ("%s irq, val:0x%x\n", mtk_dump_comp_str(dsc), val);
+	DDPIRQ("%s irq, val:0x%x", mtk_dump_comp_str(dsc), val);
 
 	writel(val, dsc->regs + DISP_REG_DSC_INTACK);
 	writel(0x0, dsc->regs + DISP_REG_DSC_INTACK);
 
 	if (val & (1 << 0))
-		DDPIRQ("[IRQ] %s: frame complete!\n",
+		DDPIRQ("%s: frame complete!",
 			mtk_dump_comp_str(dsc));
 
 	if (val & (1 << 1)) {
 		static DEFINE_RATELIMIT_STATE(err_ratelimit, 1 * HZ, 20);
 
 		if (__ratelimit(&err_ratelimit))
-			DDPPR_ERR("[IRQ] %s: err!\n",
+			DDPPR_ERR("%s: err!",
 				  mtk_dump_comp_str(dsc));
 	}
 	if (val & (1 << 2)) {
 		static DEFINE_RATELIMIT_STATE(zfifo_ratelimit, 1 * HZ, 20);
 
 		if (__ratelimit(&zfifo_ratelimit))
-			DDPPR_ERR("[IRQ] %s: zero fifo!\n",
+			DDPPR_ERR("%s: zero fifo!",
 				  mtk_dump_comp_str(dsc));
 	}
 	if (val & (1 << 3))
-		DDPPR_ERR("[IRQ] %s: abnormal EOF!\n",
+		DDPPR_ERR("%s: abnormal EOF!",
 			  mtk_dump_comp_str(dsc));
 
 	ret = IRQ_HANDLED;
@@ -187,7 +187,6 @@ out:
 
 static void mtk_dsc_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	void __iomem *baddr = comp->regs;
 	struct mtk_disp_dsc *dsc = comp_to_dsc(comp);
 
 	mtk_ddp_write_mask(comp, DSC_FORCE_COMMIT,
@@ -201,8 +200,6 @@ static void mtk_dsc_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 
 static void mtk_dsc_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	void __iomem *baddr = comp->regs;
-
 	mtk_ddp_write_mask(comp, 0x0, DISP_REG_DSC_CON, DSC_EN, handle);
 }
 
@@ -230,6 +227,8 @@ static void mtk_dsc_unprepare(struct mtk_ddp_comp *comp)
 {
 	mtk_ddp_comp_clk_unprepare(comp);
 }
+
+struct mtk_panel_dsc_params *mtk_dsc_default_setting(void);
 
 struct mtk_panel_dsc_params *mtk_dsc_default_setting(void)
 {
@@ -304,7 +303,6 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 	unsigned int enc_slice_width, enc_pic_width;
 	unsigned int pic_height_ext_num, slice_group_width;
 	unsigned int bit_per_pixel, chrunk_size, pad_num;
-	unsigned int init_delay_limit, init_delay_height_min;
 	unsigned int init_delay_height;
 	struct mtk_panel_dsc_params *dsc_params;
 	struct mtk_panel_spr_params *spr_params;
@@ -322,7 +320,7 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 
 
 	if (dsc_params->enable == 1) {
-		DDPINFO("%s, w:%d, h:%d, slice_mode:%d,slice(%d,%d),bpp:%d\n",
+		DDPINFO("%s, w:%d, h:%d, slice_mode:%d,slice(%d,%d),bpp:%d",
 			mtk_dump_comp_str(comp), cfg->w, cfg->h,
 			dsc_params->slice_mode,	dsc_params->slice_width,
 			dsc_params->slice_height, dsc_params->bit_per_pixel);
@@ -390,7 +388,7 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 		}
 		pad_num = (chrunk_size * (dsc_params->slice_mode + 1) + 2) / 3 * 3
 			- chrunk_size * (dsc_params->slice_mode + 1);
-		DDPMSG("%s+ pad_num:%d\n", __func__, pad_num);
+		DDPMSG("%s+ pad_num:%d", __func__, pad_num);
 
 		mtk_ddp_write_relaxed(comp,
 			enc_pic_width << 16 | enc_slice_width,
@@ -438,11 +436,6 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 		mtk_ddp_write_relaxed(comp,	chrunk_size * slice_height,
 			DISP_REG_DSC_BUF_SIZE, handle);
 
-		init_delay_limit =
-			((128 + (dsc_params->xmit_delay + 2) / 3) * 3 +
-			dsc_params->slice_width-1) / dsc_params->slice_width;
-		init_delay_height_min =
-			(init_delay_limit > 15) ? 15 : init_delay_limit;
 		if (dsc->data->dsi_buffer)
 			init_delay_height = 0;
 		else if (!mtk_crtc_is_frame_trigger_mode(&comp->mtk_crtc->base))
@@ -523,11 +516,6 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 		mtk_ddp_write_relaxed(comp,	reg_val,
 			DISP_REG_DSC_PPS5, handle);
 
-		{
-			void __iomem *baddr = comp->regs;
-
-		}
-
 		reg_val = ((dsc_params->flatness_minqp == 0) ?
 			0x3 : dsc_params->flatness_minqp);
 		reg_val |= ((dsc_params->flatness_maxqp == 0) ?
@@ -537,12 +525,12 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 		mtk_ddp_write_relaxed(comp,	reg_val,
 			DISP_REG_DSC_PPS6, handle);
 
-		DDPINFO("%s, bit_per_channel:%d\n",
+		DDPINFO("%s, bit_per_channel:%d",
 			mtk_dump_comp_str(comp), dsc_params->bit_per_channel);
 		if (dsc_params->bit_per_channel == 10) {
 			//10bpc_to_8bpp_20_slice_h
 			if (dsc_params->dsc_config_panel_name == 0x6c126101) {
-				DDPMSG("L12A CSOT dsc config\n");
+				DDPMSG("l12A CSOT dsc config");
 				mtk_ddp_write(comp, 0x20001007, DISP_REG_DSC_PPS6, handle);
 				mtk_ddp_write(comp, 0x330F0F06, DISP_REG_DSC_PPS7, handle);
 				mtk_ddp_write(comp, 0x382a1c0e, DISP_REG_DSC_PPS8, handle);
@@ -558,7 +546,7 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 				mtk_ddp_write(comp, 0xD22BD229, DISP_REG_DSC_PPS18, handle);
 				mtk_ddp_write(comp, 0x0000D271, DISP_REG_DSC_PPS19, handle);
 			} else if (dsc_params->dsc_config_panel_name == 0x6c126102) {
-				DDPMSG("L12A TM dsc config\n");
+				DDPMSG("l12A TM dsc config");
 				mtk_ddp_write(comp, 0x20001007, DISP_REG_DSC_PPS6, handle);
 				mtk_ddp_write(comp, 0x330F0F06, DISP_REG_DSC_PPS7, handle);
 				mtk_ddp_write(comp, 0x382a1c0e, DISP_REG_DSC_PPS8, handle);
@@ -574,7 +562,7 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 				mtk_ddp_write(comp, 0xd20cd1e9, DISP_REG_DSC_PPS18, handle);
 				mtk_ddp_write(comp, 0x0000d230, DISP_REG_DSC_PPS19, handle);
 			}  else if (dsc_params->dsc_config_panel_name == 0x6d126101) {
-				DDPMSG("M12A TM dsc config\n");
+				DDPMSG("m12A TM dsc config");
 				mtk_ddp_write(comp, 0x20001007, DISP_REG_DSC_PPS6, handle);
 				mtk_ddp_write(comp, 0x330F0F06, DISP_REG_DSC_PPS7, handle);
 				mtk_ddp_write(comp, 0x382a1c0e, DISP_REG_DSC_PPS8, handle);
@@ -590,7 +578,7 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 				mtk_ddp_write(comp, 0xd20cd1e9, DISP_REG_DSC_PPS18, handle);
 				mtk_ddp_write(comp, 0x0000d230, DISP_REG_DSC_PPS19, handle);
 			} else if (dsc_params->dsc_config_panel_name == 0x6d126102) {
-				DDPMSG("M12A CSOT dsc config\n");
+				DDPMSG("m12A CSOT dsc config");
 				mtk_ddp_write(comp, 0x20001007, DISP_REG_DSC_PPS6, handle);
 				mtk_ddp_write(comp, 0x330F0F06, DISP_REG_DSC_PPS7, handle);
 				mtk_ddp_write(comp, 0x382a1c0e, DISP_REG_DSC_PPS8, handle);
@@ -606,7 +594,7 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 				mtk_ddp_write(comp, 0xD22BD229, DISP_REG_DSC_PPS18, handle);
 				mtk_ddp_write(comp, 0x0000D271, DISP_REG_DSC_PPS19, handle);
 			} else if (dsc_params->dsc_config_panel_name == 0x6c026d01) {
-				DDPMSG("L2M SDC dsc config\n");
+				DDPMSG("l2M SDC dsc config");
 				mtk_ddp_write(comp, 0x20001007, DISP_REG_DSC_PPS6, handle);
 				mtk_ddp_write(comp, 0x330F0F06, DISP_REG_DSC_PPS7, handle);
 				mtk_ddp_write(comp, 0x382a1c0e, DISP_REG_DSC_PPS8, handle);
@@ -623,7 +611,7 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 				mtk_ddp_write(comp, 0x0000D230, DISP_REG_DSC_PPS19, handle);
 			}else if(dsc_params->dsc_config_panel_name == 0x6c226101)
 			{
-				DDPMSG("dsc_config mi_disp M9 CSOT dsc config\n");
+				DDPMSG("dsc_config mi_disp M9 CSOT dsc config");
 				mtk_ddp_write(comp, 0x20001007, DISP_REG_DSC_PPS6, handle);
 				mtk_ddp_write(comp, 0x330F0F06, DISP_REG_DSC_PPS7, handle);
 				mtk_ddp_write(comp, 0x382a1c0e, DISP_REG_DSC_PPS8, handle);
@@ -640,7 +628,7 @@ static void mtk_dsc_config(struct mtk_ddp_comp *comp,
 				mtk_ddp_write(comp, 0x0000d271, DISP_REG_DSC_PPS19, handle);
 			}
 			else {
-				DDPMSG("dsi default dsc config\n");
+				DDPMSG("dsi default dsc config");
 				mtk_ddp_write(comp, 0x20001007, DISP_REG_DSC_PPS6, handle);
 				mtk_ddp_write(comp, 0x330F0F06, DISP_REG_DSC_PPS7, handle);
 				mtk_ddp_write(comp, 0x382a1c0e, DISP_REG_DSC_PPS8, handle);
@@ -738,20 +726,20 @@ void mtk_dsc_dump(struct mtk_ddp_comp *comp)
 	void __iomem *baddr = comp->regs;
 	int i;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 
-	DDPDUMP("(0x000)DSC_START=0x%x\n", readl(baddr + DISP_REG_DSC_CON));
-	DDPDUMP("(0x020)DSC_SLICE_WIDTH=0x%x\n",
+	DDPDUMP("(0x000)DSC_START=0x%x", readl(baddr + DISP_REG_DSC_CON));
+	DDPDUMP("(0x020)DSC_SLICE_WIDTH=0x%x",
 		readl(baddr + DISP_REG_DSC_SLICE_W));
-	DDPDUMP("(0x024)DSC_SLICE_HIGHT=0x%x\n",
+	DDPDUMP("(0x024)DSC_SLICE_HIGHT=0x%x",
 		readl(baddr + DISP_REG_DSC_SLICE_H));
-	DDPDUMP("(0x018)DSC_WIDTH=0x%x\n", readl(baddr + DISP_REG_DSC_PIC_W));
-	DDPDUMP("(0x01C)DSC_HEIGHT=0x%x\n", readl(baddr + DISP_REG_DSC_PIC_H));
-	DDPDUMP("(0x200)DSC_SHADOW=0x%x\n",
+	DDPDUMP("(0x018)DSC_WIDTH=0x%x", readl(baddr + DISP_REG_DSC_PIC_W));
+	DDPDUMP("(0x01C)DSC_HEIGHT=0x%x", readl(baddr + DISP_REG_DSC_PIC_H));
+	DDPDUMP("(0x200)DSC_SHADOW=0x%x",
 		readl(baddr + DISP_REG_DSC_SHADOW));
-	DDPDUMP("-- Start dump dsc registers --\n");
+	DDPDUMP("-- start dump dsc registers --");
 	for (i = 0; i < 204; i += 16) {
-		DDPDUMP("DSC+%x: 0x%x 0x%x 0x%x 0x%x\n", i, readl(baddr + i),
+		DDPDUMP("DSC+%x: 0x%x 0x%x 0x%x 0x%x", i, readl(baddr + i),
 			 readl(baddr + i + 0x4), readl(baddr + i + 0x8),
 			 readl(baddr + i + 0xc));
 	}
@@ -761,8 +749,8 @@ int mtk_dsc_analysis(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s ANALYSIS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs);
-	DDPDUMP("en=%d, pic_w=%d, pic_h=%d, slice_w=%d, bypass=%d\n",
+	DDPDUMP("== %s ANALYSIS:0x%x ==", mtk_dump_comp_str(comp), comp->regs);
+	DDPDUMP("en=%d, pic_w=%d, pic_h=%d, slice_w=%d, bypass=%d",
 		 DISP_REG_GET_FIELD(CON_FLD_DSC_EN,
 				baddr + DISP_REG_DSC_CON),
 		 DISP_REG_GET_FIELD(CFG_FLD_PIC_WIDTH,
@@ -792,7 +780,7 @@ static int mtk_disp_dsc_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component %s: %d\n",
@@ -825,7 +813,7 @@ static int mtk_disp_dsc_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 
-	DDPMSG("%s+\n", __func__);
+	DDPMSG("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -855,7 +843,7 @@ static int mtk_disp_dsc_probe(struct platform_device *pdev)
 			       IRQF_TRIGGER_NONE | IRQF_SHARED, dev_name(dev),
 			       priv);
 	if (ret < 0) {
-		DDPAEE("%s:%d, failed to request irq:%d ret:%d comp_id:%d\n",
+		DDPAEE("%s:%d, failed to request irq:%d ret:%d comp_id:%d",
 				__func__, __LINE__,
 				irq, ret, comp_id);
 		return ret;
@@ -872,7 +860,7 @@ static int mtk_disp_dsc_probe(struct platform_device *pdev)
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 
-	DDPMSG("%s-\n", __func__);
+	DDPMSG("%s-", __func__);
 	return ret;
 }
 

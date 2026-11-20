@@ -30,24 +30,25 @@
 
 extern int mml_pq_msg;
 
+/* Mainline-style logging: standard levels, no [flow]/[param_dump] tags. */
 #define mml_pq_msg(fmt, args...) \
 do { \
 	if (mml_pq_msg) \
-		pr_notice("[flow]" fmt "\n", ##args); \
+		pr_debug(fmt, ##args); \
 } while (0)
 
 #define mml_pq_log(fmt, args...) \
-	pr_notice("[flow]" fmt "\n", ##args)
+	pr_debug(fmt, ##args)
 
 #define mml_pq_err(fmt, args...) \
-	pr_notice("[flow][err]" fmt "\n", ##args)
+	pr_err(fmt, ##args)
 
 extern int mml_pq_dump;
 
 #define mml_pq_dump(fmt, args...) \
 do { \
 	if (mml_pq_dump) \
-		pr_notice("[param_dump]" fmt "\n", ##args); \
+		pr_debug(fmt, ##args); \
 } while (0)
 
 extern int mml_pq_rb_msg;
@@ -55,9 +56,8 @@ extern int mml_pq_rb_msg;
 #define mml_pq_rb_msg(fmt, args...) \
 do { \
 	if (mml_pq_rb_msg) \
-		pr_notice("[rb_flow]" fmt "\n", ##args); \
+		pr_debug(fmt, ##args); \
 } while (0)
-
 
 /* mml pq ftrace */
 extern int mml_pq_trace;

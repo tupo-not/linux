@@ -6480,6 +6480,8 @@ static char *ddp_get_mutex_module1_name_mt6855(unsigned int bit)
 	}
 }
 
+char *mtk_ddp_get_mutex_sof_name_mt6885(unsigned int regval);
+
 char *mtk_ddp_get_mutex_sof_name_mt6885(unsigned int regval)
 {
 	switch (regval) {
@@ -6492,10 +6494,12 @@ char *mtk_ddp_get_mutex_sof_name_mt6885(unsigned int regval)
 	case MUTEX_SOF_DPI0:
 		return "dpi";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
+
+char *mtk_ddp_get_mutex_sof_name_mt6983(unsigned int regval);
 
 char *mtk_ddp_get_mutex_sof_name_mt6983(unsigned int regval)
 {
@@ -6511,10 +6515,12 @@ char *mtk_ddp_get_mutex_sof_name_mt6983(unsigned int regval)
 	case MT6983_MUTEX_SOF_DPI1:
 		return "dpi1";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
+
+char *mtk_ddp_get_mutex_sof_name_mt6895(unsigned int regval);
 
 char *mtk_ddp_get_mutex_sof_name_mt6895(unsigned int regval)
 {
@@ -6530,10 +6536,12 @@ char *mtk_ddp_get_mutex_sof_name_mt6895(unsigned int regval)
 	case MT6895_MUTEX_SOF_DPI1:
 		return "dpi1";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
+
+char *mtk_ddp_get_mutex_sof_name_mt6873(unsigned int regval);
 
 char *mtk_ddp_get_mutex_sof_name_mt6873(unsigned int regval)
 {
@@ -6545,10 +6553,12 @@ char *mtk_ddp_get_mutex_sof_name_mt6873(unsigned int regval)
 	case MUTEX_SOF_DPI0:
 		return "dpi";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
+
+char *mtk_ddp_get_mutex_sof_name_mt6853(unsigned int regval);
 
 char *mtk_ddp_get_mutex_sof_name_mt6853(unsigned int regval)
 {
@@ -6558,10 +6568,12 @@ char *mtk_ddp_get_mutex_sof_name_mt6853(unsigned int regval)
 	case MUTEX_SOF_DSI0:
 		return "dsi0";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
+
+char *mtk_ddp_get_mutex_sof_name_mt6833(unsigned int regval);
 
 char *mtk_ddp_get_mutex_sof_name_mt6833(unsigned int regval)
 {
@@ -6571,10 +6583,12 @@ char *mtk_ddp_get_mutex_sof_name_mt6833(unsigned int regval)
 	case MUTEX_SOF_DSI0:
 		return "dsi0";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
+
+char *mtk_ddp_get_mutex_sof_name_mt6879(unsigned int regval);
 
 char *mtk_ddp_get_mutex_sof_name_mt6879(unsigned int regval)
 {
@@ -6584,10 +6598,12 @@ char *mtk_ddp_get_mutex_sof_name_mt6879(unsigned int regval)
 	case MUTEX_SOF_DSI0:
 		return "dsi0";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
+
+char *mtk_ddp_get_mutex_sof_name_mt6855(unsigned int regval);
 
 char *mtk_ddp_get_mutex_sof_name_mt6855(unsigned int regval)
 {
@@ -6597,7 +6613,7 @@ char *mtk_ddp_get_mutex_sof_name_mt6855(unsigned int regval)
 	case MUTEX_SOF_DSI0:
 		return "dsi0";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
@@ -7413,6 +7429,8 @@ static char *ddp_clock_1_mt6855(int bit)
 	}
 }
 
+char *mtk_ddp_get_mutex_sof_name(unsigned int regval);
+
 char *mtk_ddp_get_mutex_sof_name(unsigned int regval)
 {
 	switch (regval) {
@@ -7425,7 +7443,7 @@ char *mtk_ddp_get_mutex_sof_name(unsigned int regval)
 	case MUTEX_SOF_DPI0:
 		return "dpi";
 	default:
-		DDPDUMP("%s, unknown reg=%d\n", __func__, regval);
+		DDPDUMP("%s, unknown reg=%d", __func__, regval);
 		return "unknown";
 	}
 }
@@ -9656,7 +9674,7 @@ void mtk_disp_ultra_offset(void __iomem *config_regs,
 		shift = REG_FLD_SHIFT(FLD_OVL3_2L_ULTRA_SEL);
 		break;
 	default:
-		DDPPR_ERR("unsupport comp id:%d\n", comp);
+		DDPPR_ERR("unsupport comp id:%d", comp);
 		return;
 	}
 
@@ -9897,7 +9915,7 @@ void mtk_ddp_add_comp_to_path(struct mtk_drm_crtc *mtk_crtc,
 		break;
 
 	default:
-		DDPINFO("%s mtk drm not support mmsys id %d\n",
+		DDPINFO("%s mtk drm not support mmsys id %d",
 			__func__, priv->data->mmsys_id);
 		break;
 	}
@@ -10194,7 +10212,7 @@ void mtk_ddp_add_comp_to_path_with_cmdq(struct mtk_drm_crtc *mtk_crtc,
 		break;
 
 	default:
-		DDPINFO("%s mtk drm not support mmsys id %d\n",
+		DDPINFO("%s mtk drm not support mmsys id %d",
 			__func__, priv->data->mmsys_id);
 		break;
 	}
@@ -10336,7 +10354,7 @@ void mtk_ddp_remove_comp_from_path(struct mtk_drm_crtc *mtk_crtc,
 		break;
 
 	default:
-		DDPINFO("%s mtk drm not support mmsys id %d\n",
+		DDPINFO("%s mtk drm not support mmsys id %d",
 			__func__, priv->data->mmsys_id);
 		break;
 	}
@@ -10483,7 +10501,7 @@ void mtk_ddp_remove_comp_from_path_with_cmdq(struct mtk_drm_crtc *mtk_crtc,
 		break;
 
 	default:
-		DDPINFO("%s mtk drm not support mmsys id %d\n",
+		DDPINFO("%s mtk drm not support mmsys id %d",
 			__func__, priv->data->mmsys_id);
 		break;
 	}
@@ -11191,7 +11209,7 @@ static void mtk_ddp_ext_dual_pipe_dsc(struct mtk_drm_crtc *mtk_crtc,
 		mtk_ddp_ext_dual_pipe_dsc_MT6895(mtk_crtc, mutex);
 		break;
 	default:
-		DDPINFO("%s mtk drm not support mmsys id %d\n",
+		DDPINFO("%s mtk drm not support mmsys id %d",
 			__func__, priv->data->mmsys_id);
 		break;
 	}
@@ -11213,7 +11231,7 @@ static void mtk_ddp_ext_insert_dual_pipe(struct mtk_drm_crtc *mtk_crtc,
 		mtk_ddp_ext_insert_dual_pipe_MT6895(mtk_crtc, mutex);
 		break;
 	default:
-		DDPINFO("%s mtk drm not support mmsys id %d\n",
+		DDPINFO("%s mtk drm not support mmsys id %d",
 			__func__, priv->data->mmsys_id);
 		break;
 	}
@@ -11448,42 +11466,41 @@ void mtk_ddp_remove_dsc_prim_MT6855(struct mtk_drm_crtc *mtk_crtc,
 /* TODO: adopt for multiple platform */
 void mtk_ddp_dual_pipe_dump(struct mtk_drm_crtc *mtk_crtc)
 {
-	unsigned int addr, shift, reg;
+	unsigned int addr, reg;
 	void __iomem *config_regs = mtk_crtc->config_regs;
 
-	DDPDUMP("%s\n", __func__);
+	DDPDUMP("%s", __func__);
 	addr = MT6885_DISP_OVL2_2L_OUT0_MOUT;
 	reg = readl_relaxed(config_regs + addr);
-	DDPDUMP("MT6885_DISP_OVL2_2L_OUT0_MOUT:0x%x\n", reg);
+	DDPDUMP("MT6885_DISP_OVL2_2L_OUT0_MOUT:0x%x", reg);
 
 	addr = MT6885_DISP_RDMA4_SOUT;
 	reg = readl_relaxed(config_regs + addr);
-	DDPDUMP("MT6885_DISP_RDMA4_SOUT:0x%x\n", reg);
+	DDPDUMP("MT6885_DISP_RDMA4_SOUT:0x%x", reg);
 
 	/* DISP_OVL3_2L_OUT0_MOUT -> DISP_RDMA5 */
 	addr = MT6885_DISP_OVL3_2L_OUT0_MOUT;
 	reg = readl_relaxed(config_regs + addr);
-	DDPDUMP("MT6885_DISP_OVL3_2L_OUT0_MOUT:0x%x\n", reg);
+	DDPDUMP("MT6885_DISP_OVL3_2L_OUT0_MOUT:0x%x", reg);
 
 	/* DISP_OVL3_2L -> DISP_RDMA5 */
 	addr = MT6885_MMSYS_OVL_CON;
 	reg = readl_relaxed(config_regs + addr);
-	DDPDUMP("MT6885_MMSYS_OVL_CON:0x%x\n", reg);
+	DDPDUMP("MT6885_MMSYS_OVL_CON:0x%x", reg);
 
 	/*OVL3 Ultra/pre ultra from RDMA setting,  "00"RDMA4;"01"RDMA5*/
-	shift = REG_FLD_SHIFT(FLD_OVL3_2L_ULTRA_SEL);
 	addr = DISP_REG_CONFIG_MMSYS_MISC;
 	reg = readl_relaxed(config_regs + addr);
-	DDPDUMP("DISP_REG_CONFIG_MMSYS_MISC:0x%x\n", reg);
+	DDPDUMP("DISP_REG_CONFIG_MMSYS_MISC:0x%x", reg);
 	/* DISP_RDMA5_SOUT -> DISP_MERGE1 */
 	addr = MT6885_DISP_RDMA5_SOUT;
 	reg = readl_relaxed(config_regs + addr);
-	DDPDUMP("MT6885_DISP_RDMA5_SOUT:0x%x\n", reg);
+	DDPDUMP("MT6885_DISP_RDMA5_SOUT:0x%x", reg);
 
 	/* DISP_MERGE1 -> DISP_DP_WRAP_SEL */
 	addr = MT6885_DISP_DP_WRAP_SEL_IN;
 	reg = readl_relaxed(config_regs + addr);
-	DDPDUMP("MT6885_DISP_DP_WRAP_SEL_IN:0x%x\n", reg);
+	DDPDUMP("MT6885_DISP_DP_WRAP_SEL_IN:0x%x", reg);
 
 }
 
@@ -11504,7 +11521,7 @@ void mtk_ddp_connect_dual_pipe_path(struct mtk_drm_crtc *mtk_crtc,
 
 		for_each_comp_in_dual_pipe(comp, mtk_crtc, i, j) {
 			if (j >= mtk_crtc->dual_pipe_ddp_ctx.ddp_comp_nr[i]) {
-				DDPINFO("exceed comp nr\n");
+				DDPINFO("exceed comp nr");
 				continue;
 			}
 			ddp_comp = mtk_crtc->dual_pipe_ddp_ctx.ddp_comp[i];
@@ -11566,7 +11583,7 @@ mtk_ddp_get_mmsys_reg_data(enum mtk_mmsys_id mmsys_id)
 		data = &mt6855_mmsys_reg_data;
 		break;
 	default:
-		DDPPR_ERR("mtk drm not support mmsys id %d\n", mmsys_id);
+		DDPPR_ERR("mtk drm not support mmsys id %d", mmsys_id);
 		break;
 	}
 	return data;
@@ -11592,7 +11609,7 @@ void mtk_disp_mutex_put(struct mtk_disp_mutex *mutex)
 		container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -11628,7 +11645,7 @@ void mtk_disp_mutex_add_comp(struct mtk_disp_mutex *mutex,
 	void __iomem *reg_addr;
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 	if (ddp->data->dispsys_map && ddp->data->dispsys_map[id] == 1)
@@ -11647,7 +11664,7 @@ void mtk_disp_mutex_add_comp(struct mtk_disp_mutex *mutex,
 		writel_relaxed(reg, reg_addr + DISP_REG_MUTEX_MOD2(mutex->id));
 	}
 
-	DDPDBG("%s mutex%d add %d\n", __func__, mutex->id, id);
+	DDPDBG("%s mutex%d add %d", __func__, mutex->id, id);
 }
 
 /* TODO: should be refactor, need path rather than crtc */
@@ -11661,7 +11678,7 @@ void mtk_disp_mutex_src_set(struct mtk_drm_crtc *mtk_crtc, bool is_cmd_mode)
 	struct mtk_ddp_comp *comp = NULL;
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -11694,7 +11711,7 @@ void mtk_disp_mutex_src_set(struct mtk_drm_crtc *mtk_crtc, bool is_cmd_mode)
 	else if (id == DDP_COMPONENT_DPI1)
 		val = DDP_MUTEX_SOF_DPI1;
 
-	DDPINFO("%s, id:%d, val:0x%x\n", __func__, id,
+	DDPINFO("%s, id:%d, val:0x%x", __func__, id,
 	       ddp->data->mutex_sof[val]);
 
 	writel_relaxed(ddp->data->mutex_sof[val],
@@ -11709,7 +11726,7 @@ void mtk_disp_mutex_src_set(struct mtk_drm_crtc *mtk_crtc, bool is_cmd_mode)
 		else if (val == DDP_MUTEX_SOF_DPI1)
 			val = DDP_MUTEX_SOF_DPI0;
 
-		DDPINFO("%s, disp1 id:%d, val:0x%x\n", __func__, id,
+		DDPINFO("%s, disp1 id:%d, val:0x%x", __func__, id,
 			ddp->data->mutex_sof[val]);
 		writel_relaxed(
 			ddp->data->mutex_sof[val],
@@ -11729,7 +11746,7 @@ void mtk_disp_mutex_add_comp_with_cmdq(struct mtk_drm_crtc *mtk_crtc,
 	resource_size_t regs_pa;
 
 	if (mutex_id >= DDP_PATH_NR) {
-		DDPPR_ERR("mutex id is out of bound:%d\n", mutex_id);
+		DDPPR_ERR("mutex id is out of bound:%d", mutex_id);
 		return;
 	}
 
@@ -11737,7 +11754,7 @@ void mtk_disp_mutex_add_comp_with_cmdq(struct mtk_drm_crtc *mtk_crtc,
 	ddp = container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -11789,7 +11806,7 @@ void mtk_disp_mutex_add_comp_with_cmdq(struct mtk_drm_crtc *mtk_crtc,
 				       ddp->data->mutex_mod[id] & ~BIT(31),
 				       ddp->data->mutex_mod[id] & ~BIT(31));
 		}
-		DDPINFO("mutex_add_comp /w cmdq mutex%d add %s\n", mutex->id,
+		DDPINFO("mutex_add_comp /w cmdq mutex%d add %s", mutex->id,
 			mtk_dump_comp_str_id(id));
 
 		return;
@@ -11808,7 +11825,7 @@ void mtk_disp_mutex_remove_comp(struct mtk_disp_mutex *mutex,
 	void __iomem *reg_addr;
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -11858,7 +11875,7 @@ void mtk_disp_mutex_remove_comp_with_cmdq(struct mtk_drm_crtc *mtk_crtc,
 	resource_size_t regs_pa;
 
 	if (mutex_id >= DDP_PATH_NR) {
-		DDPPR_ERR("mutex id is out of bound:%d\n", mutex_id);
+		DDPPR_ERR("mutex id is out of bound:%d", mutex_id);
 		return;
 	}
 
@@ -11866,7 +11883,7 @@ void mtk_disp_mutex_remove_comp_with_cmdq(struct mtk_drm_crtc *mtk_crtc,
 	ddp = container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -11920,6 +11937,8 @@ void mtk_disp_mutex_trigger(struct mtk_disp_mutex *mutex, void *handle)
 	cmdq_pkt_write(handle, ddp->cmdq_base,
 		       ddp->side_regs_pa + DISP_REG_MUTEX_EN(mutex->id), 1, ~0);
 }
+
+void mtk_disp_mutex_inten_enable(struct mtk_disp_mutex *mutex);
 
 void mtk_disp_mutex_inten_enable(struct mtk_disp_mutex *mutex)
 {
@@ -11989,7 +12008,7 @@ void mtk_disp_mutex_enable(struct mtk_disp_mutex *mutex)
 		container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -12009,7 +12028,7 @@ void mtk_disp_mutex_enable_cmdq(struct mtk_disp_mutex *mutex,
 		container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -12038,7 +12057,7 @@ void mtk_disp_mutex_disable(struct mtk_disp_mutex *mutex)
 		container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -12067,7 +12086,7 @@ void mtk_disp_mutex_acquire(struct mtk_disp_mutex *mutex)
 
 	if (readl_poll_timeout_atomic(ddp->regs + DISP_REG_MUTEX(mutex->id),
 				      tmp, tmp & INT_MUTEX, 1, 10000))
-		DDPPR_ERR("could not acquire mutex %d\n", mutex->id);
+		DDPPR_ERR("could not acquire mutex %d", mutex->id);
 
 	if (!(ddp->data->dispsys_map && ddp->side_regs))
 		return;
@@ -12076,7 +12095,7 @@ void mtk_disp_mutex_acquire(struct mtk_disp_mutex *mutex)
 	writel(1, ddp->side_regs + DISP_REG_MUTEX(mutex->id));
 	if (readl_poll_timeout_atomic(ddp->side_regs + DISP_REG_MUTEX(mutex->id),
 				      tmp, tmp & INT_MUTEX, 1, 10000))
-		DDPPR_ERR("could not acquire disp1 mutex %d\n", mutex->id);
+		DDPPR_ERR("could not acquire disp1 mutex %d", mutex->id);
 
 }
 
@@ -12100,7 +12119,7 @@ void mtk_disp_mutex_submit_sof(struct mtk_disp_mutex *mutex)
 		container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 
 	if (&ddp->mutex[mutex->id] != mutex)
-		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d\n",
+		DDPAEE("%s:%d, invalid mutex:(%p,%p) id:%d",
 			__func__, __LINE__,
 			&ddp->mutex[mutex->id], mutex, mutex->id);
 
@@ -12128,7 +12147,7 @@ static irqreturn_t mtk_disp_mutex_irq_handler(int irq, void *dev_id)
 	irq_debug[0] = sched_clock();
 
 	if (mtk_drm_top_clk_isr_get("mutex_irq") == false) {
-		DDPIRQ("%s, top clk off\n", __func__);
+		DDPIRQ("%s, top clk off", __func__);
 		return IRQ_NONE;
 	}
 
@@ -12140,13 +12159,13 @@ static irqreturn_t mtk_disp_mutex_irq_handler(int irq, void *dev_id)
 	}
 
 	DRM_MMP_MARK(IRQ, ddp->regs_pa, val);
-	DDPIRQ("MM_MUTEX irq, val:0x%x\n", val);
+	DDPIRQ("MM_MUTEX irq, val:0x%x", val);
 
 	writel(~val, ddp->regs + DISP_REG_MUTEX_INTSTA);
 
 	for (m_id = 0; m_id < DISP_MUTEX_DDP_COUNT; m_id++) {
 		if (val & (0x1 << (m_id + DISP_MUTEX_TOTAL))) {
-			DDPIRQ("[IRQ] mutex%d eof!\n", m_id);
+			DDPIRQ("mutex%d eof!", m_id);
 			DRM_MMP_MARK(mutex[m_id], val, 1);
 #ifndef DRM_BYPASS_PQ
 			irq_debug[1] = sched_clock();
@@ -12155,7 +12174,7 @@ static irqreturn_t mtk_disp_mutex_irq_handler(int irq, void *dev_id)
 #endif
 		}
 		if (val & (0x1 << m_id)) {
-			DDPIRQ("[IRQ] mutex%d sof!\n", m_id);
+			DDPIRQ("mutex%d sof!", m_id);
 			DRM_MMP_MARK(mutex[m_id], val, 0);
 
 			if (disp_helper_get_stage() == DISP_HELPER_STAGE_NORMAL) {
@@ -12178,7 +12197,7 @@ static irqreturn_t mtk_disp_mutex_irq_handler(int irq, void *dev_id)
 
 	if (((sched_clock() - irq_debug[0]) > 850000) &&
 			__ratelimit(&irq_ratelimit)) {
-		DDPMSG("%s > 850 us, %llu %llu %llu %llu %llu\n",
+		DDPMSG("%s > 850 us, %llu %llu %llu %llu %llu",
 			__func__,
 			(irq_debug[2] - irq_debug[1]),
 			(irq_debug[4] - irq_debug[3]),
@@ -12202,33 +12221,33 @@ void mutex_dump_reg_mt6885(struct mtk_disp_mutex *mutex)
 		container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 	void __iomem *module_base = ddp->regs;
 
-	DDPDUMP("== DISP MUTEX REGS ==\n");
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("== DISP MUTEX REGS ==");
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x0, readl_relaxed(module_base + 0x0), 0x4,
 		readl_relaxed(module_base + 0x4), 0x8,
 		readl_relaxed(module_base + 0x8), 0x020,
 		readl_relaxed(module_base + 0x020));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x028, readl_relaxed(module_base + 0x028), 0x02C,
 		readl_relaxed(module_base + 0x02C), 0x030,
 		readl_relaxed(module_base + 0x030), 0x034,
 		readl_relaxed(module_base + 0x034));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x040, readl_relaxed(module_base + 0x040), 0x048,
 		readl_relaxed(module_base + 0x048), 0x04C,
 		readl_relaxed(module_base + 0x04C), 0x050,
 		readl_relaxed(module_base + 0x050));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x054, readl_relaxed(module_base + 0x054), 0x060,
 		readl_relaxed(module_base + 0x060), 0x068,
 		readl_relaxed(module_base + 0x068), 0x06C,
 		readl_relaxed(module_base + 0x06C));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x070, readl_relaxed(module_base + 0x070), 0x074,
 		readl_relaxed(module_base + 0x074), 0x080,
 		readl_relaxed(module_base + 0x080), 0x088,
 		readl_relaxed(module_base + 0x088));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x08C, readl_relaxed(module_base + 0x08C), 0x090,
 		readl_relaxed(module_base + 0x090), 0x094,
 		readl_relaxed(module_base + 0x094));
@@ -12242,33 +12261,33 @@ void mutex_dump_reg_mt6983(struct mtk_disp_mutex *mutex)
 	int cnt = 0;
 
 REDUMP:
-	DDPDUMP("== DISP%d MUTEX REGS ==\n", cnt);
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("== DISP%d MUTEX REGS ==", cnt);
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x0, readl_relaxed(module_base + 0x0), 0x4,
 		readl_relaxed(module_base + 0x4), 0x8,
 		readl_relaxed(module_base + 0x8), 0x020,
 		readl_relaxed(module_base + 0x020));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x028, readl_relaxed(module_base + 0x028), 0x02C,
 		readl_relaxed(module_base + 0x02C), 0x030,
 		readl_relaxed(module_base + 0x030), 0x034,
 		readl_relaxed(module_base + 0x034));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x040, readl_relaxed(module_base + 0x040), 0x048,
 		readl_relaxed(module_base + 0x048), 0x04C,
 		readl_relaxed(module_base + 0x04C), 0x050,
 		readl_relaxed(module_base + 0x050));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x054, readl_relaxed(module_base + 0x054), 0x060,
 		readl_relaxed(module_base + 0x060), 0x068,
 		readl_relaxed(module_base + 0x068), 0x06C,
 		readl_relaxed(module_base + 0x06C));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x070, readl_relaxed(module_base + 0x070), 0x074,
 		readl_relaxed(module_base + 0x074), 0x080,
 		readl_relaxed(module_base + 0x080), 0x088,
 		readl_relaxed(module_base + 0x088));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x08C, readl_relaxed(module_base + 0x08C), 0x090,
 		readl_relaxed(module_base + 0x090), 0x094,
 		readl_relaxed(module_base + 0x094));
@@ -12288,33 +12307,33 @@ void mutex_dump_reg_mt6895(struct mtk_disp_mutex *mutex)
 	int cnt = 0;
 
 REDUMP:
-	DDPDUMP("== DISP%d MUTEX REGS:0x%x ==\n", cnt, ddp->regs_pa);
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("== DISP%d MUTEX REGS:0x%x ==", cnt, ddp->regs_pa);
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x0, readl_relaxed(module_base + 0x0), 0x4,
 		readl_relaxed(module_base + 0x4), 0x8,
 		readl_relaxed(module_base + 0x8), 0x020,
 		readl_relaxed(module_base + 0x020));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x028, readl_relaxed(module_base + 0x028), 0x02C,
 		readl_relaxed(module_base + 0x02C), 0x030,
 		readl_relaxed(module_base + 0x030), 0x034,
 		readl_relaxed(module_base + 0x034));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x040, readl_relaxed(module_base + 0x040), 0x048,
 		readl_relaxed(module_base + 0x048), 0x04C,
 		readl_relaxed(module_base + 0x04C), 0x050,
 		readl_relaxed(module_base + 0x050));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x054, readl_relaxed(module_base + 0x054), 0x060,
 		readl_relaxed(module_base + 0x060), 0x068,
 		readl_relaxed(module_base + 0x068), 0x06C,
 		readl_relaxed(module_base + 0x06C));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x070, readl_relaxed(module_base + 0x070), 0x074,
 		readl_relaxed(module_base + 0x074), 0x080,
 		readl_relaxed(module_base + 0x080), 0x088,
 		readl_relaxed(module_base + 0x088));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x08C, readl_relaxed(module_base + 0x08C), 0x090,
 		readl_relaxed(module_base + 0x090), 0x094,
 		readl_relaxed(module_base + 0x094));
@@ -12333,7 +12352,7 @@ void mutex_dump_reg_mt6879(struct mtk_disp_mutex *mutex)
 	void __iomem *module_base = ddp->regs;
 	unsigned int off = 0;
 
-	DDPDUMP("== DISP MUTEX REGS ==\n");
+	DDPDUMP("== DISP MUTEX REGS ==");
 
 	for (off = 0x0; off <= 0x80; off += 0x10)
 		mtk_serial_dump_reg(module_base, off, 4);
@@ -12346,7 +12365,7 @@ void mutex_dump_reg_mt6855(struct mtk_disp_mutex *mutex)
 	void __iomem *module_base = ddp->regs;
 	unsigned int off = 0;
 
-	DDPDUMP("== DISP MUTEX REGS ==\n");
+	DDPDUMP("== DISP MUTEX REGS ==");
 
 	for (off = 0x0; off <= 0x80; off += 0x10)
 		mtk_serial_dump_reg(module_base, off, 4);
@@ -12358,33 +12377,33 @@ void mutex_dump_reg_mt6873(struct mtk_disp_mutex *mutex)
 		container_of(mutex, struct mtk_ddp, mutex[mutex->id]);
 	void __iomem *module_base = ddp->regs;
 
-	DDPDUMP("== DISP MUTEX REGS ==\n");
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("== DISP MUTEX REGS ==");
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x0, readl_relaxed(module_base + 0x0), 0x4,
 		readl_relaxed(module_base + 0x4), 0x8,
 		readl_relaxed(module_base + 0x8), 0x020,
 		readl_relaxed(module_base + 0x020));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x028, readl_relaxed(module_base + 0x028), 0x02C,
 		readl_relaxed(module_base + 0x02C), 0x030,
 		readl_relaxed(module_base + 0x030), 0x034,
 		readl_relaxed(module_base + 0x034));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x040, readl_relaxed(module_base + 0x040), 0x048,
 		readl_relaxed(module_base + 0x048), 0x04C,
 		readl_relaxed(module_base + 0x04C), 0x050,
 		readl_relaxed(module_base + 0x050));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x054, readl_relaxed(module_base + 0x054), 0x060,
 		readl_relaxed(module_base + 0x060), 0x068,
 		readl_relaxed(module_base + 0x068), 0x06C,
 		readl_relaxed(module_base + 0x06C));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x070, readl_relaxed(module_base + 0x070), 0x074,
 		readl_relaxed(module_base + 0x074), 0x080,
 		readl_relaxed(module_base + 0x080), 0x088,
 		readl_relaxed(module_base + 0x088));
-	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x\n",
+	DDPDUMP("0x%03x=0x%08x 0x%03x=0x%08x 0x%03x=0x%08x",
 		0x08C, readl_relaxed(module_base + 0x08C), 0x090,
 		readl_relaxed(module_base + 0x090), 0x094,
 		readl_relaxed(module_base + 0x094));
@@ -12401,7 +12420,7 @@ void mutex_dump_analysis_mt6885(struct mtk_disp_mutex *mutex)
 	int len = 0;
 	unsigned int val;
 
-	DDPDUMP("== DISP Mutex Analysis ==\n");
+	DDPDUMP("== DISP Mutex Analysis ==");
 	for (i = 0; i < 5; i++) {
 		unsigned int mod0, mod1;
 
@@ -12423,7 +12442,7 @@ void mutex_dump_analysis_mt6885(struct mtk_disp_mutex *mutex)
 
 		if (len < 0) {
 			/* Handle sprintf() error */
-			DDPPR_ERR("sprintf error\n");
+			DDPPR_ERR("sprintf error");
 		}
 
 		p += len;
@@ -12436,7 +12455,7 @@ void mutex_dump_analysis_mt6885(struct mtk_disp_mutex *mutex)
 					ddp_get_mutex_module0_name_mt6885(j));
 				if (len < 0) {
 					/* Handle sprintf() error */
-					DDPPR_ERR("sprintf error\n");
+					DDPPR_ERR("sprintf error");
 				}
 				p += len;
 			}
@@ -12450,12 +12469,12 @@ void mutex_dump_analysis_mt6885(struct mtk_disp_mutex *mutex)
 
 				if (len < 0) {
 					/* Handle sprintf() error */
-					DDPPR_ERR("sprintf error\n");
+					DDPPR_ERR("sprintf error");
 				}
 				p += len;
 			}
 		}
-		DDPDUMP("%s)\n", mutex_module);
+		DDPDUMP("%s)", mutex_module);
 	}
 }
 
@@ -12472,7 +12491,7 @@ void mutex_dump_analysis_mt6983(struct mtk_disp_mutex *mutex)
 	unsigned int val;
 
 REDUMP:
-	DDPDUMP("== DISP%d Mutex Analysis ==\n", cnt);
+	DDPDUMP("== DISP%d Mutex Analysis ==", cnt);
 	for (i = 0; i < 5; i++) {
 		unsigned int mod0, mod1;
 
@@ -12494,7 +12513,7 @@ REDUMP:
 
 		if (len < 0) {
 			/* Handle sprintf() error */
-			DDPPR_ERR("sprintf error\n");
+			DDPPR_ERR("sprintf error");
 		}
 
 		p += len;
@@ -12507,7 +12526,7 @@ REDUMP:
 					ddp_get_mutex_module0_name_mt6983(j));
 				if (len < 0) {
 					/* Handle sprintf() error */
-					DDPPR_ERR("sprintf error\n");
+					DDPPR_ERR("sprintf error");
 				}
 				p += len;
 			}
@@ -12521,12 +12540,12 @@ REDUMP:
 
 				if (len < 0) {
 					/* Handle sprintf() error */
-					DDPPR_ERR("sprintf error\n");
+					DDPPR_ERR("sprintf error");
 				}
 				p += len;
 			}
 		}
-		DDPDUMP("%s)\n", mutex_module);
+		DDPDUMP("%s)", mutex_module);
 	}
 
 	if (cnt == 0 && ddp->side_regs != NULL) {
@@ -12549,7 +12568,7 @@ void mutex_dump_analysis_mt6895(struct mtk_disp_mutex *mutex)
 	unsigned int val;
 
 REDUMP:
-	DDPDUMP("== DISP%d Mutex Analysis:0x%x ==\n", cnt, ddp->regs_pa);
+	DDPDUMP("== DISP%d Mutex Analysis:0x%x ==", cnt, ddp->regs_pa);
 	for (i = 0; i < 5; i++) {
 		unsigned int mod0, mod1;
 
@@ -12571,7 +12590,7 @@ REDUMP:
 
 		if (len < 0) {
 			/* Handle sprintf() error */
-			DDPPR_ERR("sprintf error\n");
+			DDPPR_ERR("sprintf error");
 		}
 
 		p += len;
@@ -12584,7 +12603,7 @@ REDUMP:
 					ddp_get_mutex_module0_name_mt6895(j));
 				if (len < 0) {
 					/* Handle sprintf() error */
-					DDPPR_ERR("sprintf error\n");
+					DDPPR_ERR("sprintf error");
 				}
 				p += len;
 			}
@@ -12598,12 +12617,12 @@ REDUMP:
 
 				if (len < 0) {
 					/* Handle sprintf() error */
-					DDPPR_ERR("sprintf error\n");
+					DDPPR_ERR("sprintf error");
 				}
 				p += len;
 			}
 		}
-		DDPDUMP("%s)\n", mutex_module);
+		DDPDUMP("%s)", mutex_module);
 	}
 
 	if (cnt == 0 && ddp->side_regs != NULL) {
@@ -12624,7 +12643,7 @@ void mutex_dump_analysis_mt6873(struct mtk_disp_mutex *mutex)
 	int len = 0;
 	unsigned int val;
 
-	DDPDUMP("== DISP Mutex Analysis ==\n");
+	DDPDUMP("== DISP Mutex Analysis ==");
 	for (i = 0; i < 5; i++) {
 		p = mutex_module;
 		len = 0;
@@ -12653,7 +12672,7 @@ void mutex_dump_analysis_mt6873(struct mtk_disp_mutex *mutex)
 				p += len;
 			}
 		}
-		DDPDUMP("%s)\n", mutex_module);
+		DDPDUMP("%s)", mutex_module);
 	}
 }
 
@@ -12668,7 +12687,7 @@ void mutex_dump_analysis_mt6853(struct mtk_disp_mutex *mutex)
 	int len = 0;
 	unsigned int val;
 
-	DDPDUMP("== DISP Mutex Analysis ==\n");
+	DDPDUMP("== DISP Mutex Analysis ==");
 	for (i = 0; i < 5; i++) {
 		p = mutex_module;
 		len = 0;
@@ -12698,7 +12717,7 @@ void mutex_dump_analysis_mt6853(struct mtk_disp_mutex *mutex)
 					p += len;
 			}
 		}
-		DDPDUMP("%s)\n", mutex_module);
+		DDPDUMP("%s)", mutex_module);
 	}
 }
 
@@ -12713,7 +12732,7 @@ void mutex_dump_analysis_mt6833(struct mtk_disp_mutex *mutex)
 	int len = 0;
 	unsigned int val;
 
-	DDPDUMP("== DISP Mutex Analysis ==\n");
+	DDPDUMP("== DISP Mutex Analysis ==");
 	for (i = 0; i < 5; i++) {
 		p = mutex_module;
 		len = 0;
@@ -12744,7 +12763,7 @@ void mutex_dump_analysis_mt6833(struct mtk_disp_mutex *mutex)
 					p += len;
 			}
 		}
-		DDPDUMP("%s)\n", mutex_module);
+		DDPDUMP("%s)", mutex_module);
 	}
 }
 
@@ -12759,7 +12778,7 @@ void mutex_dump_analysis_mt6879(struct mtk_disp_mutex *mutex)
 	int len = 0;
 	unsigned int val;
 
-	DDPDUMP("== DISP Mutex Analysis ==\n");
+	DDPDUMP("== DISP Mutex Analysis ==");
 	for (i = 0; i < 5; i++) {
 		unsigned int mod0, mod1;
 
@@ -12799,7 +12818,7 @@ void mutex_dump_analysis_mt6879(struct mtk_disp_mutex *mutex)
 				p += len;
 			}
 		}
-		DDPDUMP("%s)\n", mutex_module);
+		DDPDUMP("%s)", mutex_module);
 	}
 }
 
@@ -12814,7 +12833,7 @@ void mutex_dump_analysis_mt6855(struct mtk_disp_mutex *mutex)
 	int len = 0;
 	unsigned int val;
 
-	DDPDUMP("== DISP Mutex Analysis ==\n");
+	DDPDUMP("== DISP Mutex Analysis ==");
 	for (i = 0; i < 5; i++) {
 		unsigned int mod0, mod1;
 
@@ -12854,7 +12873,7 @@ void mutex_dump_analysis_mt6855(struct mtk_disp_mutex *mutex)
 				p += len;
 			}
 		}
-		DDPDUMP("%s)\n", mutex_module);
+		DDPDUMP("%s)", mutex_module);
 	}
 }
 
@@ -12862,7 +12881,7 @@ void mmsys_config_dump_reg_mt6885(void __iomem *config_regs)
 {
 	unsigned int off = 0;
 
-	DDPDUMP("== DISP MMSYS_CONFIG REGS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG REGS ==");
 /* TODO: use raw dump helper here */
 	for (off = 0x0; off <= 0x40; off += 0x10)
 		mtk_serial_dump_reg(config_regs, off, 4);
@@ -12890,7 +12909,7 @@ void mmsys_config_dump_reg_mt6983(void __iomem *config_regs)
 {
 	unsigned int off = 0;
 
-	DDPDUMP("== DISP MMSYS_CONFIG REGS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG REGS ==");
 /* TODO: use raw dump helper here */
 	for (off = 0x0; off <= 0x40; off += 0x10)
 		mtk_serial_dump_reg(config_regs, off, 4);
@@ -12921,7 +12940,7 @@ void mmsys_config_dump_reg_mt6895(void __iomem *config_regs)
 {
 	unsigned int off = 0;
 
-	DDPDUMP("== DISP MMSYS_CONFIG REGS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG REGS ==");
 /* TODO: use raw dump helper here */
 	for (off = 0x0; off <= 0x40; off += 0x10)
 		mtk_serial_dump_reg(config_regs, off, 4);
@@ -12949,7 +12968,7 @@ void mmsys_config_dump_reg_mt6879(void __iomem *config_regs)
 {
 	unsigned int off = 0;
 
-	DDPDUMP("== DISP MMSYS_CONFIG REGS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG REGS ==");
 /* TODO: use raw dump helper here */
 	for (off = 0x0; off <= 0x40; off += 0x10)
 		mtk_serial_dump_reg(config_regs, off, 4);
@@ -12977,7 +12996,7 @@ void mmsys_config_dump_reg_mt6855(void __iomem *config_regs)
 {
 	unsigned int off = 0;
 
-	DDPDUMP("== DISP MMSYS_CONFIG REGS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG REGS ==");
 /* TODO: use raw dump helper here */
 	for (off = 0x0; off <= 0x40; off += 0x10)
 		mtk_serial_dump_reg(config_regs, off, 4);
@@ -13005,7 +13024,7 @@ void mmsys_config_dump_reg_mt6873(void __iomem *config_regs)
 {
 	unsigned int off = 0;
 
-	DDPDUMP("== DISP MMSYS_CONFIG REGS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG REGS ==");
 /* TODO: use raw dump helper here */
 	for (off = 0x0; off <= 0x40; off += 0x10)
 		mtk_serial_dump_reg(config_regs, off, 4);
@@ -13093,7 +13112,7 @@ void mmsys_config_dump_analysis_mt6885(void __iomem *config_regs)
 	ready[5] =
 		readl_relaxed(config_regs + MT6885_DISP_REG_CONFIG_DL_READY_5);
 
-	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==");
 	reg = readl_relaxed(config_regs + DISP_REG_CONFIG_MMSYS_CG_CON0_MT6885);
 	for (bit = 0; bit < 32; bit++) {
 		if ((reg & (1 << bit)) == 0) {
@@ -13114,13 +13133,13 @@ void mmsys_config_dump_analysis_mt6885(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("clock on modules:%s\n", clock_on);
+	DDPDUMP("clock on modules:%s", clock_on);
 
-	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x\n",
+	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x",
 		valid[0], valid[1], valid[2], valid[3], valid[4], valid[5]);
-	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x\n",
+	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x",
 		ready[0], ready[1], ready[2], ready[3], ready[4], ready[5]);
-	DDPDUMP("greq=0x%x\n", greq);
+	DDPDUMP("greq=0x%x", greq);
 	for (idx = 0; idx < 6; idx++) {
 		for (bit = 0; bit < 32; bit++) {
 			name = ddp_signal_mt6885(idx, bit);
@@ -13147,13 +13166,13 @@ void mmsys_config_dump_analysis_mt6885(void __iomem *config_regs)
 			if (len >= 0)
 				pos += len;
 
-			DDPDUMP("%s\n", clock_on);
+			DDPDUMP("%s", clock_on);
 		}
 	}
 	/* greq: 1 means SMI dose not grant, maybe SMI hang */
 	if (greq) {
-		DDPDUMP("smi greq not grant module:\n");
-		DDPDUMP("(greq: 1 means SMI dose not grant, maybe SMI hang)\n");
+		DDPDUMP("smi greq not grant module:");
+		DDPDUMP("(greq: 1 means SMI dose not grant, maybe SMI hang)");
 	}
 
 	clock_on[0] = '\0';
@@ -13166,7 +13185,7 @@ void mmsys_config_dump_analysis_mt6885(void __iomem *config_regs)
 				(sizeof(clock_on) - strlen(clock_on) - 1));
 		}
 	}
-	DDPDUMP("%s\n", clock_on);
+	DDPDUMP("%s", clock_on);
 }
 
 void mmsys_config_dump_analysis_mt6983(void __iomem *config_regs)
@@ -13210,7 +13229,7 @@ void mmsys_config_dump_analysis_mt6983(void __iomem *config_regs)
 	ready[5] =
 		readl_relaxed(config_regs + MT6983_DISP_REG_CONFIG_DL_READY_5);
 
-	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==");
 	reg = readl_relaxed(config_regs + DISP_REG_CONFIG_MMSYS_CG_CON0_MT6983);
 	for (bit = 0; bit < 32; bit++) {
 		if ((reg & (1 << bit)) == 0) {
@@ -13231,13 +13250,13 @@ void mmsys_config_dump_analysis_mt6983(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("clock on modules:%s\n", clock_on);
+	DDPDUMP("clock on modules:%s", clock_on);
 
-	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x\n",
+	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x",
 		valid[0], valid[1], valid[2], valid[3], valid[4], valid[5]);
-	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x\n",
+	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x",
 		ready[0], ready[1], ready[2], ready[3], ready[4], ready[5]);
-	DDPDUMP("greq0=0x%x greq1=0x%x\n", greq0, greq1);
+	DDPDUMP("greq0=0x%x greq1=0x%x", greq0, greq1);
 	for (idx = 0; idx < 6; idx++) {
 		for (bit = 0; bit < 32; bit++) {
 			name = ddp_signal_mt6983(idx, bit);
@@ -13265,20 +13284,20 @@ void mmsys_config_dump_analysis_mt6983(void __iomem *config_regs)
 				pos += len;
 
 			if ((valid[idx] & (1 << bit)) | (ready[idx] & (1 << bit)))
-				DDPDUMP("%s\n", clock_on);
+				DDPDUMP("%s", clock_on);
 		}
 	}
 
 	/* greq: 1 means SMI dose not grant, maybe SMI hang */
 	if (greq0) {
-		DDPDUMP("smi larb0 greq not grant module:\n");
+		DDPDUMP("smi larb0 greq not grant module:");
 		DDPDUMP(
-		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)\n");
+		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)");
 	}
 	if (greq1) {
-		DDPDUMP("smi larb1 greq not grant module:\n");
+		DDPDUMP("smi larb1 greq not grant module:");
 		DDPDUMP(
-		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)\n");
+		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)");
 	}
 
 	clock_on[0] = '\0';
@@ -13304,14 +13323,14 @@ void mmsys_config_dump_analysis_mt6983(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("%s\n", clock_on);
+	DDPDUMP("%s", clock_on);
 
 #ifdef CONFIG_MTK_SMI_EXT
 	if (greq0 || greq1) {
 		if (!in_interrupt())
 			smi_debug_bus_hang_detect(false, "DISP");
 		else
-			DDPDUMP("%s, Can't smi dump in IRQ\n", __func__);
+			DDPDUMP("%s, can't smi dump in IRQ", __func__);
 	}
 #endif
 }
@@ -13357,7 +13376,7 @@ void mmsys_config_dump_analysis_mt6895(void __iomem *config_regs)
 	ready[5] =
 		readl_relaxed(config_regs + MT6895_DISP_REG_CONFIG_DL_READY_5);
 
-	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==");
 	reg = readl_relaxed(config_regs + DISP_REG_CONFIG_MMSYS_CG_CON0_MT6895);
 	for (bit = 0; bit < 32; bit++) {
 		if ((reg & (1 << bit)) == 0) {
@@ -13378,13 +13397,13 @@ void mmsys_config_dump_analysis_mt6895(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("clock on modules:%s\n", clock_on);
+	DDPDUMP("clock on modules:%s", clock_on);
 
-	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x\n",
+	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x",
 		valid[0], valid[1], valid[2], valid[3], valid[4], valid[5]);
-	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x\n",
+	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x",
 		ready[0], ready[1], ready[2], ready[3], ready[4], ready[5]);
-	DDPDUMP("greq0=0x%x greq1=0x%x\n", greq0, greq1);
+	DDPDUMP("greq0=0x%x greq1=0x%x", greq0, greq1);
 	for (idx = 0; idx < 6; idx++) {
 		for (bit = 0; bit < 32; bit++) {
 			name = ddp_signal_mt6895(idx, bit);
@@ -13412,20 +13431,20 @@ void mmsys_config_dump_analysis_mt6895(void __iomem *config_regs)
 				pos += len;
 
 			if ((valid[idx] & (1 << bit)) | (ready[idx] & (1 << bit)))
-				DDPDUMP("%s\n", clock_on);
+				DDPDUMP("%s", clock_on);
 		}
 	}
 
 	/* greq: 1 means SMI dose not grant, maybe SMI hang */
 	if (greq0) {
-		DDPDUMP("smi larb0 greq not grant module:\n");
+		DDPDUMP("smi larb0 greq not grant module:");
 		DDPDUMP(
-		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)\n");
+		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)");
 	}
 	if (greq1) {
-		DDPDUMP("smi larb1 greq not grant module:\n");
+		DDPDUMP("smi larb1 greq not grant module:");
 		DDPDUMP(
-		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)\n");
+		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)");
 	}
 
 	clock_on[0] = '\0';
@@ -13451,7 +13470,7 @@ void mmsys_config_dump_analysis_mt6895(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("%s\n", clock_on);
+	DDPDUMP("%s", clock_on);
 }
 
 void mmsys_config_dump_analysis_mt6873(void __iomem *config_regs)
@@ -13495,7 +13514,7 @@ void mmsys_config_dump_analysis_mt6873(void __iomem *config_regs)
 		readl_relaxed(config_regs +
 				MT6873_DISP_REG_CONFIG_SMI_LARB1_GREQ);
 
-	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==");
 	reg = readl_relaxed(config_regs + DISP_REG_CONFIG_MMSYS_CG_CON0_MT6873);
 	for (i = 0; i < 32; i++) {
 		if ((reg & (1 << i)) == 0) {
@@ -13516,13 +13535,13 @@ void mmsys_config_dump_analysis_mt6873(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("clock on modules:%s\n", clock_on);
+	DDPDUMP("clock on modules:%s", clock_on);
 
-	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x\n",
+	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x",
 		valid0, valid1,	valid2, valid3, valid4, valid5);
-	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x\n",
+	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x",
 		ready0, ready1, ready2, ready3, ready4, ready5);
-	DDPDUMP("greq0=0x%x greq1=0x%x\n", greq0, greq1);
+	DDPDUMP("greq0=0x%x greq1=0x%x", greq0, greq1);
 	for (i = 0; i < 32; i++) {
 		name = ddp_signal_0_mt6873(i);
 		if (!name)
@@ -13542,7 +13561,7 @@ void mmsys_config_dump_analysis_mt6873(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 	for (i = 0; i < 32; i++) {
@@ -13564,7 +13583,7 @@ void mmsys_config_dump_analysis_mt6873(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 	for (i = 0; i < 32; i++) {
@@ -13586,20 +13605,20 @@ void mmsys_config_dump_analysis_mt6873(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 
 	/* greq: 1 means SMI dose not grant, maybe SMI hang */
 	if (greq0) {
-		DDPDUMP("smi larb0 greq not grant module:\n");
+		DDPDUMP("smi larb0 greq not grant module:");
 		DDPDUMP(
-		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)\n");
+		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)");
 	}
 	if (greq1) {
-		DDPDUMP("smi larb1 greq not grant module:\n");
+		DDPDUMP("smi larb1 greq not grant module:");
 		DDPDUMP(
-		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)\n");
+		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)");
 	}
 
 	clock_on[0] = '\0';
@@ -13625,14 +13644,14 @@ void mmsys_config_dump_analysis_mt6873(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("%s\n", clock_on);
+	DDPDUMP("%s", clock_on);
 
 #ifdef CONFIG_MTK_SMI_EXT
 	if (greq0 || greq1) {
 		if (!in_interrupt())
 			smi_debug_bus_hang_detect(false, "DISP");
 		else
-			DDPDUMP("%s, Can't smi dump in IRQ\n", __func__);
+			DDPDUMP("%s, can't smi dump in IRQ", __func__);
 	}
 #endif
 }
@@ -13679,7 +13698,7 @@ void mmsys_config_dump_analysis_mt6853(void __iomem *config_regs)
 		readl_relaxed(config_regs +
 				MT6873_DISP_REG_CONFIG_SMI_LARB1_GREQ);
 
-	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==");
 	reg = readl_relaxed(config_regs + DISP_REG_CONFIG_MMSYS_CG_CON0_MT6873);
 	for (i = 0; i < 32; i++) {
 		if ((reg & (1 << i)) == 0) {
@@ -13690,13 +13709,13 @@ void mmsys_config_dump_analysis_mt6853(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("clock on modules:%s\n", clock_on);
+	DDPDUMP("clock on modules:%s", clock_on);
 
-	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x\n",
+	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x",
 		valid0, valid1,	valid2, valid3, valid4, valid5);
-	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x\n",
+	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x",
 		ready0, ready1, ready2, ready3, ready4, ready5);
-	DDPDUMP("greq0=0x%x greq1=0x%x\n", greq0, greq1);
+	DDPDUMP("greq0=0x%x greq1=0x%x", greq0, greq1);
 	for (i = 0; i < 32; i++) {
 		name = ddp_signal_0_mt6853(i);
 		if (!name)
@@ -13716,7 +13735,7 @@ void mmsys_config_dump_analysis_mt6853(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 	for (i = 0; i < 32; i++) {
@@ -13738,20 +13757,20 @@ void mmsys_config_dump_analysis_mt6853(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 
 	/* greq: 1 means SMI dose not grant, maybe SMI hang */
 	if (greq0) {
-		DDPDUMP("smi larb0 greq not grant module:\n");
+		DDPDUMP("smi larb0 greq not grant module:");
 		DDPDUMP(
-		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)\n");
+		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)");
 	}
 	if (greq1) {
-		DDPDUMP("smi larb1 greq not grant module:\n");
+		DDPDUMP("smi larb1 greq not grant module:");
 		DDPDUMP(
-		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)\n");
+		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)");
 	}
 
 	clock_on[0] = '\0';
@@ -13777,14 +13796,14 @@ void mmsys_config_dump_analysis_mt6853(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("%s\n", clock_on);
+	DDPDUMP("%s", clock_on);
 
 #ifdef CONFIG_MTK_SMI_EXT
 	if (greq0 || greq1) {
 		if (!in_interrupt())
 			smi_debug_bus_hang_detect(false, "DISP");
 		else
-			DDPDUMP("%s, Can't smi dump in IRQ\n", __func__);
+			DDPDUMP("%s, can't smi dump in IRQ", __func__);
 	}
 #endif
 }
@@ -13812,7 +13831,7 @@ void mmsys_config_dump_analysis_mt6833(void __iomem *config_regs)
 		readl_relaxed(config_regs +
 				MT6873_DISP_REG_CONFIG_SMI_LARB1_GREQ);
 
-	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==");
 	reg = readl_relaxed(config_regs + DISP_REG_CONFIG_MMSYS_CG_CON0_MT6873);
 	for (i = 0; i < 32; i++) {
 		if ((reg & (1 << i)) == 0) {
@@ -13823,8 +13842,8 @@ void mmsys_config_dump_analysis_mt6833(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("clock on modules:%s\n", clock_on);
-	DDPDUMP("va=0x%x, rd=0x%x, greq0=0x%x, greq1=0x%x\n", valid, ready, greq0, greq1);
+	DDPDUMP("clock on modules:%s", clock_on);
+	DDPDUMP("va=0x%x, rd=0x%x, greq0=0x%x, greq1=0x%x", valid, ready, greq0, greq1);
 	for (i = 0; i < 32; i++) {
 		name = ddp_signal_0_mt6833(i);
 		if (!name)
@@ -13850,19 +13869,19 @@ void mmsys_config_dump_analysis_mt6833(void __iomem *config_regs)
 		if (len >= 0)
 			pos += len;
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 	/* greq: 1 means SMI dose not grant, maybe SMI hang */
 	if (greq0) {
-		DDPDUMP("smi larb0 greq not grant module:\n");
+		DDPDUMP("smi larb0 greq not grant module:");
 		DDPDUMP(
-		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)\n");
+		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)");
 	}
 	if (greq1) {
-		DDPDUMP("smi larb1 greq not grant module:\n");
+		DDPDUMP("smi larb1 greq not grant module:");
 		DDPDUMP(
-		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)\n");
+		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)");
 	}
 
 	clock_on[0] = '\0';
@@ -13888,14 +13907,14 @@ void mmsys_config_dump_analysis_mt6833(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("%s\n", clock_on);
+	DDPDUMP("%s", clock_on);
 
 #ifdef CONFIG_MTK_SMI_EXT
 	if (greq0 || greq1) {
 		if (!in_interrupt())
 			smi_debug_bus_hang_detect(false, "DISP");
 		else
-			DDPDUMP("%s, Can't smi dump in IRQ\n", __func__);
+			DDPDUMP("%s, can't smi dump in IRQ", __func__);
 	}
 #endif
 }
@@ -13942,7 +13961,7 @@ void mmsys_config_dump_analysis_mt6879(void __iomem *config_regs)
 		readl_relaxed(config_regs +
 				MT6873_DISP_REG_CONFIG_SMI_LARB1_GREQ);
 
-	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==");
 	reg = readl_relaxed(config_regs + DISP_REG_CONFIG_MMSYS_CG_CON0_MT6873);
 	for (i = 0; i < 32; i++) {
 		if ((reg & (1 << i)) == 0) {
@@ -13963,13 +13982,13 @@ void mmsys_config_dump_analysis_mt6879(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("clock on modules:%s\n", clock_on);
+	DDPDUMP("clock on modules:%s", clock_on);
 
-	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x\n",
+	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x",
 		valid0, valid1,	valid2, valid3, valid4, valid5);
-	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x\n",
+	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x",
 		ready0, ready1, ready2, ready3, ready4, ready5);
-	DDPDUMP("greq0=0x%x greq1=0x%x\n", greq0, greq1);
+	DDPDUMP("greq0=0x%x greq1=0x%x", greq0, greq1);
 	for (i = 0; i < 32; i++) {
 		name = ddp_signal_0_mt6879(i);
 		if (!name)
@@ -13989,7 +14008,7 @@ void mmsys_config_dump_analysis_mt6879(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 	for (i = 0; i < 32; i++) {
@@ -14011,20 +14030,20 @@ void mmsys_config_dump_analysis_mt6879(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 
 	/* greq: 1 means SMI dose not grant, maybe SMI hang */
 	if (greq0) {
-		DDPDUMP("smi larb0 greq not grant module:\n");
+		DDPDUMP("smi larb0 greq not grant module:");
 		DDPDUMP(
-		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)\n");
+		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)");
 	}
 	if (greq1) {
-		DDPDUMP("smi larb1 greq not grant module:\n");
+		DDPDUMP("smi larb1 greq not grant module:");
 		DDPDUMP(
-		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)\n");
+		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)");
 	}
 
 	clock_on[0] = '\0';
@@ -14050,14 +14069,14 @@ void mmsys_config_dump_analysis_mt6879(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("%s\n", clock_on);
+	DDPDUMP("%s", clock_on);
 
 #ifdef CONFIG_MTK_SMI_EXT
 	if (greq0 || greq1) {
 		if (!in_interrupt())
 			smi_debug_bus_hang_detect(false, "DISP");
 		else
-			DDPDUMP("%s, Can't smi dump in IRQ\n", __func__);
+			DDPDUMP("%s, can't smi dump in IRQ", __func__);
 	}
 #endif
 }
@@ -14104,7 +14123,7 @@ void mmsys_config_dump_analysis_mt6855(void __iomem *config_regs)
 		readl_relaxed(config_regs +
 				MT6873_DISP_REG_CONFIG_SMI_LARB1_GREQ);
 
-	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==\n");
+	DDPDUMP("== DISP MMSYS_CONFIG ANALYSIS ==");
 	reg = readl_relaxed(config_regs + DISP_REG_CONFIG_MMSYS_CG_CON0_MT6873);
 	for (i = 0; i < 32; i++) {
 		if ((reg & (1 << i)) == 0) {
@@ -14125,13 +14144,13 @@ void mmsys_config_dump_analysis_mt6855(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("clock on modules:%s\n", clock_on);
+	DDPDUMP("clock on modules:%s", clock_on);
 
-	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x\n",
+	DDPDUMP("va0=0x%x,va1=0x%x,va2=0x%x,va3=0x%x,va4=0x%x,va5=0x%x",
 		valid0, valid1,	valid2, valid3, valid4, valid5);
-	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x\n",
+	DDPDUMP("rd0=0x%x,rd1=0x%x,rd2=0x%x,rd3=0x%x,rd4=0x%x,rd5=0x%x",
 		ready0, ready1, ready2, ready3, ready4, ready5);
-	DDPDUMP("greq0=0x%x greq1=0x%x\n", greq0, greq1);
+	DDPDUMP("greq0=0x%x greq1=0x%x", greq0, greq1);
 	for (i = 0; i < 32; i++) {
 		name = ddp_signal_0_mt6855(i);
 		if (!name)
@@ -14151,7 +14170,7 @@ void mmsys_config_dump_analysis_mt6855(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 	for (i = 0; i < 32; i++) {
@@ -14173,20 +14192,20 @@ void mmsys_config_dump_analysis_mt6855(void __iomem *config_regs)
 
 		pos += sprintf(pos, ": %s", name);
 
-		DDPDUMP("%s\n", clock_on);
+		DDPDUMP("%s", clock_on);
 	}
 
 
 	/* greq: 1 means SMI dose not grant, maybe SMI hang */
 	if (greq0) {
-		DDPDUMP("smi larb0 greq not grant module:\n");
+		DDPDUMP("smi larb0 greq not grant module:");
 		DDPDUMP(
-		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)\n");
+		"(greq0: 1 means SMI dose not grant, maybe SMI larb0 hang)");
 	}
 	if (greq1) {
-		DDPDUMP("smi larb1 greq not grant module:\n");
+		DDPDUMP("smi larb1 greq not grant module:");
 		DDPDUMP(
-		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)\n");
+		"(greq1: 1 means SMI dose not grant, maybe SMI larb1 hang)");
 	}
 
 	clock_on[0] = '\0';
@@ -14212,14 +14231,14 @@ void mmsys_config_dump_analysis_mt6855(void __iomem *config_regs)
 		}
 	}
 
-	DDPDUMP("%s\n", clock_on);
+	DDPDUMP("%s", clock_on);
 
 #ifdef CONFIG_MTK_SMI_EXT
 	if (greq0 || greq1) {
 		if (!in_interrupt())
 			smi_debug_bus_hang_detect(false, "DISP");
 		else
-			DDPDUMP("%s, Can't smi dump in IRQ\n", __func__);
+			DDPDUMP("%s, can't smi dump in IRQ", __func__);
 	}
 #endif
 }
@@ -14234,7 +14253,7 @@ static int mtk_ddp_probe(struct platform_device *pdev)
 	int i;
 	int ret;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 	ddp = devm_kzalloc(dev, sizeof(*ddp), GFP_KERNEL);
 	if (!ddp)
 		return -ENOMEM;
@@ -14259,12 +14278,12 @@ static int mtk_ddp_probe(struct platform_device *pdev)
 
 	if (disp_helper_get_stage() == DISP_HELPER_STAGE_NORMAL) {
 		if (!of_find_property(dev->of_node, "clocks", &i))
-			DDPPR_ERR("mediatek-drm %s: has no clocks, set freerun\n",
+			DDPPR_ERR("mediatek-drm %s: has no clocks, set freerun",
 				dev_name(dev));
 		else {
 			ddp->clk = devm_clk_get(dev, NULL);
 			if (IS_ERR(ddp->clk)) {
-				DDPPR_ERR("Failed to get Mutex clock\n");
+				DDPPR_ERR("failed to get Mutex clock");
 				return PTR_ERR(ddp->clk);
 			}
 		}
@@ -14304,7 +14323,7 @@ static int mtk_ddp_probe(struct platform_device *pdev)
 	}
 	ddp->side_clk = of_clk_get(dev->of_node, 1);
 	if (IS_ERR(ddp->side_clk))
-		DDPPR_ERR("Failed to get Mutex1 clock\n");
+		DDPPR_ERR("failed to get Mutex1 clock");
 
 SKIP_SIDE_DISP:
 
@@ -14316,14 +14335,14 @@ SKIP_SIDE_DISP:
 			       IRQF_TRIGGER_NONE | IRQF_SHARED, dev_name(dev),
 			       ddp);
 	if (ret < 0) {
-		DDPAEE("%s:%d, failed to request irq:%d ret:%d\n",
+		DDPAEE("%s:%d, failed to request irq:%d ret:%d",
 				__func__, __LINE__,
 				irq, ret);
 		return ret;
 	}
 
 	platform_set_drvdata(pdev, ddp);
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return 0;
 }

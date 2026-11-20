@@ -71,7 +71,7 @@ static struct mtk_drm_gem_obj *mtk_drm_gem_init(struct drm_device *dev,
 	mtk_gem_obj->base.funcs = &mtk_drm_gem_object_funcs;
 	ret = drm_gem_object_init(dev, &mtk_gem_obj->base, size);
 	if (ret != 0) {
-		DDPPR_ERR("failed to initialize gem object\n");
+		DDPPR_ERR("failed to initialize gem object");
 		kfree(mtk_gem_obj);
 		return ERR_PTR(ret);
 	}
@@ -112,7 +112,7 @@ static struct sg_table *mtk_gem_vmap_pa(struct mtk_drm_gem_obj *mtk_gem,
 
 	sgt = kzalloc(sizeof(*sgt), GFP_KERNEL);
 	if (!sgt) {
-		DDPPR_ERR("sgt creation failed\n");
+		DDPPR_ERR("sgt creation failed");
 		return NULL;
 	}
 
@@ -135,7 +135,7 @@ static inline void *mtk_gem_dma_alloc(struct device *dev, size_t size,
 {
 	void *va;
 
-	DDPINFO("D_ALLOC:%s[%d], dma:0x%p, size:%ld\n", name, line,
+	DDPINFO("d_ALLOC:%s[%d], dma:0x%p, size:%ld", name, line,
 			dma_handle, size);
 	DRM_MMP_EVENT_START(dma_alloc, line, 0);
 	va = dma_alloc_attrs(dev, size, dma_handle,
@@ -151,7 +151,7 @@ static inline void mtk_gem_dma_free(struct device *dev, size_t size,
 				     unsigned long attrs, const char *name,
 				     int line)
 {
-	DDPINFO("D_FREE:%s[%d], dma:0x%llx, size:%ld\n", name, line,
+	DDPINFO("d_FREE:%s[%d], dma:0x%llx, size:%ld", name, line,
 			dma_handle, size);
 	DRM_MMP_EVENT_START(dma_free, (unsigned long)dma_handle,
 			(unsigned long)size);
@@ -166,17 +166,14 @@ struct mtk_drm_gem_obj *mtk_drm_fb_gem_insert(struct drm_device *dev,
 					      unsigned int vramsize)
 {
 	struct mtk_drm_gem_obj *mtk_gem;
-	struct drm_gem_object *obj;
 	struct sg_table *sgt;
 	dma_addr_t fb_pa = 0;
 	struct mtk_drm_private *private = dev->dev_private;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 	mtk_gem = mtk_drm_gem_init(dev, vramsize);
 	if (IS_ERR(mtk_gem))
 		return ERR_CAST(mtk_gem);
-
-	obj = &mtk_gem->base;
 
 	mtk_gem->size = size;
 	mtk_gem->dma_attrs = DMA_ATTR_WRITE_COMBINE;
@@ -214,7 +211,7 @@ struct mtk_drm_gem_obj *mtk_drm_fb_gem_insert(struct drm_device *dev,
 			pr_err("MT6893-FBIOMMU: already mapped (LK region re-attach?)\n");
 	}
 
-	DDPINFO("%s cookie = %p dma_addr = %pad size = %zu\n", __func__,
+	DDPINFO("%s cookie = %p dma_addr = %pad size = %zu", __func__,
 		mtk_gem->cookie, &mtk_gem->dma_addr, size);
 
 	return mtk_gem;
@@ -333,7 +330,7 @@ int mtk_drm_gem_dumb_map_offset(struct drm_file *file_priv,
 
 	obj = drm_gem_object_lookup(file_priv, handle);
 	if (!obj) {
-		DDPPR_ERR("failed to lookup gem object.\n");
+		DDPPR_ERR("failed to lookup gem object.");
 		return -EINVAL;
 	}
 
@@ -387,14 +384,14 @@ void mtk_drm_gem_ion_free_handle(struct dma_buf *buf_hnd,
 				const char *name, int line)
 {
 	if (!buf_hnd) {
-		DDPPR_ERR("invalid buf_hnd handle!\n");
+		DDPPR_ERR("invalid buf_hnd handle!");
 
 		return;
 	}
 
 	dma_buf_put(buf_hnd);
 
-	DDPDBG("free dma_buf handle 0x%p\n", buf_hnd);
+	DDPDBG("free dma_buf handle 0x%p", buf_hnd);
 }
 
 /**
@@ -410,12 +407,12 @@ struct dma_buf *mtk_drm_gem_ion_import_handle(int fd)
 	buf_hnd = dma_buf_get(fd);
 
 	if (IS_ERR(buf_hnd)) {
-		DDPPR_ERR("%s:%d error! hnd:0x%p, fd:%d\n",
+		DDPPR_ERR("%s:%d error! hnd:0x%p, fd:%d",
 					__func__, __LINE__, buf_hnd, fd);
 		return NULL;
 	}
 
-	DDPDBG("import dma_buf handle fd=%d,hnd=0x%p\n", fd, buf_hnd);
+	DDPDBG("import dma_buf handle fd=%d,hnd=0x%p", fd, buf_hnd);
 
 	return buf_hnd;
 }
@@ -433,13 +430,13 @@ struct sg_table *mtk_gem_prime_get_sg_table(struct drm_gem_object *obj)
 	struct sg_table *sgt;
 	int ret;
 
-	DDPDBG("%s:%d obj:0x%p +\n",
+	DDPDBG("%s:%d obj:0x%p +",
 		   __func__, __LINE__,
 		   obj);
 
 	sgt = kzalloc(sizeof(*sgt), GFP_KERNEL);
 	if (!sgt) {
-		DDPPR_ERR("%s:%d sgt alloc error\n",
+		DDPPR_ERR("%s:%d sgt alloc error",
 			   __func__, __LINE__);
 		return ERR_PTR(-ENOMEM);
 	}
@@ -448,12 +445,12 @@ struct sg_table *mtk_gem_prime_get_sg_table(struct drm_gem_object *obj)
 				    mtk_gem->dma_addr, obj->size,
 				    mtk_gem->dma_attrs);
 	if (ret) {
-		DDPPR_ERR("failed to allocate sgt, %d\n", ret);
+		DDPPR_ERR("failed to allocate sgt, %d", ret);
 		kfree(sgt);
 		return ERR_PTR(ret);
 	}
 
-	DDPDBG("%s:%d sgt:0x%p ret:%d -\n",
+	DDPDBG("%s:%d sgt:0x%p ret:%d -",
 		   __func__, __LINE__,
 		   sgt,
 		   ret);
@@ -474,7 +471,7 @@ mtk_gem_prime_import_sg_table(struct drm_device *dev,
 	dma_addr_t expected, last_iova = 0;
 #endif
 
-	DDPDBG("%s:%d dev:0x%p, attach:0x%p, sg:0x%p +\n",
+	DDPDBG("%s:%d dev:0x%p, attach:0x%p, sg:0x%p +",
 			__func__, __LINE__,
 			dev,
 			attach,
@@ -482,7 +479,7 @@ mtk_gem_prime_import_sg_table(struct drm_device *dev,
 	mtk_gem = mtk_drm_gem_init(dev, attach->dmabuf->size);
 
 	if (IS_ERR(mtk_gem)) {
-		DDPPR_ERR("%s:%d mtk_gem error:0x%p\n",
+		DDPPR_ERR("%s:%d mtk_gem error:0x%p",
 				__func__, __LINE__,
 				mtk_gem);
 		return ERR_PTR(PTR_ERR(mtk_gem));
@@ -493,9 +490,9 @@ mtk_gem_prime_import_sg_table(struct drm_device *dev,
 	for_each_sg(sg->sgl, s, sg->nents, i) {
 		if (sg_dma_address(s) != expected) {
 			if (!error_cnt)
-				DDPPR_ERR("sg_table is not contiguous %u\n",
+				DDPPR_ERR("sg_table is not contiguous %u",
 					  sg->nents);
-			DDPPR_ERR("exp:0x%llx,cur:0x%llx/%u,last:0x%llx+0x%x\n",
+			DDPPR_ERR("exp:0x%llx,cur:0x%llx/%u,last:0x%llx+0x%x",
 				  expected, sg_dma_address(s),
 				  i, last_iova, last_len);
 			if (error_cnt++ > 5)
@@ -516,7 +513,7 @@ mtk_gem_prime_import_sg_table(struct drm_device *dev,
 	mtk_gem->size = attach->dmabuf->size;
 	mtk_gem->sg = sg;
 
-	DDPDBG("%s:%d sec:%d, addr:0x%llx, size:%ld, sg:0x%p -\n",
+	DDPDBG("%s:%d sec:%d, addr:0x%llx, size:%ld, sg:0x%p -",
 			__func__, __LINE__,
 			mtk_gem->sec,
 			mtk_gem->dma_addr,
@@ -550,9 +547,9 @@ int mtk_gem_create_ioctl(struct drm_device *dev, void *data,
 	struct drm_mtk_gem_create *args = data;
 	int ret;
 
-	DDPDBG("%s(), args->size %llu\n", __func__, args->size);
+	DDPDBG("%s(), args->size %llu", __func__, args->size);
 	if (args->size == 0) {
-		DDPPR_ERR("%s(), invalid args->size %llu\n",
+		DDPPR_ERR("%s(), invalid args->size %llu",
 			  __func__, args->size);
 		return 0;
 	}
@@ -578,7 +575,7 @@ err_handle_create:
 	mtk_drm_gem_free_object(&mtk_gem->base);
 	return ret;
 #endif
-	DDPPR_ERR("not supported!\n");
+	DDPPR_ERR("not supported!");
 	return 0;
 }
 
@@ -601,7 +598,7 @@ static void prepare_output_buffer(struct drm_device *dev,
 		buf->interface_fence_fd = output_buf->fence;
 		buf->interface_index = output_buf->idx;
 	} else {
-		DDPPR_ERR("P+ FAIL /%s%d/L%d/e%d/fd%d/id%d/ffd%d\n",
+		DDPPR_ERR("p+ FAIL /%s%d/L%d/e%d/fd%d/id%d/ffd%d",
 			  mtk_fence_session_mode_spy(buf->session_id),
 			  MTK_SESSION_DEV(buf->session_id), buf->layer_id,
 			  buf->layer_en, buf->index, buf->fb_id, buf->fence_fd);
@@ -626,7 +623,7 @@ int mtk_gem_submit_ioctl(struct drm_device *dev, void *data,
 			args->fence_fd = buf->fence;
 			args->index = buf->idx;
 		} else {
-			DDPPR_ERR("P+ FAIL /%s%d/L%d/e%d/fd%d/id%d/ffd%d\n",
+			DDPPR_ERR("p+ FAIL /%s%d/L%d/e%d/fd%d/id%d/ffd%d",
 				  mtk_fence_session_mode_spy(args->session_id),
 				  MTK_SESSION_DEV(args->session_id),
 				  args->layer_id, args->layer_en, args->fb_id,
@@ -637,7 +634,7 @@ int mtk_gem_submit_ioctl(struct drm_device *dev, void *data,
 		if (args->type == MTK_SUBMIT_OUT_FENCE)
 			prepare_output_buffer(dev, args, buf2);
 	} else {
-		DDPPR_ERR("P+ FAIL /%s%d/l%d/e%d/fd%d/id%d/ffd%d\n",
+		DDPPR_ERR("p+ FAIL /%s%d/l%d/e%d/fd%d/id%d/ffd%d",
 			  mtk_fence_session_mode_spy(args->session_id),
 			  MTK_SESSION_DEV(args->session_id), args->layer_id,
 			  args->layer_en, args->fb_id, args->index,
@@ -649,32 +646,34 @@ int mtk_gem_submit_ioctl(struct drm_device *dev, void *data,
 	return ret;
 }
 
+void print_mml_frame_buffer(struct mml_frame_buffer frame_buf);
+
 void print_mml_frame_buffer(struct mml_frame_buffer frame_buf)
 {
 	unsigned int i = 0;
 
-	DDPMSG("====  frame buffer s ====\n");
-	DDPMSG("src buf\n");
-	DDPMSG("[0]:fd:%d, size:%d, [1]:fd:%d, size:%d, [2]:fd:%d, size:%d,",
+	DDPMSG("====  frame buffer s ====");
+	DDPMSG("src buf");
+	DDPMSG(":fd:%d, size:%d, [1]:fd:%d, size:%d, [2]:fd:%d, size:%d,",
 			frame_buf.src.fd[0], frame_buf.src.size[0],
 			frame_buf.src.fd[1], frame_buf.src.size[1],
 			frame_buf.src.fd[2], frame_buf.src.size[2]);
-	DDPMSG("cnt:%d, fence:%d, flush:%d, invalid:%d\n",
+	DDPMSG("cnt:%d, fence:%d, flush:%d, invalid:%d",
 			frame_buf.src.cnt, frame_buf.src.fence,
 			frame_buf.src.flush, frame_buf.src.invalid);
-	DDPMSG("dest:(cnt:%d)\n", frame_buf.dest_cnt);
+	DDPMSG("dest:(cnt:%d)", frame_buf.dest_cnt);
 	for (; i < MML_MAX_OUTPUTS; ++i) {
-		DDPMSG("dest buf[%d]\n", i);
-		DDPMSG("[0]:fd:%d, size:%d, [1]:fd:%d, size:%d, [2]:fd:%d, size:%d,",
+		DDPMSG("dest buf[%d]", i);
+		DDPMSG(":fd:%d, size:%d, [1]:fd:%d, size:%d, [2]:fd:%d, size:%d,",
 			frame_buf.dest[i].fd[0], frame_buf.dest[i].size[0],
 			frame_buf.dest[i].fd[1], frame_buf.dest[i].size[1],
 			frame_buf.dest[i].fd[2], frame_buf.dest[i].size[2]);
 
-		DDPMSG("cnt:%d, fence:%d, flush:%d, invalid:%d\n",
+		DDPMSG("cnt:%d, fence:%d, flush:%d, invalid:%d",
 			frame_buf.dest[i].cnt, frame_buf.dest[i].fence,
 			frame_buf.dest[i].flush, frame_buf.dest[i].invalid);
 	}
-	DDPMSG("==== frame buffer e ====\n");
+	DDPMSG("==== frame buffer e ====");
 }
 
 //To-Do: need to be remove
@@ -682,18 +681,18 @@ void print_mml_frame_info(struct mml_frame_info info)
 {
 	unsigned int i = 0;
 
-	DDPMSG("====  frame_info s ====\n");
-	DDPMSG("src cfg:\n");
+	DDPMSG("====  frame_info s ====");
+	DDPMSG("src cfg:");
 	DDPMSG("w:%d, h:%d, y_s:%d, uv_s:%d, vert_s:%d, f:%d, pro:%d,",
 		info.src.width, info.src.height,
 		info.src.y_stride, info.src.uv_stride,
 		info.src.vert_stride, info.src.format, info.src.profile);
-	DDPMSG("plane_offset[0]:%d, plane_offset[1]:%d, plane_offset[2]:%d, p_c:%d, sec:%d\n",
+	DDPMSG("plane_offset[0]:%d, plane_offset[1]:%d, plane_offset[2]:%d, p_c:%d, sec:%d",
 		info.src.plane_offset[0], info.src.plane_offset[1], info.src.plane_offset[2],
 		info.src.plane_cnt, info.src.secure);
-	DDPMSG("dest_cnt:%d\n", info.dest_cnt);
+	DDPMSG("dest_cnt:%d", info.dest_cnt);
 	for (; i < MML_MAX_OUTPUTS; ++i) {
-		DDPMSG("dest cfg[%d]:\n", i);
+		DDPMSG("dest cfg[%d]:", i);
 		DDPMSG("w:%d, h:%d, y_s:%d, uv_s:%d, vert_s:%d, f:%d, pro:%d,",
 			info.dest[i].data.width, info.dest[i].data.height,
 			info.dest[i].data.y_stride, info.dest[i].data.uv_stride,
@@ -703,28 +702,30 @@ void print_mml_frame_info(struct mml_frame_info info)
 			info.dest[i].data.plane_offset[0],
 			info.dest[i].data.plane_offset[1],
 			info.dest[i].data.plane_offset[2]);
-		DDPMSG("p_c:%d, sec:%d\n",
+		DDPMSG("p_c:%d, sec:%d",
 			info.dest[i].data.plane_cnt, info.dest[i].data.secure);
-		DDPMSG("x_sub_px:%d, y_sub_px:%d, w_sub_px:%d, h_sub_px:%d\n",
+		DDPMSG("x_sub_px:%d, y_sub_px:%d, w_sub_px:%d, h_sub_px:%d",
 			info.dest[i].crop.x_sub_px, info.dest[i].crop.y_sub_px,
 			info.dest[i].crop.w_sub_px, info.dest[i].crop.h_sub_px);
-		DDPMSG("l:%d, t:%d, w:%d, h:%d\n",
+		DDPMSG("l:%d, t:%d, w:%d, h:%d",
 			info.dest[i].compose.left, info.dest[i].compose.top,
 			info.dest[i].compose.width, info.dest[i].compose.height);
-		DDPMSG("[MMLPQParamParser] en_sharp[%d], en_ur[%d], en_dc[%d],",
+		DDPMSG("en_sharp[%d], en_ur[%d], en_dc[%d],",
 			info.dest[i].pq_config.en_sharp, info.dest[i].pq_config.en_ur,
 			info.dest[i].pq_config.en_dc);
 		DDPMSG("en_color[%d], en_hdr[%d], en_ccorr[%d], en_dre[%d]",
 			info.dest[i].pq_config.en_color, info.dest[i].pq_config.en_hdr,
 			info.dest[i].pq_config.en_ccorr, info.dest[i].pq_config.en_dre);
-		DDPMSG("rotate:%d, flip:%d, pq_config.en:%d\n",
+		DDPMSG("rotate:%d, flip:%d, pq_config.en:%d",
 			info.dest[i].rotate, info.dest[i].flip, info.dest[i].pq_config);
 	}
-	DDPMSG("mode:%d, layer_id:%d\n", info.mode, info.layer_id);
-	DDPMSG("====  frame_info e ====\n");
+	DDPMSG("mode:%d, layer_id:%d", info.mode, info.layer_id);
+	DDPMSG("====  frame_info e ====");
 }
 
 //To-Do: need to be remove
+void print_mml_submit(struct mml_submit *args);
+
 void print_mml_submit(struct mml_submit *args)
 {
 	int i = 0;
@@ -732,16 +733,16 @@ void print_mml_submit(struct mml_submit *args)
 	if (!args)
 		return;
 
-	DDPMSG("====  %s s ====\n", __func__);
+	DDPMSG("====  %s s ====", __func__);
 	if (args->job)
-		DDPMSG("jobid:%d, fence:%d\n", args->job->jobid, args->job->fence);
+		DDPMSG("jobid:%d, fence:%d", args->job->jobid, args->job->fence);
 
 	print_mml_frame_info(args->info);
 	print_mml_frame_buffer(args->buffer);
 
 	for (i = 0; i < MML_MAX_OUTPUTS; i++) {
 		if (args->pq_param[i]) {
-			DDPMSG("pq_param[%d]\n", i);
+			DDPMSG("pq_param[%d]", i);
 			DDPMSG("e:%d, t:%d, pq_s:%d, l_id:%d, d_id:%d, s_ga:%d, d_ga:%d,",
 				args->pq_param[i]->enable, args->pq_param[i]->time_stamp,
 				args->pq_param[i]->scenario, args->pq_param[i]->layer_id,
@@ -751,15 +752,15 @@ void print_mml_submit(struct mml_submit *args)
 				args->pq_param[i]->src_hdr_video_mode,
 				args->pq_param[i]->video_param.video_id,
 				args->pq_param[i]->video_param.time_stamp);
-			DDPMSG("ishdr2sdr:%d, param_table:%d, pq_user_info:%d\n",
+			DDPMSG("ishdr2sdr:%d, param_table:%d, pq_user_info:%d",
 				args->pq_param[i]->video_param.ishdr2sdr,
 				args->pq_param[i]->video_param.param_table,
 				args->pq_param[i]->user_info);
 		}
 	}
-	DDPMSG("sec:%lld, usec:%lld, update:%d\n",
+	DDPMSG("sec:%lld, usec:%lld, update:%d",
 		args->end.sec, args->end.nsec, args->update);
-	DDPMSG("====  %s e ====\n", __func__);
+	DDPMSG("====  %s e ====", __func__);
 }
 
 int mtk_drm_ioctl_mml_gem_submit(struct drm_device *dev, void *data,
@@ -773,10 +774,10 @@ int mtk_drm_ioctl_mml_gem_submit(struct drm_device *dev, void *data,
 	struct mml_submit* submit_kernel;
 	struct drm_crtc *crtc;
 
-	DDPINFO("%s:%d +\n", __func__, __LINE__);
+	DDPINFO("%s:%d +", __func__, __LINE__);
 
 	if (!mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_MML_PRIMARY)) {
-		DDPINFO("%s:%d MTK_DRM_OPT_MML_PRIMARY is not support\n", __func__, __LINE__);
+		DDPINFO("%s:%d MTK_DRM_OPT_MML_PRIMARY is not support", __func__, __LINE__);
 		return -EINVAL;
 	}
 
@@ -785,21 +786,29 @@ int mtk_drm_ioctl_mml_gem_submit(struct drm_device *dev, void *data,
 	submit_kernel->job = kzalloc(sizeof(struct mml_job), GFP_KERNEL);
 
 	if (submit_user->job) {
-		copy_from_user(submit_kernel->job, submit_user->job, sizeof(struct mml_job));
+		if (copy_from_user(submit_kernel->job, submit_user->job,
+				   sizeof(struct mml_job))) {
+			DDPMSG("failed to copy mml job from user");
+			ret = -EFAULT;
+		}
 	} else {
-		DDPMSG("mtk_drm_ioctl_mml_gem_submit submit_user->job is null\n");
+		DDPMSG("mtk_drm_ioctl_mml_gem_submit submit_user->job is null");
 	}
 
 	for (i = 0; i < MML_MAX_OUTPUTS; i++)
 	{
 		if (submit_user->pq_param[i]) {
 			submit_kernel->pq_param[i] = kzalloc(sizeof(struct mml_pq_param), GFP_KERNEL);
-			copy_from_user(submit_kernel->pq_param[i], submit_user->pq_param[i],
-				sizeof(struct mml_pq_param));
+			if (copy_from_user(submit_kernel->pq_param[i],
+					   submit_user->pq_param[i],
+					   sizeof(struct mml_pq_param))) {
+				DDPMSG("failed to copy pq param from user");
+				ret = -EFAULT;
+			}
 			//copy_from_user(submit_kernel->pq_param[i]->gralloc_extra_handle,
 			//	submit_user->pq_param[i]->gralloc_extra_handle, sizeof(void *));
 		} else {
-			DDPMSG("mtk_drm_ioctl_mml_gem_submit submit_user->pq_param[i] is null\n");
+			DDPMSG("mtk_drm_ioctl_mml_gem_submit submit_user->pq_param[i] is null");
 		}
 	}
 
@@ -808,24 +817,28 @@ int mtk_drm_ioctl_mml_gem_submit(struct drm_device *dev, void *data,
 	mml_ctx = mtk_drm_get_mml_drm_ctx(dev, crtc);
 
 	if (g_mml_debug) {
-		DDPINFO("%s:%d\n", __func__, __LINE__);
+		DDPINFO("%s:%d", __func__, __LINE__);
 		print_mml_submit(submit_kernel);
-		DDPINFO("%s:%d\n", __func__, __LINE__);
+		DDPINFO("%s:%d", __func__, __LINE__);
 	}
 
-	if (mml_ctx > 0) {
-		DDPINFO("%s:%d mml_drm_submit +\n", __func__, __LINE__);
+	if (mml_ctx) {
+		DDPINFO("%s:%d mml_drm_submit +", __func__, __LINE__);
 		ret = mml_drm_submit(mml_ctx, submit_kernel, NULL);
-		DDPINFO("%s:%d mml_drm_submit - ret:%d, job(id,fence):(%d,%d)\n",
+		DDPINFO("%s:%d mml_drm_submit - ret:%d, job(id,fence):(%d,%d)",
 			__func__, __LINE__, ret,
 			submit_kernel->job->jobid, submit_kernel->job->fence);
 		if (ret) {
-			DDPMSG("submit failed: %d\n", ret);
+			DDPMSG("submit failed: %d", ret);
 		}
 	}
 
 	if (submit_user && submit_user->job) {
-		copy_to_user(submit_user->job, submit_kernel->job, sizeof(struct mml_job));
+		if (copy_to_user(submit_user->job, submit_kernel->job,
+				 sizeof(struct mml_job))) {
+			DDPMSG("failed to copy mml job to user");
+			ret = -EFAULT;
+		}
 	}
 
 	for (i = 0; i < MML_MAX_OUTPUTS; i++)
@@ -837,7 +850,7 @@ int mtk_drm_ioctl_mml_gem_submit(struct drm_device *dev, void *data,
 	kfree(submit_kernel->job);
 	kfree(submit_kernel);
 
-	DDPINFO("%s:%d -\n", __func__, __LINE__);
+	DDPINFO("%s:%d -", __func__, __LINE__);
 
 	return ret;
 }

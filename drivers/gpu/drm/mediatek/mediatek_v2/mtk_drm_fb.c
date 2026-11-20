@@ -172,7 +172,7 @@ int mtk_fb_wait(struct drm_framebuffer *fb)
 				      MAX_SCHEDULE_TIMEOUT);
 	/* MAX_SCHEDULE_TIMEOUT on success, -ERESTARTSYS if interrupted */
 	if (ret < 0) {
-		DDPAEE("%s:%d, invalid ret:%ld\n",
+		DDPAEE("%s:%d, invalid ret:%ld",
 			__func__, __LINE__,
 			ret);
 		return ret;

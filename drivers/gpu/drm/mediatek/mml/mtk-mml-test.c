@@ -121,7 +121,7 @@ static void check_fence(int32_t fd, const char *func)
 	struct dma_fence *fence = sync_file_get_fence(fd);
 	long fret = dma_fence_wait(fence, true);
 
-	mml_log("[test]%s success fence %d %p ret %ld",
+	mml_log("%s success fence %d %p ret %ld",
 		func, fd, fence, fret);
 
 	dma_fence_put(fence);
@@ -185,7 +185,7 @@ static void case_general_submit(struct mml_test *test,
 	s32 ret;
 	int8_t mode;
 
-	mml_log("[test]%s begin case %d", __func__, mml_case);
+	mml_log("%s begin case %d", __func__, mml_case);
 
 	mml_pdev = mml_get_plat_device(test->pdev);
 	if (!mml_pdev) {
@@ -1193,7 +1193,7 @@ static ssize_t test_read(struct file *filep, char __user *buf, size_t size,
 	u32 len = sizeof(the_case);
 
 	if (size < sizeof(the_case)) {
-		mml_err("[test] buf size not match %zu %u",
+		mml_err("buf size not match %zu %u",
 			sizeof(the_case), len);
 		return -EFAULT;
 	}
@@ -1203,12 +1203,12 @@ static ssize_t test_read(struct file *filep, char __user *buf, size_t size,
 	if (mml_case < ARRAY_SIZE(cases) && cases[mml_case].config)
 		cases[mml_case].config();
 	else
-		mml_err("[test]no such case %d", mml_case);
+		mml_err("no such case %d", mml_case);
 
 	copy_to_user(buf, &the_case, len);
 	*offset += len;
 
-	mml_log("[test]%s format src %#010x dest %#010x size %u stride %u",
+	mml_log("%s format src %#010x dest %#010x size %u stride %u",
 		__func__, the_case.cfg_src_format, the_case.cfg_dest_format);
 
 	return 0;

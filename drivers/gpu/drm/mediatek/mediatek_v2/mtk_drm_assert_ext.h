@@ -20,6 +20,6 @@ enum DAL_COLOR {
 int DAL_SetScreenColor(enum DAL_COLOR color);
 int DAL_SetColor(unsigned int fgColor, unsigned int bgColor);
 int DAL_Clean(void);
-int DAL_Printf(const char *fmt, ...);
+int DAL_Printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 #endif

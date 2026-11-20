@@ -1671,7 +1671,7 @@ static void mtk_hdmi_register_audio_driver(struct device *dev)
 	if (IS_ERR(pdev))
 		return;
 
-	DDPINFO("%s driver bound to HDMI\n", HDMI_CODEC_DRV_NAME);
+	DDPINFO("%s driver bound to HDMI", HDMI_CODEC_DRV_NAME);
 }
 
 static int mtk_drm_hdmi_probe(struct platform_device *pdev)
@@ -1796,7 +1796,7 @@ static int __init mtk_hdmitx_init(void)
 	for (i = 0; i < ARRAY_SIZE(mtk_hdmi_drivers); i++) {
 		ret = platform_driver_register(mtk_hdmi_drivers[i]);
 		if (ret < 0) {
-			DDPPR_ERR("Failed to register %s driver: %d\n",
+			DDPPR_ERR("failed to register %s driver: %d",
 			       mtk_hdmi_drivers[i]->driver.name, ret);
 			goto err;
 		}

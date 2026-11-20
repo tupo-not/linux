@@ -65,14 +65,14 @@ static void mtk_merge_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 	ret = pm_runtime_get_sync(comp->dev);
 	if (ret < 0)
 		pr_err("Failed to enable power domain: %d\n", ret);
-	DDPMSG("%s\n", __func__);
+	DDPMSG("%s", __func__);
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		       comp->regs_pa + DISP_REG_MERGE_CTRL, 0x1, ~0);
 }
 
 static void mtk_merge_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
-	DDPMSG("%s\n", __func__);
+	DDPMSG("%s", __func__);
 	pm_runtime_put(comp->dev);
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
@@ -83,12 +83,12 @@ static int mtk_merge_check_params(struct mtk_merge_config_struct *merge_config)
 {
 	if (!merge_config->height || !merge_config->width_left
 		|| !merge_config->width_right) {
-		DDPPR_ERR("%s:merge input width l(%u) w(%u) h(%u)\n",
+		DDPPR_ERR("%s:merge input width l(%u) w(%u) h(%u)",
 			  __func__, merge_config->width_left,
 			  merge_config->width_right, merge_config->height);
 		return -EINVAL;
 	}
-	DDPMSG("%s:merge input width l(%u) r(%u) height(%u)\n",
+	DDPMSG("%s:merge input width l(%u) r(%u) height(%u)",
 			  __func__, merge_config->width_left,
 			  merge_config->width_right, merge_config->height);
 	return 0;
@@ -106,7 +106,7 @@ static void mtk_merge_config(struct mtk_ddp_comp *comp,
 
 	mtk_merge_check_params(&merge_config);
 
-	DDPMSG("%s\n", __func__);
+	DDPMSG("%s", __func__);
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		comp->regs_pa + DISP_REG_MERGE_WIDTH,
 		merge_config.width_left | (merge_config.width_right << 16),
@@ -121,14 +121,14 @@ void mtk_merge_dump(struct mtk_ddp_comp *comp)
 	void __iomem *baddr = comp->regs;
 	int i = 0;
 
-	DDPDUMP("== DISP %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs);
+	DDPDUMP("== DISP %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs);
 	for (i = 0; i < 1; i++) {
-		DDPDUMP("0x%03X: 0x%08x 0x%08x 0x%08x 0x%08x\n", i * 0x10,
+		DDPDUMP("0x%03X: 0x%08x 0x%08x 0x%08x 0x%08x", i * 0x10,
 			readl(baddr + i * 0x10), readl(baddr + i * 0x10 + 0x4),
 			readl(baddr + i * 0x10 + 0x8),
 			readl(baddr + i * 0x10 + 0xC));
 	}
-	DDPDUMP("0x010: 0x%08x 0x%08x;\n", readl(baddr + 0x10),
+	DDPDUMP("0x010: 0x%08x 0x%08x;", readl(baddr + 0x10),
 		readl(baddr + 0x14));
 }
 
@@ -151,7 +151,7 @@ int mtk_merge_analysis(struct mtk_ddp_comp *comp)
 	dbg0 = readl(baddr + DISP_REG_MERGE_DGB0);
 	dbg1 = readl(baddr + DISP_REG_MERGE_DGB1);
 
-	DDPDUMP("== DISP %s ANALYSIS ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== DISP %s ANALYSIS ==", mtk_dump_comp_str(comp), comp->regs_pa);
 
 	ret = snprintf(msg, LEN,
 		"en:%d,swap:%d,dcm_dis:%d,width_L:%d,width_R:%d,h:%d,pix_cnt:%d,line_cnt:%d\n",

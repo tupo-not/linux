@@ -170,6 +170,8 @@ static inline struct mml_sys *ddp_comp_to_sys(struct mtk_ddp_comp *ddp_comp)
 	return container_of(ddp_comp, struct mml_sys, ddp_comps[ddp_comp->sub_idx]);
 }
 
+u16 mml_sys_get_reg_ready_sel(struct mml_comp *comp);
+
 u16 mml_sys_get_reg_ready_sel(struct mml_comp *comp)
 {
 	return comp_to_sys(comp)->inline_ready_sel;
@@ -571,7 +573,7 @@ static void sys_reset(struct mml_comp *comp, struct mml_frame_config *cfg, u32 p
 {
 	const struct mml_topology_path *path = cfg->path[pipe];
 
-	mml_err("[sys]reset bits %#llx for pipe %u", path->reset_bits, pipe);
+	mml_err("reset bits %#llx for pipe %u", path->reset_bits, pipe);
 	if (path->reset0 != U32_MAX) {
 		writel(path->reset0, comp->base + SYS_SW0_RST_B_REG);
 		writel(U32_MAX, comp->base + SYS_SW0_RST_B_REG);
@@ -603,7 +605,6 @@ static int sys_comp_init(struct device *dev, struct mml_sys *sys,
 	int cnt, i;
 	struct property *prop;
 	const char *name;
-	const __be32 *p;
 	u32 value, comp_id;
 
 	/* Initialize mux-pins */
@@ -635,7 +636,7 @@ static int sys_comp_init(struct device *dev, struct mml_sys *sys,
 	/* Initialize dbg-regs */
 	i = 0;
 	while (of_property_read_u32_index(node, "dbg-reg-offsets", i, &value) == 0) {
-		if (i > MML_MAX_SYS_DBG_REGS) {
+		if (i >= MML_MAX_SYS_DBG_REGS) {
 			dev_err(dev, "no dbg-reg-offsets or out of size in component %s: %d\n",
 				node->full_name, i);
 				return -EINVAL;
@@ -647,7 +648,7 @@ static int sys_comp_init(struct device *dev, struct mml_sys *sys,
 
 	i = 0;
 	of_property_for_each_string(node, "dbg-reg-names", prop, name) {
-		if (i > sys->dbg_reg_cnt) {
+		if (i >= sys->dbg_reg_cnt) {
 			dev_err(dev, "dbg-reg-names size over offsets size %s: %d\n",
 				node->full_name, i);
 				return -EINVAL;
@@ -1104,7 +1105,7 @@ static int dl_comp_init(struct device *dev, struct mml_sys *sys,
 
 	ret = snprintf(name, sizeof(name), "%s-dl-relay", comp->name);
 	if (ret >= sizeof(name)) {
-		dev_err(dev, "len:%d over name size:%d", ret, sizeof(name));
+		dev_err(dev, "len:%d over name size:%zu", ret, sizeof(name));
 		name[sizeof(name) - 1] = '\0';
 	}
 	ret = of_property_read_u16(node, name, &offset);
@@ -1251,6 +1252,9 @@ static struct mml_sys *dbg_probed_components[2];
 static int dbg_probed_count;
 
 struct mml_sys *mml_sys_create(struct platform_device *pdev,
+			       const struct component_ops *comp_ops);
+
+struct mml_sys *mml_sys_create(struct platform_device *pdev,
 			       const struct component_ops *comp_ops)
 {
 	struct device *dev = &pdev->dev;
@@ -1271,6 +1275,9 @@ struct mml_sys *mml_sys_create(struct platform_device *pdev,
 	dbg_probed_components[dbg_probed_count++] = sys;
 	return sys;
 }
+
+void mml_sys_destroy(struct platform_device *pdev, struct mml_sys *sys,
+		     const struct component_ops *comp_ops);
 
 void mml_sys_destroy(struct platform_device *pdev, struct mml_sys *sys,
 		     const struct component_ops *comp_ops)
@@ -1345,6 +1352,9 @@ static int bind_ddp(struct device *dev, struct drm_device *drm_dev,
 }
 
 int mml_sys_bind(struct device *dev, struct device *master,
+		 struct mml_sys *sys, void *data);
+
+int mml_sys_bind(struct device *dev, struct device *master,
 		 struct mml_sys *sys, void *data)
 {
 	if (!data)
@@ -1373,6 +1383,9 @@ static void unbind_ddp(struct drm_device *drm_dev, struct mml_sys *sys)
 		return;
 	mml_ddp_comp_unregister(drm_dev, &sys->ddp_comps[--sys->ddp_bound]);
 }
+
+void mml_sys_unbind(struct device *dev, struct device *master,
+		    struct mml_sys *sys, void *data);
 
 void mml_sys_unbind(struct device *dev, struct device *master,
 		    struct mml_sys *sys, void *data)
@@ -1404,7 +1417,7 @@ static int probe(struct platform_device *pdev)
 
 	priv = mml_sys_create(pdev, &mml_comp_ops);
 	if (IS_ERR(priv)) {
-		dev_err(&pdev->dev, "failed to init mml sys: %d\n",
+		dev_err(&pdev->dev, "failed to init mml sys: %ld\n",
 			PTR_ERR(priv));
 		return PTR_ERR(priv);
 	}
@@ -1539,12 +1552,13 @@ static s32 dbg_get(char *buf, const struct kernel_param *kp)
 				struct mtk_ddp_comp *ddp_comp = &sys->ddp_comps[i];
 
 				length += snprintf(buf + length, PAGE_SIZE - length,
-					"    - [%d] mml comp_id: %d.%d @%08x name: %s bound: %d\n",
-					i, comp->id, comp->sub_idx, comp->base_pa,
+					"    - [%d] mml comp_id: %d.%d @%08llx name: %s bound: %d\n",
+					i, comp->id, comp->sub_idx,
+					(unsigned long long)comp->base_pa,
 					comp->name ? comp->name : "(null)", comp->bound);
 				length += snprintf(buf + length, PAGE_SIZE - length,
-					"    -         larb_port: %d @%08x pw: %d clk: %d\n",
-					comp->larb_port, comp->larb_base,
+					"    -         larb_port: %d @%08llx pw: %d clk: %d\n",
+					comp->larb_port, (unsigned long long)comp->larb_base,
 					comp->pw_cnt, comp->clk_cnt);
 				length += snprintf(buf + length, PAGE_SIZE - length,
 					"    -     ddp comp_id: %d bound: %d\n",

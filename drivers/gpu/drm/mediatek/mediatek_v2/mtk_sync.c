@@ -184,7 +184,7 @@ static bool mtk_sync_timeline_fence_enable_signaling(struct dma_fence *fence)
 	return true;
 }
 
-static void mtk_sync_timeline_fence_value_str(
+static void __maybe_unused mtk_sync_timeline_fence_value_str(
 					      struct dma_fence *fence,
 					      char *str,
 					      int size)
@@ -198,7 +198,7 @@ static void mtk_sync_timeline_fence_value_str(
 	}
 }
 
-static void mtk_sync_timeline_fence_timeline_value_str(struct dma_fence *fence,
+static void __maybe_unused mtk_sync_timeline_fence_timeline_value_str(struct dma_fence *fence,
 						       char *str, int size)
 {
 	struct sync_timeline *parent = dma_fence_parent(fence);

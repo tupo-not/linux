@@ -117,7 +117,7 @@ mtk_drm_helper_name_to_opt(struct mtk_drm_helper *helper_opt, const char *name)
 		if (strcmp(name, opt_name) == 0)
 			return i;
 	}
-	DDPINFO("%s: unknown name: %s\n", __func__, name);
+	DDPINFO("%s: unknown name: %s", __func__, name);
 	return MTK_DRM_OPT_NUM;
 }
 
@@ -127,13 +127,13 @@ int mtk_drm_helper_set_opt(struct mtk_drm_helper *helper_opt,
 	unsigned int i;
 
 	if (option >= MTK_DRM_OPT_NUM) {
-		DDPINFO("wrong option: %d\n", option);
+		DDPINFO("wrong option: %d", option);
 		return -EINVAL;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(help_info); i++) {
 		if (helper_opt[i].opt == option && helper_opt[i].val != value) {
-			DDPMSG("Set Option %d(%s) from (%d) to (%d)\n", option,
+			DDPMSG("set Option %d(%s) from (%d) to (%d)", option,
 			       mtk_drm_helper_opt_spy(helper_opt, option),
 			       mtk_drm_helper_get_opt(helper_opt, option),
 			       value);
@@ -164,7 +164,7 @@ int mtk_drm_helper_get_opt(struct mtk_drm_helper *helper_opt,
 	int i;
 
 	if (option >= MTK_DRM_OPT_NUM) {
-		DDPINFO("%s: option invalid %d\n", __func__, option);
+		DDPINFO("%s: option invalid %d", __func__, option);
 		return -1;
 	}
 
@@ -183,7 +183,7 @@ void mtk_drm_helper_init(struct device *dev, struct mtk_drm_helper **helper_opt)
 
 	tmp_opt = kmalloc(sizeof(help_info), GFP_KERNEL);
 	if (!tmp_opt) {
-		DDPPR_ERR("helper info creation failed\n");
+		DDPPR_ERR("helper info creation failed");
 		return;
 	}
 
@@ -200,7 +200,7 @@ void mtk_drm_helper_init(struct device *dev, struct mtk_drm_helper **helper_opt)
 				value = 0;
 		}
 		tmp_opt[i].val = value;
-		DDPINFO("%s %d\n", tmp_opt[i].desc, tmp_opt[i].val);
+		DDPINFO("%s %d", tmp_opt[i].desc, tmp_opt[i].val);
 	}
 
 	if (of_property_read_bool(dev->of_node, "force_no_prim_dual_pipe"))

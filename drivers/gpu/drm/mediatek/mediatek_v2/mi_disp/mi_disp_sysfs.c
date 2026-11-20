@@ -4,7 +4,7 @@
  * Copyright (C) 2020 XiaoMi, Inc.
  */
 
-#define pr_fmt(fmt)	"mi_disp_sysfs:[%s] " fmt, __func__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/device.h>
 #include <linux/err.h>
@@ -551,15 +551,22 @@ static const struct attribute_group *disp_feature_groups[] = {
 	NULL
 };
 
+int mi_disp_create_device_attributes(struct device *dev);
+
 int mi_disp_create_device_attributes(struct device *dev)
 {
 	return sysfs_create_groups(&dev->kobj, disp_feature_groups);
 }
 
+void mi_disp_remove_device_attributes(struct device *dev);
+
 void mi_disp_remove_device_attributes(struct device *dev)
 {
 	sysfs_remove_groups(&dev->kobj, disp_feature_groups);
 }
+
+ssize_t mi_drm_sysfs_read_panel_info(struct drm_connector *connector,
+			char *buf);
 
 ssize_t mi_drm_sysfs_read_panel_info(struct drm_connector *connector,
 			char *buf)

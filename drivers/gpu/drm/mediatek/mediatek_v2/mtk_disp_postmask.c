@@ -145,7 +145,7 @@ static irqreturn_t mtk_postmask_irq_handler(int irq, void *dev_id)
 		return IRQ_NONE;
 
 	if (mtk_drm_top_clk_isr_get("postmask_irq") == false) {
-		DDPIRQ("%s, top clk off\n", __func__);
+		DDPIRQ("%s, top clk off", __func__);
 		return IRQ_NONE;
 	}
 
@@ -161,20 +161,20 @@ static irqreturn_t mtk_postmask_irq_handler(int irq, void *dev_id)
 	if (val & 0x110)
 		DRM_MMP_MARK(abnormal_irq, val, postmask->id);
 
-	DDPIRQ("%s irq, val:0x%x\n", mtk_dump_comp_str(postmask), val);
+	DDPIRQ("%s irq, val:0x%x", mtk_dump_comp_str(postmask), val);
 
 	writel(~val, postmask->regs + DISP_POSTMASK_INTSTA);
 
 	if (val & (1 << 0))
-		DDPIRQ("[IRQ] %s: input frame end!\n",
+		DDPIRQ("%s: input frame end!",
 		       mtk_dump_comp_str(postmask));
 	if (val & (1 << 1))
-		DDPIRQ("[IRQ] %s: output frame end!\n",
+		DDPIRQ("%s: output frame end!",
 		       mtk_dump_comp_str(postmask));
 	if (val & (1 << 2))
-		DDPIRQ("[IRQ] %s: frame start!\n", mtk_dump_comp_str(postmask));
+		DDPIRQ("%s: frame start!", mtk_dump_comp_str(postmask));
 	if (val & (1 << 4)) {
-		DDPPR_ERR("[IRQ] %s: abnormal SOF! cnt=%d\n",
+		DDPPR_ERR("%s: abnormal SOF! cnt=%d",
 			  mtk_dump_comp_str(postmask), priv->abnormal_cnt);
 		priv->abnormal_cnt++;
 	}
@@ -230,7 +230,7 @@ static void mtk_postmask_config(struct mtk_ddp_comp *comp,
 	mtk_ddp_write_relaxed(comp, value, DISP_POSTMASK_SIZE, handle);
 
 	if (!panel_ext)
-		DDPPR_ERR("%s:panel_ext not found\n", __func__);
+		DDPPR_ERR("%s:panel_ext not found", __func__);
 
 	if (panel_ext && panel_ext->round_corner_en) {
 		value = (REG_FLD_VAL((PAUSE_REGION_FLD_RDMA_PAUSE_START),
@@ -313,7 +313,7 @@ static void mtk_postmask_config(struct mtk_ddp_comp *comp,
 		}
 
 		if (addr == 0 || size == 0) {
-			DDPPR_ERR("invalid postmaks addr/size\n");
+			DDPPR_ERR("invalid postmaks addr/size");
 			force_relay = 1;
 		}
 		value = (REG_FLD_VAL((CFG_FLD_RELAY_MODE), force_relay) |
@@ -376,7 +376,7 @@ int mtk_postmask_dump(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 
 	mtk_serial_dump_reg(baddr, 0x0, 4);
 	mtk_serial_dump_reg(baddr, 0x20, 1);
@@ -399,17 +399,17 @@ int mtk_postmask_analysis(struct mtk_ddp_comp *comp)
 	struct mtk_disp_postmask *postmask = comp_to_postmask(comp);
 	dma_addr_t addr = 0;
 
-	DDPDUMP("== %s ANALYSIS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
-	DDPDUMP("en=%d,cfg=0x%x,size=(%dx%d)\n",
+	DDPDUMP("== %s ANALYSIS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("en=%d,cfg=0x%x,size=(%dx%d)",
 		readl(DISP_POSTMASK_EN + baddr) & 0x1,
 		readl(DISP_POSTMASK_CFG + baddr),
 		(readl(DISP_POSTMASK_SIZE + baddr) >> 16) & 0x1fff,
 		readl(DISP_POSTMASK_SIZE + baddr) & 0x1fff);
-	DDPDUMP("blend_cfg=0x%x,bg=0x%x,mask=0x%x\n",
+	DDPDUMP("blend_cfg=0x%x,bg=0x%x,mask=0x%x",
 		readl(DISP_POSTMASK_BLEND_CFG + baddr),
 		readl(DISP_POSTMASK_ROI_BGCLR + baddr),
 		readl(DISP_POSTMASK_MASK_CLR + baddr));
-	DDPDUMP("fifo_cfg=%d,gmc=0x%x,threshold=(0x%x,0x%x)\n",
+	DDPDUMP("fifo_cfg=%d,gmc=0x%x,threshold=(0x%x,0x%x)",
 		readl(DISP_POSTMASK_RDMA_FIFO_CTRL + baddr),
 		readl(DISP_POSTMASK_MEM_GMC_SETTING2 + baddr),
 		readl(DISP_POSTMASK_RDMA_BUF_LOW_TH + baddr),
@@ -422,10 +422,10 @@ int mtk_postmask_analysis(struct mtk_ddp_comp *comp)
 
 	addr += readl(DISP_POSTMASK_MEM_ADDR + baddr);
 
-	DDPDUMP("mem_addr=0x%x,length=0x%x\n",
+	DDPDUMP("mem_addr=0x%x,length=0x%x",
 		addr, readl(DISP_POSTMASK_MEM_LENGTH + baddr));
 
-	DDPDUMP("status=0x%x,cur_pos=0x%x\n",
+	DDPDUMP("status=0x%x,cur_pos=0x%x",
 		readl(DISP_POSTMASK_STATUS + baddr),
 		readl(DISP_POSTMASK_INPUT_COUNT + baddr));
 
@@ -439,7 +439,7 @@ static int mtk_postmask_io_cmd(struct mtk_ddp_comp *comp,
 static void mtk_postmask_start(struct mtk_ddp_comp *comp,
 			       struct cmdq_pkt *handle)
 {
-	DDPDBG("%s\n", __func__);
+	DDPDBG("%s", __func__);
 
 	mtk_postmask_io_cmd(comp, handle, IRQ_LEVEL_NORMAL, NULL);
 
@@ -450,7 +450,7 @@ static void mtk_postmask_start(struct mtk_ddp_comp *comp,
 static void mtk_postmask_stop(struct mtk_ddp_comp *comp,
 			      struct cmdq_pkt *handle)
 {
-	DDPDBG("%s\n", __func__);
+	DDPDBG("%s", __func__);
 
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
@@ -468,7 +468,7 @@ static int mtk_disp_postmask_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
@@ -555,7 +555,7 @@ static int mtk_disp_postmask_probe(struct platform_device *pdev)
 	enum mtk_ddp_comp_id comp_id;
 	int ret;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (priv == NULL)
@@ -563,14 +563,14 @@ static int mtk_disp_postmask_probe(struct platform_device *pdev)
 
 	comp_id = mtk_ddp_comp_get_id(dev->of_node, MTK_DISP_POSTMASK);
 	if ((int)comp_id < 0) {
-		DDPPR_ERR("Failed to identify by alias: %d\n", comp_id);
+		DDPPR_ERR("failed to identify by alias: %d", comp_id);
 		return comp_id;
 	}
 
 	ret = mtk_ddp_comp_init(dev, dev->of_node, &priv->ddp_comp, comp_id,
 				&mtk_disp_postmask_funcs);
 	if (ret != 0) {
-		DDPPR_ERR("Failed to initialize component: %d\n", ret);
+		DDPPR_ERR("failed to initialize component: %d", ret);
 		return ret;
 	}
 
@@ -588,7 +588,7 @@ static int mtk_disp_postmask_probe(struct platform_device *pdev)
 		dev_err(dev, "Failed to add component: %d\n", ret);
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return ret;
 }

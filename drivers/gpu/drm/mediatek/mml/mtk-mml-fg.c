@@ -321,6 +321,7 @@ static s32 ut_get(char *buf, const struct kernel_param *kp)
 				"  -      mml_bound: %d\n",
 				dbg_probed_components[i]->comp.bound);
 		}
+		break;
 	default:
 		mml_err("not support read for case_id: %d", ut_case);
 		break;
@@ -330,7 +331,7 @@ static s32 ut_get(char *buf, const struct kernel_param *kp)
 	return length;
 }
 
-static struct kernel_param_ops up_param_ops = {
+static const struct kernel_param_ops up_param_ops = {
 	.set = ut_set,
 	.get = ut_get,
 };

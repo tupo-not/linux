@@ -1100,7 +1100,7 @@ static void ddp_color_cal_split_window(struct mtk_ddp_comp *comp,
 	/* save to global, can be applied on following PQ param updating. */
 	if (comp->mtk_crtc->is_dual_pipe) {
 		if (g_color_dst_w[id] == 0 || g_color_dst_h[id] == 0) {
-			DDPINFO("g_color_dst_w/h not init, return default settings\n");
+			DDPINFO("g_color_dst_w/h not init, return default settings");
 		} else if (g_split_en) {
 			/* TODO: CONFIG_MTK_LCM_PHYSICAL_ROTATION other case */
 			if (comp->id == DDP_COMPONENT_COLOR0) {
@@ -1136,7 +1136,7 @@ static void ddp_color_cal_split_window(struct mtk_ddp_comp *comp,
 			}
 		}
 	} else if (g_color_dst_w[id] == 0 || g_color_dst_h[id] == 0) {
-		DDPINFO("g_color0_dst_w/h not init, return default settings\n");
+		DDPINFO("g_color0_dst_w/h not init, return default settings");
 	} else if (g_split_en) {
 		/* TODO: CONFIG_MTK_LCM_PHYSICAL_ROTATION other case */
 		split_window_y =
@@ -1162,7 +1162,7 @@ bool disp_color_reg_get(struct mtk_ddp_comp *comp,
 		*value = readl(default_comp->regs + addr);
 		spin_unlock_irqrestore(&g_color_clock_lock, flags);
 	} else {
-		DDPINFO("%s @ %d......... Failed to spin_trylock_irqsave ",
+		DDPINFO("%s @ %d......... failed to spin_trylock_irqsave ",
 			__func__, __LINE__);
 	}
 
@@ -1189,7 +1189,7 @@ static void ddp_color_set_window(struct mtk_ddp_comp *comp,
 		g_split_window_y_end = 0xFFFF;
 	}
 
-	DDPINFO("%s: input: id[%d], en[%d], x[0x%x], y[0x%x]\n",
+	DDPINFO("%s: input: id[%d], en[%d], x[0x%x], y[0x%x]",
 		__func__, comp->id, g_split_en,
 		((win_param->end_x << 16) | win_param->start_x),
 		((win_param->end_y << 16) | win_param->start_y));
@@ -1225,6 +1225,8 @@ struct DISPLAY_PQ_T *get_Color_index(void)
 	return &g_Color_Index;
 }
 
+void DpEngine_COLORonInit(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle);
+
 void DpEngine_COLORonInit(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
 	unsigned int split_window_x, split_window_y;
@@ -1232,7 +1234,7 @@ void DpEngine_COLORonInit(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 
 	ddp_color_cal_split_window(comp, &split_window_x, &split_window_y);
 
-	DDPINFO("%s: id[%d], en[%d], x[0x%x], y[0x%x]\n",
+	DDPINFO("%s: id[%d], en[%d], x[0x%x], y[0x%x]",
 		__func__, comp->id, g_split_en, split_window_x, split_window_y);
 
 	cmdq_pkt_write(handle, comp->cmdq_base,
@@ -1252,6 +1254,8 @@ void DpEngine_COLORonInit(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		comp->regs_pa + DISP_COLOR_OUT_SEL(color), 0x333, 0x00000333);
 }
+
+void DpEngine_COLORonConfig(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle);
 
 void DpEngine_COLORonConfig(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 {
@@ -2161,7 +2165,7 @@ static void mtk_color_config(struct mtk_ddp_comp *comp,
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_COLOR_CFG_MAIN, (0x0 << 25), (0x1 << 25));
 	else
-		DDPINFO("Disp COLOR's bit is : %u\n", cfg->bpc);
+		DDPINFO("disp COLOR's bit is : %u", cfg->bpc);
 }
 
 void ddp_color_bypass_color(struct mtk_ddp_comp *comp, int bypass,
@@ -2191,11 +2195,11 @@ static bool color_get_TDSHP0_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc) {
-		DDPINFO("Fail to get TDSHP0 REG\n");
+		DDPINFO("fail to get TDSHP0 REG");
 		return false;
 	}
 
-	DDPDBG("TDSHP0 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("TDSHP0 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2210,11 +2214,11 @@ static bool color_get_MML_TDSHP0_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc) {
-		DDPINFO("Fail to get MML TDSHP0 REG\n");
+		DDPINFO("fail to get MML TDSHP0 REG");
 		return false;
 	}
 
-	DDPDBG("MML TDSHP0 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("MML TDSHP0 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2230,11 +2234,11 @@ static bool color_get_MDP_RSZ0_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc) {
-		DDPINFO("Fail to get MDP_RSZ0 REG\n");
+		DDPINFO("fail to get MDP_RSZ0 REG");
 		return false
 	}
 
-	DDPDBG("MDP_RSZ0 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("MDP_RSZ0 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2249,11 +2253,11 @@ static bool color_get_MDP_RSZ1_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc) {
-		DDPINFO("Fail to get MDP_RSZ1 REG\n");
+		DDPINFO("fail to get MDP_RSZ1 REG");
 		return false;
 	}
 
-	DDPDBG("MDP_RSZ1 REG: 0x%lx ~ 0x%lx\n", res->start, res->end);
+	DDPDBG("MDP_RSZ1 REG: 0x%lx ~ 0x%lx", res->start, res->end);
 
 	return true;
 }
@@ -2269,11 +2273,11 @@ static bool color_get_MDP_RDMA0_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc) {
-		DDPINFO("Fail to get MDP_RDMA0 REG\n");
+		DDPINFO("fail to get MDP_RDMA0 REG");
 		return false;
 	}
 
-	DDPDBG("MDP_RDMA0 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("MDP_RDMA0 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2288,11 +2292,11 @@ static bool color_get_MDP_HDR0_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc) {
-		DDPINFO("Fail to get MDP_HDR0 REG\n");
+		DDPINFO("fail to get MDP_HDR0 REG");
 		return false;
 	}
 
-	DDPDBG("MDP_HDR0 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("MDP_HDR0 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2307,11 +2311,11 @@ static bool color_get_MML_COLOR0_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc) {
-		DDPINFO("Fail to get MML_COLOR0 REG\n");
+		DDPINFO("fail to get MML_COLOR0 REG");
 		return false;
 	}
 
-	DDPDBG("MML_COLOR0 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("MML_COLOR0 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2326,11 +2330,11 @@ static bool color_get_MDP_COLOR0_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc) {
-		DDPINFO("Fail to get MDP_COLOR0 REG\n");
+		DDPINFO("fail to get MDP_COLOR0 REG");
 		return false;
 	}
 
-	DDPDBG("MDP_COLOR0 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("MDP_COLOR0 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2345,11 +2349,11 @@ static bool color_get_MDP_AAL0_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get MDP_AAL0 REG\n");
+		DDPINFO("fail to get MDP_AAL0 REG");
 		return false;
 	}
 
-	DDPDBG("MDP_AAL0 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("MDP_AAL0 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2363,11 +2367,11 @@ static bool color_get_DISP_COLOR1_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get disp_color1 REG\n");
+		DDPINFO("fail to get disp_color1 REG");
 		return false;
 	}
 
-	DDPDBG("disp_color1 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("disp_color1 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2382,11 +2386,11 @@ static bool color_get_DISP_CCORR1_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get disp_ccorr1 REG\n");
+		DDPINFO("fail to get disp_ccorr1 REG");
 		return false;
 	}
 
-	DDPDBG("disp_ccorr1 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("disp_ccorr1 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2401,11 +2405,11 @@ static bool color_get_DISP_AAL1_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get disp_aal1 REG\n");
+		DDPINFO("fail to get disp_aal1 REG");
 		return false;
 	}
 
-	DDPDBG("disp_aal1 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("disp_aal1 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2420,11 +2424,11 @@ static bool color_get_DISP_GAMMA1_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get disp_gamma1 REG\n");
+		DDPINFO("fail to get disp_gamma1 REG");
 		return false;
 	}
 
-	DDPDBG("disp_gamma1 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("disp_gamma1 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2439,11 +2443,11 @@ static bool color_get_DISP_DITHER1_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get disp_dither1 REG\n");
+		DDPINFO("fail to get disp_dither1 REG");
 		return false;
 	}
 
-	DDPDBG("disp_dither1 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("disp_dither1 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2458,11 +2462,11 @@ static bool color_get_DISP_CCORR2_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get disp_ccorr2 REG\n");
+		DDPINFO("fail to get disp_ccorr2 REG");
 		return false;
 	}
 
-	DDPDBG("disp_ccorr2 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("disp_ccorr2 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2477,11 +2481,11 @@ static bool color_get_DISP_TDSHP1_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get disp_tdshp1 REG\n");
+		DDPINFO("fail to get disp_tdshp1 REG");
 		return false;
 	}
 
-	DDPDBG("disp_tdshp1 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("disp_tdshp1 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2496,11 +2500,11 @@ static bool color_get_DISP_C3D1_REG(struct resource *res)
 
 	// check if fail to get reg.
 	if (rc)	{
-		DDPINFO("Fail to get disp_c3d1 REG\n");
+		DDPINFO("fail to get disp_c3d1 REG");
 		return false;
 	}
 
-	DDPDBG("disp_c3d1 REG: 0x%llx ~ 0x%llx\n", res->start, res->end);
+	DDPDBG("disp_c3d1 REG: 0x%llx ~ 0x%llx", res->start, res->end);
 
 	return true;
 }
@@ -2513,7 +2517,7 @@ static int get_tuning_reg_table_idx_and_offset(struct mtk_ddp_comp *comp,
 	struct mtk_disp_color *color = comp_to_color(comp);
 
 	if (addr == 0) {
-		DDPPR_ERR("addr is NULL\n");
+		DDPPR_ERR("addr is NULL");
 		return -1;
 	}
 
@@ -2540,12 +2544,12 @@ static int color_is_reg_addr_valid(struct mtk_ddp_comp *comp,
 	DDPDBG("regTableSize: %d", regTableSize);
 
 	if (addr == 0) {
-		DDPPR_ERR("addr is NULL\n");
+		DDPPR_ERR("addr is NULL");
 		return -1;
 	}
 
 	if ((addr & 0x3) != 0) {
-		DDPPR_ERR("addr is not 4-byte aligned!\n");
+		DDPPR_ERR("addr is not 4-byte aligned!");
 		return -1;
 	}
 
@@ -2556,7 +2560,7 @@ static int color_is_reg_addr_valid(struct mtk_ddp_comp *comp,
 	}
 
 	if (i < regTableSize) {
-		DDPINFO("addr valid, addr=0x%08lx\n", addr);
+		DDPINFO("addr valid, addr=0x%08lx", addr);
 		return i;
 	}
 
@@ -2564,61 +2568,61 @@ static int color_is_reg_addr_valid(struct mtk_ddp_comp *comp,
 #if defined(SUPPORT_ULTRA_RESOLUTION)
 	if (color_get_MDP_RSZ0_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=MDP_RSZ0\n", addr);
+		DDPDBG("addr=0x%lx, module=MDP_RSZ0", addr);
 		return 2;
 	}
 
 	if (color_get_MDP_RSZ1_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=MDP_RSZ1\n", addr);
+		DDPDBG("addr=0x%lx, module=MDP_RSZ1", addr);
 		return 2;
 	}
 #endif
 
 	if (color_get_MDP_RDMA0_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=MDP_RDMA0\n", addr);
+		DDPDBG("addr=0x%lx, module=MDP_RDMA0", addr);
 		return 2;
 	}
 
 	if (color_get_MDP_HDR0_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=MDP_HDR0\n", addr);
+		DDPDBG("addr=0x%lx, module=MDP_HDR0", addr);
 		return 2;
 	}
 
 	if (color_get_MDP_COLOR0_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=MDP_COLOR0\n", addr);
+		DDPDBG("addr=0x%lx, module=MDP_COLOR0", addr);
 		return 2;
 	}
 
 	if (color_get_MML_COLOR0_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=MML_COLOR0\n", addr);
+		DDPDBG("addr=0x%lx, module=MML_COLOR0", addr);
 		return 2;
 	}
 
 	/*Check if MDP AAL base address*/
 	if (color_get_MDP_AAL0_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=MDP_AAL0\n", addr);
+		DDPDBG("addr=0x%lx, module=MDP_AAL0", addr);
 		return 2;
 	}
 
 	if (color_get_TDSHP0_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=TDSHP0\n", addr);
+		DDPDBG("addr=0x%lx, module=TDSHP0", addr);
 		return 2;
 	}
 
 	if (color_get_MML_TDSHP0_REG(&res) &&
 		addr >= res.start && addr < res.end) {
-		DDPDBG("addr=0x%lx, module=MML_TDSHP0\n", addr);
+		DDPDBG("addr=0x%lx, module=MML_TDSHP0", addr);
 		return 2;
 	}
 
-	DDPPR_ERR("invalid address! addr=0x%lx!\n", addr);
+	DDPPR_ERR("invalid address! addr=0x%lx!", addr);
 	return -1;
 }
 
@@ -2642,11 +2646,11 @@ int mtk_drm_ioctl_set_pqparam(struct drm_device *dev, void *data,
 		ret = mtk_crtc_user_cmd(crtc, comp, SET_PQPARAM, data);
 		mtk_crtc_check_trigger(mtk_crtc, false, true);
 
-		DDPINFO("SET_PQ_PARAM\n");
+		DDPINFO("SET_PQ_PARAM");
 	} else {
 		/* ncs_tuning_mode = 0; */
 		DDPINFO
-		 ("SET_PQ_PARAM, bypassed by ncs_tuning_mode = 1\n");
+		 ("SET_PQ_PARAM, bypassed by ncs_tuning_mode = 1");
 	}
 
 	return ret;
@@ -2691,15 +2695,15 @@ int mtk_drm_ioctl_mutex_control(struct drm_device *dev, void *data,
 
 	if (*value == 1) {
 		ncs_tuning_mode = 1;
-		DDPINFO("ncs_tuning_mode = 1\n");
+		DDPINFO("ncs_tuning_mode = 1");
 	} else if (*value == 2) {
 
 		ncs_tuning_mode = 0;
-		DDPINFO("ncs_tuning_mode = 0\n");
+		DDPINFO("ncs_tuning_mode = 0");
 
 		mtk_crtc_check_trigger(mtk_crtc, false, true);
 	} else {
-		DDPPR_ERR("DISP_IOCTL_MUTEX_CONTROL invalid control\n");
+		DDPPR_ERR("DISP_IOCTL_MUTEX_CONTROL invalid control");
 		return -EFAULT;
 	}
 
@@ -2990,18 +2994,13 @@ int mtk_drm_ioctl_read_reg(struct drm_device *dev, void *data,
 	struct mtk_drm_private *private = dev->dev_private;
 	struct mtk_ddp_comp *comp = private->ddp_comp[DDP_COMPONENT_COLOR0];
 	unsigned long flags;
-	struct mtk_ddp_comp *ccorr_comp;
 
 	mtk_get_ccorr_caps(&g_ccorr_caps);
-	if (g_ccorr_caps.ccorr_number != 2)
-		ccorr_comp = private->ddp_comp[DDP_COMPONENT_CCORR0];
-	else
-		ccorr_comp = private->ddp_comp[DDP_COMPONENT_CCORR1];
 
 	pa = (unsigned int)rParams->reg;
 
 	if (color_is_reg_addr_valid(comp, pa) < 0) {
-		DDPPR_ERR("reg read, addr invalid, pa:0x%x\n", pa);
+		DDPPR_ERR("reg read, addr invalid, pa:0x%x", pa);
 		return -EFAULT;
 	}
 
@@ -3022,11 +3021,11 @@ int mtk_drm_ioctl_read_reg(struct drm_device *dev, void *data,
 
 		spin_unlock_irqrestore(&g_color_clock_lock, flags);
 	} else {
-		DDPINFO("%s @ %d......... Failed to spin_trylock_irqsave ",
+		DDPINFO("%s @ %d......... failed to spin_trylock_irqsave ",
 			__func__, __LINE__);
 	}
 
-	DDPINFO("read pa:0x%x(va:0x%lx) = 0x%x (0x%x)\n",
+	DDPINFO("read pa:0x%x(va:0x%lx) = 0x%x (0x%x)",
 		pa,
 		(long)va,
 		rParams->val,
@@ -3044,19 +3043,14 @@ int mtk_drm_ioctl_write_reg(struct drm_device *dev, void *data,
 	struct mtk_ddp_comp *comp = private->ddp_comp[DDP_COMPONENT_COLOR0];
 	struct drm_crtc *crtc = private->crtc[0];
 	struct DISP_WRITE_REG *wParams = data;
-	struct mtk_ddp_comp *ccorr_comp;
 	unsigned int pa;
 
 	mtk_get_ccorr_caps(&g_ccorr_caps);
-	if (g_ccorr_caps.ccorr_number != 2)
-		ccorr_comp = private->ddp_comp[DDP_COMPONENT_CCORR0];
-	else
-		ccorr_comp = private->ddp_comp[DDP_COMPONENT_CCORR1];
 
 	pa = (unsigned int)wParams->reg;
 
 	if (color_is_reg_addr_valid(comp, pa) < 0) {
-		DDPPR_ERR("reg write, addr invalid, pa:0x%x\n", pa);
+		DDPPR_ERR("reg write, addr invalid, pa:0x%x", pa);
 		return -EFAULT;
 	}
 
@@ -3111,7 +3105,7 @@ int mtk_drm_ioctl_pq_set_window(struct drm_device *dev, void *data,
 		g_split_window_y_end = 0xFFFF;
 	}
 
-	DDPINFO("%s: input: id[%d], en[%d], x[0x%x], y[0x%x]\n",
+	DDPINFO("%s: input: id[%d], en[%d], x[0x%x], y[0x%x]",
 		__func__, comp->id, g_split_en,
 		((win_param->end_x << 16) | win_param->start_x),
 		((win_param->end_y << 16) | win_param->start_y));
@@ -3121,7 +3115,7 @@ int mtk_drm_ioctl_pq_set_window(struct drm_device *dev, void *data,
 	DDPINFO("%s: output: x[0x%x], y[0x%x]", __func__,
 		split_window_x, split_window_y);
 
-	DDPINFO("%s..., id=%d, en=%d, x=0x%x, y=0x%x\n",
+	DDPINFO("%s..., id=%d, en=%d, x=0x%x, y=0x%x",
 		__func__, comp->id, g_split_en,
 		((g_split_window_x_end << 16) | g_split_window_x_start),
 		((g_split_window_y_end << 16) | g_split_window_y_start));
@@ -3135,7 +3129,7 @@ int mtk_drm_ioctl_pq_set_window(struct drm_device *dev, void *data,
 		DDPINFO("%s: output: x[0x%x], y[0x%x]", __func__,
 			split_window_x, split_window_y);
 
-		DDPINFO("%s..., id=%d, en=%d, x=0x%x, y=0x%x\n",
+		DDPINFO("%s..., id=%d, en=%d, x=0x%x, y=0x%x",
 			__func__, comp_color1->id, g_split_en,
 			((g_split_window_x_end << 16) | g_split_window_x_start),
 			((g_split_window_y_end << 16) | g_split_window_y_start));
@@ -3177,7 +3171,7 @@ static void mtk_color_stop(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 static void mtk_color_bypass(struct mtk_ddp_comp *comp, int bypass,
 	struct cmdq_pkt *handle)
 {
-	DDPINFO("%s: bypass %d\n", __func__, bypass);
+	DDPINFO("%s: bypass %d", __func__, bypass);
 
 	g_color_bypass[index_of_color(comp->id)] = bypass;
 
@@ -3194,6 +3188,10 @@ static void mtk_color_bypass(struct mtk_ddp_comp *comp, int bypass,
 
 void disp_color_write_pos_main_for_dual_pipe(struct mtk_ddp_comp *comp,
 	struct cmdq_pkt *handle, struct DISP_WRITE_REG *wParams,
+	unsigned int pa, unsigned int pa1);
+
+void disp_color_write_pos_main_for_dual_pipe(struct mtk_ddp_comp *comp,
+	struct cmdq_pkt *handle, struct DISP_WRITE_REG *wParams,
 	unsigned int pa, unsigned int pa1)
 {
 	unsigned int pos_x, pos_y, val, val1, mask;
@@ -3202,27 +3200,27 @@ void disp_color_write_pos_main_for_dual_pipe(struct mtk_ddp_comp *comp,
 	mask = wParams->mask;
 	pos_x = (wParams->val & 0xffff);
 	pos_y = ((wParams->val & (0xffff0000)) >> 16);
-	DDPINFO("write POS_MAIN: pos_x[%d] pos_y[%d]\n",
+	DDPINFO("write POS_MAIN: pos_x[%d] pos_y[%d]",
 		pos_x, pos_y);
 	if (pos_x < g_width) {
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			pa, val, mask);
-		DDPINFO("dual pipe write pa:0x%x(va:0) = 0x%x (0x%x)\n"
+		DDPINFO("dual pipe write pa:0x%x(va:0) = 0x%x (0x%x)"
 			, pa, val, mask);
 		val1 = ((pos_x + g_width) | ((pos_y << 16)));
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			pa1, val1, mask);
-		DDPINFO("dual pipe write pa1:0x%x(va:0) = 0x%x (0x%x)\n"
+		DDPINFO("dual pipe write pa1:0x%x(va:0) = 0x%x (0x%x)"
 			, pa1, val1, mask);
 	} else {
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			pa, val, mask);
-		DDPINFO("dual pipe write pa:0x%x(va:0) = 0x%x (0x%x)\n"
+		DDPINFO("dual pipe write pa:0x%x(va:0) = 0x%x (0x%x)"
 			, pa, val, mask);
 		val1 = ((pos_x - g_width) | ((pos_y << 16)));
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			pa1, val1, mask);
-		DDPINFO("dual pipe write pa1:0x%x(va:0) = 0x%x (0x%x)\n"
+		DDPINFO("dual pipe write pa1:0x%x(va:0) = 0x%x (0x%x)"
 			, pa1, val1, mask);
 	}
 }
@@ -3230,7 +3228,7 @@ void disp_color_write_pos_main_for_dual_pipe(struct mtk_ddp_comp *comp,
 static int mtk_color_user_cmd(struct mtk_ddp_comp *comp,
 	struct cmdq_pkt *handle, unsigned int cmd, void *data)
 {
-	DDPINFO("%s: cmd: %d\n", __func__, cmd);
+	DDPINFO("%s: cmd: %d", __func__, cmd);
 	switch (cmd) {
 	case SET_PQPARAM:
 	{
@@ -3325,13 +3323,13 @@ static int mtk_color_user_cmd(struct mtk_ddp_comp *comp,
 					cmdq_pkt_write(handle, comp->cmdq_base,
 						pa, wParams->val, wParams->mask);
 				}
-				DDPINFO("dual pipe write pa:0x%x(va:0x%lx) = 0x%x (0x%x)\n",
+				DDPINFO("dual pipe write pa:0x%x(va:0x%lx) = 0x%x (0x%x)",
 					pa, (long)va, wParams->val, wParams->mask);
 				if (pa1) {
 					cmdq_pkt_write(handle, comp->cmdq_base,
 						pa1, wParams->val, wParams->mask);
 				}
-				DDPINFO("dual pipe write pa1:0x%x(va:0x%lx) = 0x%x (0x%x)\n",
+				DDPINFO("dual pipe write pa1:0x%x(va:0x%lx) = 0x%x (0x%x)",
 					pa1, (long)va, wParams->val, wParams->mask);
 			} while (0);
 		} else {
@@ -3339,7 +3337,7 @@ static int mtk_color_user_cmd(struct mtk_ddp_comp *comp,
 				cmdq_pkt_write(handle, comp->cmdq_base,
 					pa, wParams->val, wParams->mask);
 			}
-			DDPINFO("single pipe write pa:0x%x(va:0x%lx) = 0x%x (0x%x)\n",
+			DDPINFO("single pipe write pa:0x%x(va:0x%lx) = 0x%x (0x%x)",
 				pa, (long)va, wParams->val, wParams->mask);
 		}
 	}
@@ -3367,7 +3365,7 @@ static int mtk_color_user_cmd(struct mtk_ddp_comp *comp,
 	}
 	break;
 	default:
-		DDPPR_ERR("%s: error cmd: %d\n", __func__, cmd);
+		DDPPR_ERR("%s: error cmd: %d", __func__, cmd);
 		return -EINVAL;
 	}
 	return 0;
@@ -3421,6 +3419,9 @@ static void mtk_color_unprepare(struct mtk_ddp_comp *comp)
 }
 
 void mtk_color_first_cfg(struct mtk_ddp_comp *comp,
+	       struct mtk_ddp_config *cfg, struct cmdq_pkt *handle);
+
+void mtk_color_first_cfg(struct mtk_ddp_comp *comp,
 	       struct mtk_ddp_config *cfg, struct cmdq_pkt *handle)
 {
 	mtk_color_config(comp, cfg, handle);
@@ -3444,7 +3445,7 @@ void mtk_color_dump(struct mtk_ddp_comp *comp)
 	//DDPDUMP("== %s REGS ==\n", mtk_dump_comp_str(comp));
 	//mtk_serial_dump_reg(baddr, 0x400, 3);
 	//mtk_serial_dump_reg(baddr, 0xC50, 2);
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 	mtk_cust_dump_reg(baddr, 0x400, 0x404, 0x408, 0x40C);
 	mtk_cust_dump_reg(baddr, 0x410, 0x418, 0x41C, 0x420);
 	mtk_cust_dump_reg(baddr, 0x428, 0x42C, 0x430, 0x434);
@@ -3527,7 +3528,7 @@ static int mtk_disp_color_probe(struct platform_device *pdev)
 	enum mtk_ddp_comp_id comp_id;
 	int ret;
 
-	DDPINFO("%s+\n", __func__);
+	DDPINFO("%s+", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (priv == NULL)
 		return -ENOMEM;
@@ -3564,7 +3565,7 @@ static int mtk_disp_color_probe(struct platform_device *pdev)
 	}
 
 	g_legacy_color_cust = false;
-	DDPINFO("%s-\n", __func__);
+	DDPINFO("%s-", __func__);
 
 	return ret;
 }

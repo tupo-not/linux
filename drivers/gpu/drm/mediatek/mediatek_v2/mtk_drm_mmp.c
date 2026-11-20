@@ -21,6 +21,8 @@ static struct DRM_MMP_Events g_DRM_MMP_Events;
 static struct CRTC_MMP_Events g_CRTC_MMP_Events[MMP_CRTC_NUM];
 
 /* need to update if add new mmp_event in DRM_MMP_Events */
+void init_drm_mmp_event(void);
+
 void init_drm_mmp_event(void)
 {
 	int i;
@@ -132,6 +134,8 @@ void init_drm_mmp_event(void)
 }
 
 /* need to update if add new mmp_event in CRTC_MMP_Events */
+void init_crtc_mmp_event(void);
+
 void init_crtc_mmp_event(void)
 {
 	int i = 0;
@@ -145,7 +149,7 @@ void init_crtc_mmp_event(void)
 		r = snprintf(name, sizeof(name), "crtc%d", i);
 		if (r < 0) {
 			/* Handle snprintf() error */
-			DDPPR_ERR("%s:snprintf error\n", __func__);
+			DDPPR_ERR("%s:snprintf error", __func__);
 			return;
 		}
 		crtc_mmp_root =
@@ -304,7 +308,7 @@ void init_crtc_mmp_event(void)
 }
 void drm_mmp_init(void)
 {
-	DDPMSG("%s\n", __func__);
+	DDPMSG("%s", __func__);
 
 	mmprofile_enable(1);
 
@@ -332,6 +336,8 @@ struct CRTC_MMP_Events *get_crtc_mmp_events(unsigned long id)
 #include <mtk_drm_drv.h>
 
 #define DISP_PAGE_MASK 0xfffL
+
+int mtk_drm_check_fmt(unsigned int fmt, struct mmp_metadata_bitmap_t *bitmap);
 
 int mtk_drm_check_fmt(unsigned int fmt, struct mmp_metadata_bitmap_t *bitmap)
 {
@@ -382,10 +388,13 @@ int mtk_drm_check_fmt(unsigned int fmt, struct mmp_metadata_bitmap_t *bitmap)
 		bitmap->data2 = MMPROFILE_BITMAP_VYUY;
 		return 1;
 	default:
-		DDPINFO("[MMP]unknown fmt\n");
+		DDPINFO("unknown fmt");
 		return -1;
 	}
 }
+
+int crtc_mva_map_kernel(unsigned int mva, unsigned int size,
+			unsigned long *map_va, unsigned int *map_size);
 
 int crtc_mva_map_kernel(unsigned int mva, unsigned int size,
 			unsigned long *map_va, unsigned int *map_size)
@@ -397,11 +406,14 @@ int crtc_mva_map_kernel(unsigned int mva, unsigned int size,
 		mtk_iommu_iova_to_va(&(disp_dev->iommu_pdev->dev),
 				     mva, map_va, size);
 	else
-		DDPINFO("%s, %d, disp_dev is null\n", __func__, __LINE__);
+		DDPINFO("%s, %d, disp_dev is null", __func__, __LINE__);
 #endif
 
 	return 0;
 }
+
+int crtc_mva_unmap_kernel(unsigned int mva, unsigned int size,
+			  unsigned long map_va);
 
 int crtc_mva_unmap_kernel(unsigned int mva, unsigned int size,
 			  unsigned long map_va)
@@ -411,27 +423,28 @@ int crtc_mva_unmap_kernel(unsigned int mva, unsigned int size,
 	return 0;
 }
 
+void *mtk_drm_buffer_map_kernel(struct drm_framebuffer *fb);
+
 void *mtk_drm_buffer_map_kernel(struct drm_framebuffer *fb)
 {
 	struct drm_gem_object *gem_obj = NULL;
 	struct dma_buf *dmabuf = NULL;
 	struct iosys_map map;
-	void *dma_va;
 
 	if (!fb) {
-		DDPINFO("[MMP]fb is null\n", __func__);
+		DDPINFO("%s: fb is null", __func__);
 		return 0;
 	}
 
 	gem_obj = mtk_fb_get_gem_obj(fb);
 	if (!gem_obj) {
-		DDPINFO("[MMP]gem is null\n", __func__);
+		DDPINFO("%s: gem is null", __func__);
 		return 0;
 	}
 
 	dmabuf = gem_obj->import_attach->dmabuf;
 	if (!dmabuf) {
-		DDPINFO("[MMP]dmabuf is null\n", __func__);
+		DDPINFO("%s: dmabuf is null", __func__);
 		return 0;
 	}
 
@@ -440,6 +453,8 @@ void *mtk_drm_buffer_map_kernel(struct drm_framebuffer *fb)
 
 	return map.vaddr;
 }
+
+int mtk_drm_buffer_unmap_kernel(struct drm_framebuffer *fb, void *dma_va);
 
 int mtk_drm_buffer_unmap_kernel(struct drm_framebuffer *fb, void *dma_va)
 {
@@ -471,22 +486,22 @@ int mtk_drm_mmp_ovl_layer(struct mtk_plane_state *state,
 
 	if (!mtk_drm_helper_get_opt(private->helper_opt,
 				MTK_DRM_OPT_USE_M4U)) {
-		DDPPR_ERR("[MMP]display iommu is disabled\n");
+		DDPPR_ERR("display iommu is disabled");
 		return -1;
 	}
 
 	if (!pending->enable) {
-		DDPINFO("[MMP]layer is not disable\n");
+		DDPINFO("layer is not disable");
 		return -1;
 	}
 
 	if (pending->prop_val[PLANE_PROP_COMPRESS]) {
-		DDPINFO("[MMP]layer is compress\n");
+		DDPINFO("layer is compress");
 		return -1;
 	}
 
 	if (global_lye_num > 5) {
-		DDPINFO("[MMP]not support layer over 6\n");
+		DDPINFO("not support layer over 6");
 		return -1;
 	}
 
@@ -540,7 +555,7 @@ int mtk_drm_mmp_ovl_layer(struct mtk_plane_state *state,
 		bitmap.data2 = MMPROFILE_BITMAP_VYUY;
 		yuv = 1;
 	} else {
-		DDPINFO("[MMP]unknown fmt\n");
+		DDPINFO("unknown fmt");
 		raw = 1;
 	}
 
@@ -557,7 +572,7 @@ int mtk_drm_mmp_ovl_layer(struct mtk_plane_state *state,
 
 		dma_va = mtk_drm_buffer_map_kernel(state->base.fb);
 		if (!dma_va) {
-			DDPINFO("[MMP]dma_va is null\n", __func__);
+			DDPINFO("%s: dma_va is null", __func__);
 			goto end;
 		}
 		bitmap.p_data = dma_va;
@@ -584,7 +599,7 @@ int mtk_drm_mmp_ovl_layer(struct mtk_plane_state *state,
 		if (crtc_mva_map_kernel(pending->addr, bitmap.data_size,
 					(unsigned long *)&meta.p_data,
 					&meta.size) != 0) {
-			DDPINFO("%s,fail to dump rgb\n", __func__);
+			DDPINFO("%s,fail to dump rgb", __func__);
 			goto end;
 		}
 
@@ -626,7 +641,7 @@ int mtk_drm_mmp_wdma_buffer(struct drm_crtc *crtc,
 	CRTC_MMP_EVENT_START(crtc_idx, wbBmpDump, 0, 0);
 	dma_va = mtk_drm_buffer_map_kernel(wb_fb);
 	if (!dma_va) {
-		DDPINFO("[MMP]dma_va is null\n", __func__);
+		DDPINFO("%s: dma_va is null", __func__);
 		goto end;
 	}
 	bitmap.p_data = dma_va;

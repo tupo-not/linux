@@ -188,7 +188,7 @@ mtk_plane_duplicate_state(struct drm_plane *plane)
 	__drm_atomic_helper_plane_duplicate_state(plane, &state->base);
 
 	if (state->base.plane != plane)
-		DDPAEE("%s:%d, invalid plane:(%p,%p)\n",
+		DDPAEE("%s:%d, invalid plane:(%p,%p)",
 			__func__, __LINE__,
 			state->base.plane, plane);
 
@@ -224,19 +224,19 @@ static int mtk_plane_atomic_set_property(struct drm_plane *plane,
 	int i;
 
 	if (!mtk_plane) {
-		DDPPR_ERR("%s:%d mtk plane is null\n", __func__, __LINE__);
+		DDPPR_ERR("%s:%d mtk plane is null", __func__, __LINE__);
 		return -EINVAL;
 	}
 
 	for (i = 0; i < PLANE_PROP_MAX; i++) {
 		if (mtk_plane->plane_property[i] == property) {
 			plane_state->prop_val[i] = val;
-			DDPDBG("set property:%s %llu\n", property->name, val);
+			DDPDBG("set property:%s %llu", property->name, val);
 			return ret;
 		}
 	}
 
-	DDPPR_ERR("%s:%d fail to set property:%s %d\n", property->name,
+	DDPPR_ERR("%s:%d fail to set property:%s %d", property->name,
 		  (unsigned int)val, __func__, __LINE__);
 	return -EINVAL;
 }
@@ -252,19 +252,19 @@ static int mtk_plane_atomic_get_property(struct drm_plane *plane,
 	int i;
 
 	if (!mtk_plane) {
-		DDPPR_ERR("%s:%d mtk plane is null\n", __func__, __LINE__);
+		DDPPR_ERR("%s:%d mtk plane is null", __func__, __LINE__);
 		return -EINVAL;
 	}
 
 	for (i = 0; i < PLANE_PROP_MAX; i++) {
 		if (mtk_plane->plane_property[i] == property) {
 			*val = plane_state->prop_val[i];
-			DDPINFO("get property:%s %lld\n", property->name, *val);
+			DDPINFO("get property:%s %lld", property->name, *val);
 			return ret;
 		}
 	}
 
-	DDPPR_ERR("%s:%d fail to get property:%s %p\n", __func__, __LINE__,
+	DDPPR_ERR("%s:%d fail to get property:%s %p", __func__, __LINE__,
 			property->name, val);
 
 	return -EINVAL;
@@ -316,7 +316,7 @@ static int mtk_plane_atomic_check(struct drm_plane *plane,
 			struct drm_display_mode *mode = mtk_drm_crtc_avail_disp_mode(state->crtc,
 				mtk_state->prop_val[CRTC_PROP_DISP_MODE_IDX]);
 
-			DDPDBG("%s++ from %u to %u\n", __func__,
+			DDPDBG("%s++ from %u to %u", __func__,
 					old_mtk_state->prop_val[CRTC_PROP_DISP_MODE_IDX],
 					mtk_state->prop_val[CRTC_PROP_DISP_MODE_IDX]);
 
@@ -325,7 +325,7 @@ static int mtk_plane_atomic_check(struct drm_plane *plane,
 				crtc_state->mode.hdisplay = mode->hdisplay;
 				crtc_state->mode.vdisplay = mode->vdisplay;
 
-				DDPDBG("%s: state dst:%dx%d, src:%dx%d; crtc:%dx%d\n", __func__,
+				DDPDBG("%s: state dst:%dx%d, src:%dx%d; crtc:%dx%d", __func__,
 					state->crtc_w, state->crtc_h, state->src_w, state->src_h,
 					crtc_state->mode.hdisplay, crtc_state->mode.vdisplay);
 			}
@@ -491,10 +491,10 @@ static void mtk_plane_atomic_update(struct drm_plane *plane,
 	wmb(); /* Make sure the above parameters are set before update */
 	state->pending.dirty = true;
 
-	DDPINFO("%s:%d en%d,pitch%d,fmt:%p4cc\n",
+	DDPINFO("%s:%d en%d,pitch%d,fmt:%p4cc",
 		__func__, __LINE__, (unsigned int)state->pending.enable,
 		state->pending.pitch, &state->pending.format);
-	DDPINFO("addr:0x%llx,x%d,y%d,width%d,height%d\n",
+	DDPINFO("addr:0x%llx,x%d,y%d,width%d,height%d",
 		state->pending.addr, state->pending.dst_x,
 		state->pending.dst_y, state->pending.width,
 		state->pending.height);
@@ -503,9 +503,9 @@ static void mtk_plane_atomic_update(struct drm_plane *plane,
 		DDPINFO("prop_val[%d]:%d ", i,
 			(unsigned int)state->pending.prop_val[i]);
 	}
-	DDPINFO("\n");
+	DDPINFO("");
 
-	DDPFENCE("S+/%sL%d/e%d/id%d/mva0x%08llx/size0x%08lx/S%d\n",
+	DDPFENCE("s+/%sL%d/e%d/id%d/mva0x%08llx/size0x%08lx/S%d",
 		mtk_crtc_index_spy(crtc_index),
 		plane_index,
 		state->pending.enable,
@@ -515,7 +515,7 @@ static void mtk_plane_atomic_update(struct drm_plane *plane,
 		state->pending.is_sec);
 
 	if (!mtk_crtc->sec_on && state->pending.is_sec) {
-		DDPMSG("receive sec buffer in non-sec mode\n");
+		DDPMSG("receive sec buffer in non-sec mode");
 		return;
 	}
 
@@ -543,7 +543,7 @@ static void mtk_plane_atomic_disable(struct drm_plane *plane,
 
 #ifdef MTK_DRM_ADVANCE
 	if (!state->crtc) {
-		DDPPR_ERR("%s, empty crtc state\n", __func__);
+		DDPPR_ERR("%s, empty crtc state", __func__);
 		if (old_state && old_state->crtc)
 			mtk_drm_crtc_plane_disable(old_state->crtc, plane, state);
 	} else
@@ -618,11 +618,11 @@ static void mtk_plane_attach_property(struct mtk_drm_plane *plane)
 				dev, plane_prop->flags, plane_prop->name,
 				plane_prop->min, plane_prop->max);
 			if (!mtk_prop[i]) {
-				DDPPR_ERR("fail to create property:%s\n",
+				DDPPR_ERR("fail to create property:%s",
 					  plane_prop->name);
 				return;
 			}
-			DDPINFO("create property:%s, flags:0x%x\n",
+			DDPINFO("create property:%s, flags:0x%x",
 				plane_prop->name, mtk_prop[i]->flags);
 		}
 		num++;
@@ -667,7 +667,7 @@ int mtk_plane_init(struct drm_device *dev, struct mtk_drm_plane *plane,
 			BIT(DRM_MODE_BLEND_COVERAGE) |
 			BIT(DRM_MODE_BLEND_PIXEL_NONE));
 	if (err)
-		DDPPR_ERR("failed to create blend mode property: %d\n", err);
+		DDPPR_ERR("failed to create blend mode property: %d", err);
 
 	drm_plane_helper_add(&plane->base, &mtk_plane_helper_funcs);
 

@@ -15,6 +15,8 @@ static BLOCKING_NOTIFIER_HEAD(mi_disp_notifier_list);
  * to msm_drm_notifier_list, which would be called when
  * received unblank/power down event.
  */
+int mi_disp_register_client(struct notifier_block *nb);
+
 int mi_disp_register_client(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_register(&mi_disp_notifier_list, nb);
@@ -28,6 +30,8 @@ EXPORT_SYMBOL(mi_disp_register_client);
  * This function unregisters the callback function from
  * msm_drm_notifier_list.
  */
+int mi_disp_unregister_client(struct notifier_block *nb);
+
 int mi_disp_unregister_client(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_unregister(&mi_disp_notifier_list, nb);
@@ -40,6 +44,8 @@ EXPORT_SYMBOL(mi_disp_unregister_client);
  * @v: notifier data, inculde display id and display blank
  *     event(unblank or power down).
  */
+int mi_disp_notifier_call_chain(unsigned long val, void *v);
+
 int mi_disp_notifier_call_chain(unsigned long val, void *v)
 {
 	pr_info("%s, notify = %u\n", __func__, val);

@@ -4,7 +4,7 @@
  * Copyright (C) 2020 XiaoMi, Inc.
  */
 
-#define pr_fmt(fmt)	"mi-dsi-panel:[%s:%d] " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
@@ -191,7 +191,7 @@ ssize_t dsi_panel_write_mipi_reg(char *buf, size_t count)
 		goto exit;
 	} else {
 		lcm_mipi_read_write.lcm_setting_table.count = (unsigned char)packet_count;
-		memcpy(lcm_mipi_read_write.lcm_setting_table.para_list, "",64);
+		memset(lcm_mipi_read_write.lcm_setting_table.para_list, 0, 64);
 		if(count > 8)
 		{
 			data = kzalloc(count - 6, GFP_KERNEL);
@@ -913,6 +913,8 @@ static int dsi_panel_get_lockdown_from_cmdline(unsigned char *plockdowninfo)
 	return ret;
 }
 
+int get_lockdown_info_for_nvt(unsigned char* p_lockdown_info);
+
 int get_lockdown_info_for_nvt(unsigned char* p_lockdown_info) {
 	int ret = 0;
 	int i = 0;
@@ -1076,12 +1078,7 @@ ssize_t  led_i2c_reg_read(struct mtk_dsi *dsi, char *buf)
 	int i = 0;
 	ssize_t count = 0;
 
-	struct mtk_ddp_comp *comp =  NULL;
-	struct mtk_panel_ext *panel_ext = NULL;
-
 	pr_info("%s +\n", __func__);
-	comp = &dsi->ddp_comp;
-	panel_ext = mtk_dsi_get_panel_ext(comp);
 
 	if (lcm_led_i2c_read_write.read_enable) {
 		for (i = 0; i < lcm_led_i2c_read_write.read_count; i++) {
@@ -1220,6 +1217,9 @@ int mi_dsi_panel_get_max_brightness_clone(struct mtk_dsi *dsi,
 }
 
 int mi_dsi_panel_get_factory_max_brightness(struct mtk_dsi *dsi,
+			u32 *max_brightness_clone);
+
+int mi_dsi_panel_get_factory_max_brightness(struct mtk_dsi *dsi,
 			u32 *max_brightness_clone)
 {
 	struct mtk_ddp_comp *comp =  NULL;
@@ -1348,10 +1348,9 @@ int mi_dsi_panel_get_brightness(struct mtk_dsi *dsi,
 int mi_dsi_panel_set_disp_param(struct mtk_dsi *dsi, struct disp_feature_ctl *ctl)
 {
 	int rc = 0;
-	bool need_lock = false;
+	bool need_lock __maybe_unused = false;
 	struct mtk_ddp_comp *comp =  NULL;
 	struct mtk_panel_ext *panel_ext = NULL;
-	struct drm_panel *panel = NULL;
 	struct mi_dsi_panel_cfg *mi_cfg = NULL;
 	struct mtk_drm_private *private = NULL;
 	struct lcm *ctx = panel_to_lcm(dsi->panel);
@@ -1363,7 +1362,6 @@ int mi_dsi_panel_set_disp_param(struct mtk_dsi *dsi, struct disp_feature_ctl *ct
 
 	comp = &dsi->ddp_comp;
 	panel_ext = mtk_dsi_get_panel_ext(comp);
-	panel = dsi->panel;
 
 	DISP_UTC_INFO("panel feature: %s, value: %d\n",
 		get_disp_feature_id_name(ctl->feature_id), ctl->feature_val);
@@ -1763,7 +1761,7 @@ void mi_disp_cfg_init(struct mtk_dsi *dsi)
 	int ret = 0;
 	struct mtk_ddp_comp *comp =  NULL;
 	struct mtk_panel_ext *panel_ext = NULL;
-	struct mi_dsi_panel_cfg *mi_cfg = NULL;
+	struct mi_dsi_panel_cfg *mi_cfg __maybe_unused = NULL;
 
 	if (!dsi) {
 		pr_err("%s NULL dsi\n", __func__);

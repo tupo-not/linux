@@ -194,7 +194,7 @@ mtk_addon_get_scenario_data(const char *source, struct drm_crtc *crtc,
 		return &mtk_crtc->path_data->addon_data[scn];
 
 err:
-	DDPPR_ERR("[%s] crtc%d cannot get addon data scn[%u]\n", source,
+	DDPPR_ERR("[%s] crtc%d cannot get addon data scn[%u]", source,
 		  drm_crtc_index(crtc), scn);
 	return NULL;
 }
@@ -205,7 +205,7 @@ mtk_addon_get_scenario_data_dual(const char *source, struct drm_crtc *crtc,
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
 
 	if ((scn < NONE) || (scn > ADDON_SCN_NR)) {
-		DDPPR_ERR("[%s] crtc%d scn is wrong\n", source,
+		DDPPR_ERR("[%s] crtc%d scn is wrong", source,
 				drm_crtc_index(crtc));
 		return NULL;
 	}
@@ -302,7 +302,7 @@ mtk_addon_path_connect_and_add_mutex(struct drm_crtc *crtc,
 		mtk_addon_module_get_path(module->module);
 
 	if (mutex_id < 0) {
-		DDPPR_ERR("invalid mutex id:%d\n", mutex_id);
+		DDPPR_ERR("invalid mutex id:%d", mutex_id);
 		return;
 	}
 
@@ -334,7 +334,7 @@ static void mtk_addon_path_disconnect_and_remove_mutex(
 		mtk_addon_module_get_path(module->module);
 
 	if (mutex_id < 0) {
-		DDPPR_ERR("invalid mutex id:%d\n", mutex_id);
+		DDPPR_ERR("invalid mutex id:%d", mutex_id);
 		return;
 	}
 
@@ -371,13 +371,13 @@ void mtk_addon_connect_between(struct drm_crtc *crtc, unsigned int ddp_mode,
 		mtk_crtc_find_comp(crtc, ddp_mode, module_data->attach_comp);
 
 	if (module_data->attach_comp < 0) {
-		DDPPR_ERR("Invalid attach_comp value\n");
+		DDPPR_ERR("invalid attach_comp value");
 		return;
 	}
 
 	if (attach_comp_id == -1) {
 		comp = priv->ddp_comp[module_data->attach_comp];
-		DDPPR_ERR("Attach module:%s is not in path mode %d\n",
+		DDPPR_ERR("attach module:%s is not in path mode %d",
 			  mtk_dump_comp_str(comp), ddp_mode);
 		return;
 	}
@@ -386,13 +386,13 @@ void mtk_addon_connect_between(struct drm_crtc *crtc, unsigned int ddp_mode,
 						      module_data->attach_comp);
 
 	if (module_data->attach_comp < 0) {
-		DDPPR_ERR("Invalid attach_comp value\n");
+		DDPPR_ERR("invalid attach_comp value");
 		return;
 	}
 
 	if (next_attach_comp_id == -1) {
 		comp = priv->ddp_comp[module_data->attach_comp];
-		DDPPR_ERR("Attach module:%s has not a next comp in path mode\n",
+		DDPPR_ERR("attach module:%s has not a next comp in path mode",
 			  mtk_dump_comp_str(comp));
 		return;
 	}
@@ -488,13 +488,13 @@ void mtk_addon_disconnect_between(
 		mtk_crtc_find_comp(crtc, ddp_mode, module_data->attach_comp);
 
 	if (module_data->attach_comp < 0) {
-		DDPPR_ERR("Invalid attach_comp value\n");
+		DDPPR_ERR("invalid attach_comp value");
 		return;
 	}
 
 	if (attach_comp_id == -1) {
 		comp = priv->ddp_comp[module_data->attach_comp];
-		DDPPR_ERR("Attach module:%s is not in path mode %d\n",
+		DDPPR_ERR("attach module:%s is not in path mode %d",
 			  mtk_dump_comp_str(comp), ddp_mode);
 		return;
 	}
@@ -503,14 +503,14 @@ void mtk_addon_disconnect_between(
 						      module_data->attach_comp);
 
 	if (module_data->attach_comp < 0) {
-		DDPPR_ERR("Invalid attach_comp value\n");
+		DDPPR_ERR("invalid attach_comp value");
 		return;
 	}
 
 	if (next_attach_comp_id == -1) {
 		comp = priv->ddp_comp[module_data->attach_comp];
 		DDPPR_ERR(
-			"Attach module:%s has not a next comp in path mode %d\n",
+			"attach module:%s has not a next comp in path mode %d",
 			mtk_dump_comp_str(comp), ddp_mode);
 		return;
 	}
@@ -570,13 +570,13 @@ void mtk_addon_connect_before(struct drm_crtc *crtc, unsigned int ddp_mode,
 		mtk_crtc_find_comp(crtc, ddp_mode, module_data->attach_comp);
 
 	if (module_data->attach_comp < 0) {
-		DDPPR_ERR("Invalid attach_comp value\n");
+		DDPPR_ERR("invalid attach_comp value");
 		return;
 	}
 
 	if (next_attach_comp_id == -1) {
 		comp = priv->ddp_comp[module_data->attach_comp];
-		DDPPR_ERR("Attach module:%s is not in path mode %d\n",
+		DDPPR_ERR("attach module:%s is not in path mode %d",
 			  mtk_dump_comp_str(comp), ddp_mode);
 		return;
 	}
@@ -651,13 +651,13 @@ void mtk_addon_disconnect_before(
 		mtk_crtc_find_comp(crtc, ddp_mode, module_data->attach_comp);
 
 	if (module_data->attach_comp < 0) {
-		DDPPR_ERR("Invalid attach_comp value\n");
+		DDPPR_ERR("invalid attach_comp value");
 		return;
 	}
 
 	if (next_attach_comp_id == -1) {
 		comp = priv->ddp_comp[module_data->attach_comp];
-		DDPPR_ERR("Attach module:%s is not in path mode %d\n",
+		DDPPR_ERR("attach module:%s is not in path mode %d",
 			  mtk_dump_comp_str(comp), ddp_mode);
 		return;
 	}
@@ -712,7 +712,7 @@ void mtk_addon_connect_after(struct drm_crtc *crtc, unsigned int ddp_mode,
 
 	if (prev_attach_comp_id == -1) {
 		comp = priv->ddp_comp[module_data->attach_comp];
-		DDPPR_ERR("Attach module:%s is not in path mode %d\n",
+		DDPPR_ERR("attach module:%s is not in path mode %d",
 			mtk_dump_comp_str(comp), ddp_mode);
 		return;
 	}
@@ -805,7 +805,7 @@ void mtk_addon_disconnect_after(
 
 	if (prev_attach_comp_id == -1) {
 		comp = priv->ddp_comp[module_data->attach_comp];
-		DDPPR_ERR("Attach module:%s is not in path mode %d\n",
+		DDPPR_ERR("attach module:%s is not in path mode %d",
 			mtk_dump_comp_str(comp), ddp_mode);
 		return;
 	}
@@ -848,7 +848,7 @@ void mtk_addon_connect_external(struct drm_crtc *crtc, unsigned int ddp_mode,
 	const struct mtk_addon_path_data *path_data =
 		mtk_addon_module_get_path(module_data->module);
 
-	DDPMSG("%s\n", __func__);
+	DDPMSG("%s", __func__);
 	output_comp = mtk_ddp_comp_request_output(mtk_crtc);
 
 	/* 0. attach subpath to crtc*/
@@ -876,7 +876,7 @@ void mtk_addon_disconnect_external(
 	const struct mtk_addon_path_data *path_data =
 		mtk_addon_module_get_path(module_data->module);
 
-	DDPMSG("%s\n", __func__);
+	DDPMSG("%s", __func__);
 
 	addon_config->addon_mml_config.config_type.type = ADDON_DISCONNECT;
 

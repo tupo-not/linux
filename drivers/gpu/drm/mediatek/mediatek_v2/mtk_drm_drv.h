@@ -48,7 +48,11 @@
 #if IS_ENABLED(CONFIG_MTK_CMDQ_MBOX_EXT)
 #define MTK_DRM_CMDQ_ASYNC
 #define CONFIG_MTK_DISPLAY_CMDQ
+/* Also passed on the command line by this Makefile; guard to avoid
+ * a redefinition warning in every translation unit including this header. */
+#ifndef MTK_FILL_MIPI_IMPEDANCE
 #define MTK_FILL_MIPI_IMPEDANCE
+#endif
 #endif
 
 struct device;

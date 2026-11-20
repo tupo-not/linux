@@ -72,7 +72,7 @@ static void mtk_aal_write_mask(void __iomem *address, u32 data, u32 mask)
 static void mtk_dmdp_aal_start(struct mtk_ddp_comp *comp,
 	struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + DMDP_AAL_EN,
 		       AAL_EN, ~0);
@@ -81,7 +81,7 @@ static void mtk_dmdp_aal_start(struct mtk_ddp_comp *comp,
 static void mtk_dmdp_aal_stop(struct mtk_ddp_comp *comp,
 	struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + DMDP_AAL_EN,
 		       0x0, ~0);
 }
@@ -89,7 +89,7 @@ static void mtk_dmdp_aal_stop(struct mtk_ddp_comp *comp,
 static void mtk_dmdp_aal_bypass(struct mtk_ddp_comp *comp, int bypass,
 	struct cmdq_pkt *handle)
 {
-	DDPINFO("%s : bypass = %d g_dre30_support = %d\n",
+	DDPINFO("%s : bypass = %d g_dre30_support = %d",
 			__func__, bypass, g_dre30_support);
 	atomic_set(&g_dmdp_aal_force_relay, bypass);
 	if (g_dre30_support) {
@@ -121,7 +121,7 @@ static void mtk_dmdp_aal_config(struct mtk_ddp_comp *comp,
 
 	val = (width << 16) | height;
 
-	DDPINFO("%s: 0x%08x\n", __func__, val);
+	DDPINFO("%s: 0x%08x", __func__, val);
 
 	if (g_dre30_support == 0 || atomic_read(&g_dmdp_aal_force_relay) == 1)
 		cmdq_pkt_write(handle, comp->cmdq_base,
@@ -144,14 +144,17 @@ static void mtk_dmdp_aal_config(struct mtk_ddp_comp *comp,
 			comp->regs_pa + DMDP_AAL_R2Y_00, 0, ~0);
 	DDPINFO("%s: g_dmdp_aal_force_relay[%d]",
 		__func__, atomic_read(&g_dmdp_aal_force_relay));
-	DDPINFO("%s: DMDP_AAL_CFG = 0x%08x comp_id:%d\n",
+	DDPINFO("%s: DMDP_AAL_CFG = 0x%08x comp_id:%d",
 			__func__, readl(comp->regs + DMDP_AAL_CFG), comp->id);
 }
 
 void mtk_dmdp_aal_first_cfg(struct mtk_ddp_comp *comp,
+	       struct mtk_ddp_config *cfg, struct cmdq_pkt *handle);
+
+void mtk_dmdp_aal_first_cfg(struct mtk_ddp_comp *comp,
 	       struct mtk_ddp_config *cfg, struct cmdq_pkt *handle)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + DMDP_AAL_CFG,
 			0x00400022, ~0);
 	mtk_dmdp_aal_config(comp, cfg, handle);
@@ -261,7 +264,7 @@ static void ddp_aal_cfg_backup(struct mtk_ddp_comp *comp)
 
 static void mtk_dmdp_aal_backup(struct mtk_ddp_comp *comp)
 {
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	ddp_aal_dre_backup(comp);
 	ddp_aal_dre3_backup(comp);
 	ddp_aal_cfg_backup(comp);
@@ -335,7 +338,7 @@ static void mtk_dmdp_aal_restore(struct mtk_ddp_comp *comp)
 	if (atomic_read(&g_aal_initialed) != 1)
 		return;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 	ddp_aal_dre_restore(comp);
 	ddp_aal_dre3_restore(comp);
 	ddp_aal_cfg_restore(comp);
@@ -388,11 +391,11 @@ static int mtk_dmdp_aal_bind(struct device *dev, struct device *master,
 	struct drm_device *drm_dev = data;
 	int ret;
 
-	DDPINFO("%s\n", __func__);
+	DDPINFO("%s", __func__);
 
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
-		DDPMSG("Failed to register component %s: %d\n",
+		DDPMSG("failed to register component %s: %d",
 			dev->of_node->full_name, ret);
 		return ret;
 	}
@@ -417,7 +420,7 @@ void mtk_dmdp_aal_dump(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s REGS ==\n", mtk_dump_comp_str(comp));
+	DDPDUMP("== %s REGS ==", mtk_dump_comp_str(comp));
 	mtk_cust_dump_reg(baddr, 0x0, 0x20, 0x30, 0x4D8);
 	mtk_cust_dump_reg(baddr, 0x200, 0xf4, 0xf8, 0x468);
 	mtk_cust_dump_reg(baddr, 0x46c, 0x470, 0x474, 0x478);
@@ -432,7 +435,7 @@ static int mtk_dmdp_aal_probe(struct platform_device *pdev)
 	enum mtk_ddp_comp_id comp_id;
 	int ret;
 
-	DDPMSG("%s\n", __func__);
+	DDPMSG("%s", __func__);
 
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (priv == NULL)
@@ -440,14 +443,14 @@ static int mtk_dmdp_aal_probe(struct platform_device *pdev)
 
 	comp_id = mtk_ddp_comp_get_id(dev->of_node, MTK_DMDP_AAL);
 	if ((int)comp_id < 0) {
-		DDPMSG("Failed to identify by alias: %d\n", comp_id);
+		DDPMSG("failed to identify by alias: %d", comp_id);
 		return comp_id;
 	}
 
 	aal_node = of_find_compatible_node(NULL, NULL, "mediatek,disp_aal0");
 	if (of_property_read_u32(aal_node, "mtk_dre30_support",
 		&g_dre30_support)) {
-		DDPMSG("comp_id: %d, mtk_dre30_support = %d\n",
+		DDPMSG("comp_id: %d, mtk_dre30_support = %d",
 			comp_id, g_dre30_support);
 		return -EINVAL;
 	}
@@ -455,7 +458,7 @@ static int mtk_dmdp_aal_probe(struct platform_device *pdev)
 	ret = mtk_ddp_comp_init(dev, dev->of_node, &priv->ddp_comp, comp_id,
 				&mtk_dmdp_aal_funcs);
 	if (ret != 0) {
-		DDPMSG("Failed to initialize component: %d\n", ret);
+		DDPMSG("failed to initialize component: %d", ret);
 		return ret;
 	}
 
@@ -469,7 +472,7 @@ static int mtk_dmdp_aal_probe(struct platform_device *pdev)
 	if (ret == -EPROBE_DEFER)
 		ret = 0;
 	if (ret != 0) {
-		DDPMSG("Failed to add component: %d\n", ret);
+		DDPMSG("failed to add component: %d", ret);
 		mtk_ddp_comp_pm_disable(&priv->ddp_comp);
 	}
 

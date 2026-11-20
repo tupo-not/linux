@@ -271,7 +271,7 @@ static void tp_dump_path(const struct mml_topology_path *path)
 
 	for (i = 0; i < path->node_cnt; i++) {
 		mml_log(
-			"[topology]engine %hhu (%p) prev %p next %p %p comp %p tile idx %hhu out %hhu",
+			"engine %hhu (%p) prev %p next %p %p comp %p tile idx %hhu out %hhu",
 			path->nodes[i].id, &path->nodes[i],
 			path->nodes[i].prev,
 			path->nodes[i].next[0], path->nodes[i].next[1],
@@ -290,7 +290,7 @@ static void tp_dump_path_short(struct mml_topology_path *path)
 	for (i = 0; i < path->node_cnt; i++)
 		len += snprintf(path_desc + len, sizeof(path_desc) - len, " %hhu",
 			path->nodes[i].id);
-	mml_log("[topology]engines:%s", path_desc);
+	mml_log("engines:%s", path_desc);
 }
 
 static void tp_parse_path(struct mml_dev *mml, struct mml_topology_path *path,
@@ -314,7 +314,7 @@ static void tp_parse_path(struct mml_dev *mml, struct mml_topology_path *path,
 		path->nodes[i].id = eng;
 		path->nodes[i].comp = mml_dev_get_comp_by_id(mml, eng);
 		if (!path->nodes[i].comp)
-			mml_err("[topology]no comp idx:%hhu engine:%hhu", i, eng);
+			mml_err("no comp idx:%hhu engine:%hhu", i, eng);
 
 		/* assign reset bits for this path */
 		path->reset_bits |= 1LL << engine_reset_bit[eng];
@@ -374,10 +374,10 @@ static void tp_parse_path(struct mml_dev *mml, struct mml_topology_path *path,
 			 * cannot branch from line 1
 			 */
 			if (next1)
-				mml_err("[topology]%s wrong path index %hhu engine %hhu",
-					i, eng);
+				mml_err("%s wrong path index %hhu engine %hhu",
+					__func__, i, eng);
 		} else {
-			mml_err("[topology]connect fail idx:%hhu engine:%hhu next0:%hhu next1:%hhu from:%hhu %hhu",
+			mml_err("connect fail idx:%hhu engine:%hhu next0:%hhu next1:%hhu from:%hhu %hhu",
 				i, eng, next0, next1,
 				connect_eng[0], connect_eng[1]);
 		}
@@ -389,7 +389,7 @@ static void tp_parse_path(struct mml_dev *mml, struct mml_topology_path *path,
 	 * so we need to reverse the bits
 	 */
 	path->reset_bits = ~path->reset_bits;
-	mml_msg("[topology]reset bits %#llx", path->reset_bits);
+	mml_msg("reset bits %#llx", path->reset_bits);
 
 	/* collect tile engines */
 	tile_idx = 0;
@@ -409,7 +409,7 @@ static void tp_parse_path(struct mml_dev *mml, struct mml_topology_path *path,
 			continue;
 		out_eng_idx = path->nodes[i].out_idx;
 		if (path->out_engine_ids[out_eng_idx])
-			mml_err("[topology]multiple out engines: was %hhu now %hhu on out idx:%hhu",
+			mml_err("multiple out engines: was %hhu now %hhu on out idx:%hhu",
 				path->out_engine_ids[out_eng_idx],
 				path->nodes[i].id, out_eng_idx);
 		path->out_engine_ids[out_eng_idx] = path->nodes[i].id;
@@ -425,12 +425,12 @@ static s32 tp_init_cache(struct mml_dev *mml, struct mml_topology_cache *cache,
 	u32 i;
 
 	if (clt_cnt < MML_CLT_MAX) {
-		mml_err("[topology]%s not enough cmdq clients to all paths",
+		mml_err("%s not enough cmdq clients to all paths",
 			__func__);
 		return -ECHILD;
 	}
 	if (ARRAY_SIZE(cache->paths) < PATH_MML_MAX) {
-		mml_err("[topology]%s not enough path cache for all paths",
+		mml_err("%s not enough path cache for all paths",
 			__func__);
 		return -ECHILD;
 	}
@@ -440,7 +440,7 @@ static s32 tp_init_cache(struct mml_dev *mml, struct mml_topology_cache *cache,
 
 		tp_parse_path(mml, path, path_map[i]);
 		if (mtk_mml_msg) {
-			mml_log("[topology]dump path %hhu count %u clt id %hhu",
+			mml_log("dump path %hhu count %u clt id %hhu",
 				i, path->node_cnt, clt_dispatch[i]);
 			tp_dump_path(path);
 		}
@@ -463,7 +463,7 @@ static inline bool tp_need_resize(struct mml_frame_info *info)
 		info->dest[0].rotate == MML_ROT_270)
 		swap(w, h);
 
-	mml_msg("[topology]%s target %ux%u crop %ux%u",
+	mml_msg("%s target %ux%u crop %ux%u",
 		__func__, w, h,
 		info->dest[0].crop.r.width,
 		info->dest[0].crop.r.height);

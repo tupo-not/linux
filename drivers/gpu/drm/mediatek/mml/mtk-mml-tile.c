@@ -112,7 +112,7 @@ static s32 prepare_tile(struct mml_task *task,
 		struct tile_func_block *ptr_func = tile_func->func_list[i];
 
 		if (unlikely(comp->id != ptr_func->func_num)) {
-			mml_err("[tile]mismatched tile_func(%d) and comp(%d) at [%d]",
+			mml_err("mismatched tile_func(%d) and comp(%d) at [%d]",
 				ptr_func->func_num, comp->id, i);
 			return -EINVAL;
 		}
@@ -375,7 +375,7 @@ s32 calc_tile(struct mml_task *task, u32 pipe_idx, struct mml_tile_cache *tile_c
 
 	if (task->config->info.mode == MML_MODE_RACING) {
 		if (task->config->info.dest_cnt > 1)
-			mml_err("Racing mode but output count > 1");
+			mml_err("racing mode but output count > 1");
 
 		if (dest->rotate == MML_ROT_90 || dest->rotate == MML_ROT_270)
 			tile_max = MAX_RACING_90_270_TILE_NUM;

@@ -128,7 +128,7 @@ static int fbconfig_open(struct inode *inode, struct file *file)
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 		typeof(*crtc), head);
 	if (!crtc) {
-		DDPPR_ERR("find crtc fail\n");
+		DDPPR_ERR("find crtc fail");
 		return -EFAULT;
 	}
 	mtk_crtc = to_mtk_crtc(crtc);

@@ -25,7 +25,7 @@ int mtk_drm_session_create(struct drm_device *dev,
 
 	if (config->type < MTK_SESSION_PRIMARY ||
 			config->type > MTK_SESSION_MEMORY) {
-		DDPPR_ERR("%s create session type abnormal: %u,\n",
+		DDPPR_ERR("%s create session type abnormal: %u,",
 			__func__, config->type);
 		return -EINVAL;
 	}
@@ -35,7 +35,7 @@ int mtk_drm_session_create(struct drm_device *dev,
 		if (private->session_id[i] == session) {
 			is_session_inited = 1;
 			idx = i;
-			DDPPR_ERR("[DRM] create session is exited:0x%x\n",
+			DDPPR_ERR("create session is exited:0x%x",
 				  session);
 			break;
 		}
@@ -57,9 +57,9 @@ int mtk_drm_session_create(struct drm_device *dev,
 		->session_id[idx] = session;
 	      private
 		->num_sessions = idx + 1;
-		DDPINFO("[DRM] New session:0x%x, idx:%d\n", session, idx);
+		DDPINFO("new session:0x%x, idx:%d", session, idx);
 	} else {
-		DDPPR_ERR("[DRM] Invalid session creation request\n");
+		DDPPR_ERR("invalid session creation request");
 		ret = -1;
 	}
 done:
@@ -75,7 +75,7 @@ done:
 		private->vds_path_switch_done = 0;
 		private->vds_path_enable = 0;
 
-		DDPMSG("Switch vds: crtc2 vds session create\n");
+		DDPMSG("switch vds: crtc2 vds session create");
 		/* Close RPO */
 		mtk_drm_helper_set_opt_by_name(private->helper_opt,
 			"MTK_DRM_OPT_RPO", 0);
@@ -86,7 +86,7 @@ done:
 		mtk_set_layering_opt(LYE_OPT_RPO, 0);
 	}
 
-	DDPINFO("[DRM] new session done\n");
+	DDPINFO("new session done");
 	return ret;
 }
 
@@ -111,13 +111,13 @@ int mtk_session_set_mode(struct drm_device *dev, unsigned int session_mode)
 
 	mutex_lock(&private->commit.lock);
 	if (session_mode >= MTK_DRM_SESSION_NUM) {
-		DDPPR_ERR("%s Invalid session mode:%d\n",
+		DDPPR_ERR("%s invalid session mode:%d",
 			  __func__, session_mode);
 		goto error;
 	}
 
 	if (!mode_tb[session_mode].en) {
-		DDPPR_ERR("%s Invalid mode_tb[%d].en = %d\n",
+		DDPPR_ERR("%s invalid mode_tb[%d].en = %d",
 			  __func__, session_mode, mode_tb[session_mode].en);
 		goto error;
 	}
@@ -128,7 +128,7 @@ int mtk_session_set_mode(struct drm_device *dev, unsigned int session_mode)
 	DRM_MMP_EVENT_START(set_mode, private->session_mode,
 			session_mode);
 
-	DDPMSG("%s from %u to %u\n", __func__,
+	DDPMSG("%s from %u to %u", __func__,
 		private->session_mode, session_mode);
 
 	if (mtk_drm_helper_get_opt(private->helper_opt,
@@ -151,7 +151,7 @@ int mtk_session_set_mode(struct drm_device *dev, unsigned int session_mode)
 		mtk_set_layering_opt(LYE_OPT_RPO, 1);
 
 		/* OVL0_2l switch back to main path */
-		DDPMSG("Switch vds: crtc2 vds set ddp mode to DL\n");
+		DDPMSG("switch vds: crtc2 vds set ddp mode to DL");
 		mtk_need_vds_path_switch(private->crtc[0]);
 	}
 
@@ -226,9 +226,9 @@ int mtk_drm_session_destroy(struct drm_device *dev,
 
 	/* 2. Destroy this session */
 	if (ret == 0)
-		DDPINFO("Destroy session(0x%x)\n", session);
+		DDPINFO("destroy session(0x%x)", session);
 	else
-		DDPPR_ERR("session(0x%x) does not exists\n", session);
+		DDPPR_ERR("session(0x%x) does not exists", session);
 
 	return ret;
 }

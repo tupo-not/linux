@@ -90,11 +90,11 @@ static struct debug_info_disp g_debug_info[HRT_DISP_TYPE_NUM];
 void mtk_set_layering_opt(enum LYE_HELPER_OPT opt, int value)
 {
 	if (opt >= LYE_OPT_NUM) {
-		DDPMSG("%s invalid layering opt:%d\n", __func__, opt);
+		DDPMSG("%s invalid layering opt:%d", __func__, opt);
 		return;
 	}
 	if (value < 0) {
-		DDPPR_ERR("%s invalid opt value:%d\n", __func__, value);
+		DDPPR_ERR("%s invalid opt value:%d", __func__, value);
 		return;
 	}
 
@@ -105,7 +105,7 @@ void mtk_set_layering_opt(enum LYE_HELPER_OPT opt, int value)
 static int get_layering_opt(enum LYE_HELPER_OPT opt)
 {
 	if (opt >= LYE_OPT_NUM) {
-		DDPMSG("%s invalid layering opt:%d\n", __func__, opt);
+		DDPMSG("%s invalid layering opt:%d", __func__, opt);
 		return -1;
 	}
 
@@ -354,7 +354,7 @@ static int get_ovl_by_phy(struct drm_device *dev, int disp_idx,
 	}
 
 	if (layer_idx == MAX_PHY_OVL_CNT) {
-		DDPPR_ERR("%s fail, phy_layer_idx:%d\n", __func__,
+		DDPPR_ERR("%s fail, phy_layer_idx:%d", __func__,
 			  phy_layer_idx);
 		return -1;
 	}
@@ -365,7 +365,7 @@ static int get_ovl_by_phy(struct drm_device *dev, int disp_idx,
 		ovl_mapping_tb >>= 1;
 	}
 #ifdef HRT_DEBUG_LEVEL2
-	DDPMSG("%s,phy:%d,layer_tb:0x%x,L_idx:%d ovl_idx:%d, ov_tb:0x%x\n",
+	DDPMSG("%s,phy:%d,layer_tb:0x%x,L_idx:%d ovl_idx:%d, ov_tb:0x%x",
 	       __func__, phy_layer_idx, layer_map_tb, layer_idx, ovl_idx,
 	       ovl_mapping_tb);
 #endif
@@ -431,7 +431,7 @@ static void dump_disp_info(struct drm_mtk_layering_info *disp_info,
 			if (disp_info->layer_num[i] <= 0)
 				continue;
 
-			DDPMSG("HRT D%d/M%d/LN%d/hrt:0x%x/G(%d,%d)/id%u\n", i,
+			DDPMSG("HRT D%d/M%d/LN%d/hrt:0x%x/G(%d,%d)/id%u", i,
 			       disp_info->disp_mode[i], disp_info->layer_num[i],
 			       disp_info->hrt_num, disp_info->gles_head[i],
 			       disp_info->gles_tail[i], disp_info->hrt_idx);
@@ -469,7 +469,7 @@ static void dump_disp_info(struct drm_mtk_layering_info *disp_info,
 			if (disp_info->layer_num[i] <= 0)
 				continue;
 
-			DDPINFO("HRT D%d/M%d/LN%d/hrt:0x%x/G(%d,%d)/id%u\n", i,
+			DDPINFO("HRT D%d/M%d/LN%d/hrt:0x%x/G(%d,%d)/id%u", i,
 				disp_info->disp_mode[i],
 				disp_info->layer_num[i], disp_info->hrt_num,
 				disp_info->gles_head[i],
@@ -697,7 +697,7 @@ static int _rollback_to_GPU_bottom_up(struct drm_mtk_layering_info *info,
 	}
 
 	if (available_ovl_num < 0)
-		DDPPR_ERR("%s available_ovl_num invalid:%d\n", __func__,
+		DDPPR_ERR("%s available_ovl_num invalid:%d", __func__,
 			  available_ovl_num);
 
 	return available_ovl_num;
@@ -734,7 +734,7 @@ static int _rollback_to_GPU_top_down(struct drm_mtk_layering_info *disp_info,
 	}
 
 	if (available_ovl_num < 0)
-		DDPPR_ERR("%s available_ovl_num invalid:%d\n", __func__,
+		DDPPR_ERR("%s available_ovl_num invalid:%d", __func__,
 			  available_ovl_num);
 
 	return available_ovl_num;
@@ -763,14 +763,14 @@ static int rollback_to_GPU(struct drm_mtk_layering_info *info, int disp,
 
 	if (mtk_is_layer_id_valid(info, disp, info->gles_head[disp]) == false) {
 		dump_disp_info(info, DISP_DEBUG_LEVEL_CRITICAL);
-		DDPAEE("invalid gles_head:%d, aval:%d\n",
+		DDPAEE("invalid gles_head:%d, aval:%d",
 			  info->gles_head[disp], available);
 		goto out;
 	}
 
 	if (mtk_is_layer_id_valid(info, disp, info->gles_tail[disp]) == false) {
 		dump_disp_info(info, DISP_DEBUG_LEVEL_CRITICAL);
-		DDPAEE("invalid gles_tail:%d, aval:%d\n",
+		DDPAEE("invalid gles_tail:%d, aval:%d",
 			  info->gles_tail[disp], available);
 		goto out;
 	}
@@ -832,7 +832,7 @@ retry:
 		ovl_num_limit--;
 
 #ifdef HRT_DEBUG_LEVEL2
-	DDPMSG("phy_ovl_cnt:%d,ovl_n_limit:%d\n", phy_ovl_cnt, ovl_num_limit);
+	DDPMSG("phy_ovl_cnt:%d,ovl_n_limit:%d", phy_ovl_cnt, ovl_num_limit);
 #endif
 	if (phy_ovl_cnt <= ovl_num_limit)
 		return 0;
@@ -867,7 +867,7 @@ static void ext_id_adjustment_and_retry(struct drm_device *dev,
 			break;
 	}
 #ifdef HRT_DEBUG_LEVEL2
-	DDPMSG("[%s]cannot feet current layer layout\n", __func__);
+	DDPMSG("[%s]cannot feet current layer layout", __func__);
 	dump_disp_info(info, DISP_DEBUG_LEVEL_ERR);
 #endif
 	ext_id_tuning(dev, info, disp_idx);
@@ -876,7 +876,7 @@ static void ext_id_adjustment_and_retry(struct drm_device *dev,
 static int ext_id_tuning(struct drm_device *dev,
 			  struct drm_mtk_layering_info *info, int disp)
 {
-	uint16_t ovl_tb, l_tb;
+	uint16_t l_tb;
 	int phy_ovl_cnt, i;
 	int ext_cnt = 0, cur_phy_cnt = 0;
 	struct drm_mtk_layer_config *layer_info;
@@ -889,12 +889,12 @@ static int ext_id_tuning(struct drm_device *dev,
 	_filter_by_ovl_cnt(dev, info, disp);
 	phy_ovl_cnt = get_phy_ovl_layer_cnt(info, disp);
 	if (phy_ovl_cnt > MAX_PHY_OVL_CNT) {
-		DDPPR_ERR("phy_ovl_cnt(%d) over OVL count limit\n",
+		DDPPR_ERR("phy_ovl_cnt(%d) over OVL count limit",
 			  phy_ovl_cnt);
 		phy_ovl_cnt = MAX_PHY_OVL_CNT;
 	}
 
-	ovl_tb = l_rule_ops->get_mapping_table(dev, disp, DISP_HW_OVL_TB, 0);
+	(void)l_rule_ops->get_mapping_table(dev, disp, DISP_HW_OVL_TB, 0);
 	l_tb = l_rule_ops->get_mapping_table(dev, disp, DISP_HW_LAYER_TB,
 					     phy_ovl_cnt);
 
@@ -914,12 +914,12 @@ static int ext_id_tuning(struct drm_device *dev,
 			}
 		} else {
 #ifdef HRT_DEBUG_LEVEL2
-			DDPMSG("i:%d, cur_phy_cnt:%d\n", i, cur_phy_cnt);
+			DDPMSG("i:%d, cur_phy_cnt:%d", i, cur_phy_cnt);
 #endif
 			if (mtk_is_gles_layer(info, disp, i) &&
 			    (i != info->gles_head[disp])) {
 #ifdef HRT_DEBUG_LEVEL2
-				DDPMSG("is gles layer, continue\n");
+				DDPMSG("is gles layer, continue");
 #endif
 				continue;
 			}
@@ -967,7 +967,7 @@ static int filter_by_ovl_cnt(struct drm_device *dev,
 	}
 
 #ifdef HRT_DEBUG_LEVEL2
-	DDPMSG("[%s result]\n", __func__);
+	DDPMSG("[%s result]", __func__);
 	dump_disp_info(disp_info, DISP_DEBUG_LEVEL_INFO);
 #endif
 	return ret;
@@ -986,16 +986,16 @@ static int dump_entry_list(bool sort_by_y)
 	else
 		temp = x_entry_list;
 
-	DDPMSG("%s, sort_by_y:%d, addr:0x%p\n", __func__, sort_by_y, temp);
+	DDPMSG("%s, sort_by_y:%d, addr:0x%p", __func__, sort_by_y, temp);
 	while (temp) {
 		layer_info = temp->layer_info;
-		DDPMSG("key:%d, offset(%d, %d), w/h(%d, %d), overlap_w:%d\n",
+		DDPMSG("key:%d, offset(%d, %d), w/h(%d, %d), overlap_w:%d",
 		       temp->key, layer_info->dst_offset_x,
 		       layer_info->dst_offset_y, layer_info->dst_width,
 		       layer_info->dst_height, temp->overlap_w);
 		temp = temp->tail;
 	}
-	DDPMSG("%s end\n", __func__);
+	DDPMSG("%s end", __func__);
 	return 0;
 }
 #endif
@@ -1072,13 +1072,13 @@ static int add_layer_entry(struct drm_mtk_layer_config *l_info, bool sort_by_y,
 		/* Inser begin entry */
 		insert_entry(p_entry, begin_t);
 #ifdef HRT_DEBUG_LEVEL2
-		DDPMSG("Insert key:%d\n", begin_t->key);
+		DDPMSG("insert key:%d", begin_t->key);
 		dump_entry_list(sort_by_y);
 #endif
 		/* Inser end entry */
 		insert_entry(p_entry, end_t);
 #ifdef HRT_DEBUG_LEVEL2
-		DDPMSG("Insert key:%d\n", end_t->key);
+		DDPMSG("insert key:%d", end_t->key);
 		dump_entry_list(sort_by_y);
 #endif
 	}
@@ -1303,6 +1303,10 @@ static int get_layer_weight(int disp_idx,
 
 void calc_mml_ir_layer_weight(struct drm_device *dev,
 	struct drm_mtk_layering_info *disp_info,
+	int disp, int layer_idx, int *overlap_w);
+
+void calc_mml_ir_layer_weight(struct drm_device *dev,
+	struct drm_mtk_layering_info *disp_info,
 	int disp, int layer_idx, int *overlap_w)
 {
 	struct mml_frame_info *mml_info = NULL;
@@ -1333,7 +1337,7 @@ void calc_mml_ir_layer_weight(struct drm_device *dev,
 
 	if (src_size && dst_size)
 		*overlap_w = ((uint64_t)((uint64_t)*overlap_w) * src_size) / dst_size;
-	DDPINFO("%s:%d overlap_w:%d, src:%u, dst:%u\n",
+	DDPINFO("%s:%d overlap_w:%d, src:%u, dst:%u",
 		__func__, __LINE__, *overlap_w, src_size, dst_size);
 }
 
@@ -1343,7 +1347,7 @@ static int _calc_hrt_num(struct drm_device *dev,
 {
 	int i, sum_overlap_w, overlap_l_bound;
 	uint16_t layer_map;
-	int overlap_w, layer_idx, phy_layer_idx, ovl_cnt;
+	int overlap_w, layer_idx, ovl_cnt;
 	bool has_gles = false;
 	struct drm_mtk_layer_config *layer_info;
 
@@ -1386,8 +1390,7 @@ static int _calc_hrt_num(struct drm_device *dev,
 				else if (!is_extended_layer(layer_info))
 					layer_idx++;
 
-				phy_layer_idx =
-					get_phy_ovl_index(dev, disp, layer_idx);
+				(void)get_phy_ovl_index(dev, disp, layer_idx);
 				ovl_idx = get_ovl_by_phy(dev, disp, layer_map,
 							 layer_idx);
 				if (get_larb_by_ovl(dev, ovl_idx, disp) !=
@@ -1410,8 +1413,7 @@ static int _calc_hrt_num(struct drm_device *dev,
 				else if (!is_extended_layer(layer_info))
 					layer_idx++;
 
-				phy_layer_idx =
-					get_phy_ovl_index(dev, disp, layer_idx);
+				(void)get_phy_ovl_index(dev, disp, layer_idx);
 				ovl_idx = get_ovl_by_phy(dev, disp, layer_map,
 							 layer_idx);
 
@@ -1447,7 +1449,7 @@ static int _calc_hrt_num(struct drm_device *dev,
 	}
 
 #ifdef HRT_DEBUG_LEVEL1
-	DDPMSG("%s disp:%d, disp:%d, hrt_type:%d, sum_overlap_w:%d\n", __func__,
+	DDPMSG("%s disp:%d, disp:%d, hrt_type:%d, sum_overlap_w:%d", __func__,
 	       disp, disp, hrt_type, sum_overlap_w);
 #endif
 
@@ -1524,7 +1526,7 @@ static int calc_hrt_num(struct drm_device *dev,
 	 */
 	disp_info->hrt_num = emi_hrt_level;
 #ifdef HRT_DEBUG_LEVEL1
-	DDPMSG("EMI hrt lv2:%d,overlap_w:%d\n", emi_hrt_level, sum_overlap_w);
+	DDPMSG("EMI hrt lv2:%d,overlap_w:%d", emi_hrt_level, sum_overlap_w);
 #endif
 
 #ifdef HAS_LARB_HRT
@@ -1537,7 +1539,7 @@ static int calc_hrt_num(struct drm_device *dev,
 	larb_hrt_level = calc_larb_hrt_level(dev, disp_info);
 
 #ifdef HRT_DEBUG_LEVEL1
-	DDPMSG("Larb hrt level:%d\n", larb_hrt_level);
+	DDPMSG("larb hrt level:%d", larb_hrt_level);
 #endif
 
 	if (emi_hrt_level < larb_hrt_level)
@@ -1557,8 +1559,8 @@ static int ext_layer_grouping(struct drm_device *dev,
 {
 	int cont_ext_layer_cnt = 0, ext_idx = 0;
 	int is_ext_layer, disp_idx, i;
-	struct drm_mtk_layer_config *src_info, *dst_info;
-	int available_layers = 0, phy_layer_cnt = 0;
+	struct drm_mtk_layer_config *dst_info;
+	int available_layers = 0, phy_layer_cnt __maybe_unused = 0;
 	struct drm_crtc *crtc;
 
 	for (disp_idx = 0; disp_idx < HRT_DISP_TYPE_NUM; disp_idx++) {
@@ -1597,7 +1599,6 @@ static int ext_layer_grouping(struct drm_device *dev,
 
 		for (i = 1; i < disp_info->layer_num[disp_idx]; i++) {
 			dst_info = &disp_info->input_config[disp_idx][i];
-			src_info = &disp_info->input_config[disp_idx][i - 1];
 			/* skip other GPU layers */
 			if (mtk_is_gles_layer(disp_info, disp_idx, i) ||
 			    mtk_is_gles_layer(disp_info, disp_idx, i - 1)) {
@@ -1638,12 +1639,17 @@ static int ext_layer_grouping(struct drm_device *dev,
 	}
 
 #ifdef HRT_DEBUG_LEVEL1
-	DDPMSG("[ext layer grouping]\n");
+	DDPMSG("");
 	dump_disp_info(disp_info, DISP_DEBUG_LEVEL_INFO);
 #endif
 
 	return available_layers;
 }
+
+void lye_add_lye_priv_blob(struct mtk_plane_comp_state *comp_state,
+			   struct mtk_drm_lyeblob_ids *lyeblob_ids,
+			   int plane_idx, int disp_idx,
+			   struct drm_device *drm_dev);
 
 void lye_add_lye_priv_blob(struct mtk_plane_comp_state *comp_state,
 			   struct mtk_drm_lyeblob_ids *lyeblob_ids,
@@ -1705,7 +1711,7 @@ static int mtk_lye_get_comp_id(int disp_idx, struct drm_device *drm_dev,
 			return DDP_COMPONENT_OVL2_2L;
 	}
 
-	DDPPR_ERR("Invalid disp_idx:%d\n", disp_idx);
+	DDPPR_ERR("invalid disp_idx:%d", disp_idx);
 	return DDP_COMPONENT_OVL2_2L;
 }
 
@@ -1754,7 +1760,7 @@ static void clear_layer(struct drm_mtk_layering_info *disp_info)
 		if (!mtk_is_gles_layer(disp_info, di, top))
 			continue;
 
-		DDPMSG("%s:D%d:L%d\n", __func__, di, top);
+		DDPMSG("%s:d%d:L%d", __func__, di, top);
 
 		disp_info->gles_head[di] = 0;
 		disp_info->gles_tail[di] = disp_info->layer_num[di] - 1;
@@ -1787,7 +1793,7 @@ static void clear_layer(struct drm_mtk_layering_info *disp_info)
 			    !mtk_has_layer_cap(c, MTK_MDP_RSZ_LAYER)) {
 				c->layer_caps &= ~MTK_DISP_CLIENT_CLEAR_LAYER;
 				mtk_rollback_layer_to_GPU(disp_info, di, top);
-				DDPMSG("%s:remove clear(rsz), caps:0x%08x\n",
+				DDPMSG("%s:remove clear(rsz), caps:0x%08x",
 				       __func__, c->layer_caps);
 			}
 		}
@@ -1899,7 +1905,7 @@ static int _dispatch_lye_blob_idx(struct drm_mtk_layering_info *disp_info,
 			!is_extended_layer(layer_info) &&
 			layer_info->compress != 1) {
 
-			DDPINFO("%s layer_id %d no compress phy layer\n",
+			DDPINFO("%s layer_id %d no compress phy layer",
 				__func__, i);
 			no_compress_layer_num++;
 		}
@@ -1915,7 +1921,7 @@ static int _dispatch_lye_blob_idx(struct drm_mtk_layering_info *disp_info,
 	if (disp_idx == 0) {
 		HRT_SET_NO_COMPRESS_FLAG(disp_info->hrt_num,
 				no_compress_layer_num);
-		DDPINFO("%s disp_info->hrt_num=0x%x,no_comp_layer_num=%d\n",
+		DDPINFO("%s disp_info->hrt_num=0x%x,no_comp_layer_num=%d",
 				__func__, disp_info->hrt_num,
 				no_compress_layer_num);
 	}
@@ -1957,7 +1963,7 @@ static int dispatch_gles_range(struct drm_mtk_layering_info *disp_info,
 		}
 
 	if (no_disp) {
-		DDPINFO("There is no disp need dispatch\n");
+		DDPINFO("there is no disp need dispatch");
 		return 0;
 	}
 
@@ -2009,7 +2015,7 @@ static int dispatch_ovl_id(struct drm_mtk_layering_info *disp_info,
 		}
 
 	if (no_disp) {
-		DDPINFO("There is no disp need dispatch\n");
+		DDPINFO("there is no disp need dispatch");
 		return 0;
 	}
 
@@ -2063,7 +2069,7 @@ static int check_layering_result(struct drm_mtk_layering_info *info)
 		}
 
 	if (no_disp) {
-		DDPINFO("There is no disp need check\n");
+		DDPINFO("there is no disp need check");
 		return 0;
 	}
 
@@ -2081,7 +2087,7 @@ static int check_layering_result(struct drm_mtk_layering_info *info)
 		max_ovl_id = info->input_config[disp_idx][layer_num - 1].ovl_id;
 
 		if (max_ovl_id >= ovl_layer_num)
-			DDPAEE("Inv ovl:%d,disp:%d\n", max_ovl_id, disp_idx);
+			DDPAEE("inv ovl:%d,disp:%d", max_ovl_id, disp_idx);
 	}
 	return 0;
 }
@@ -2092,7 +2098,7 @@ static int check_disp_info(struct drm_mtk_layering_info *disp_info)
 	int i;
 
 	if (disp_info == NULL) {
-		DDPPR_ERR("[HRT]disp_info is empty\n");
+		DDPPR_ERR("disp_info is empty");
 		return -1;
 	}
 
@@ -2101,7 +2107,7 @@ static int check_disp_info(struct drm_mtk_layering_info *disp_info)
 		int layer_num = disp_info->layer_num[i];
 
 		if (mode < 0 || mode >= MTK_DRM_SESSION_NUM) {
-			DDPPR_ERR("[HRT] i %d, invalid mode %d\n", i, mode);
+			DDPPR_ERR("i %d, invalid mode %d", i, mode);
 			return -1;
 		}
 
@@ -2110,7 +2116,7 @@ static int check_disp_info(struct drm_mtk_layering_info *disp_info)
 		 * ask for a ~170 GB vzalloc() in
 		 * _copy_layer_info_from_disp() and retry it at will. */
 		if (layer_num < 0 || layer_num > MTK_MAX_LAYERS) {
-			DDPPR_ERR("[HRT] i %d, invalid layer num %d\n",
+			DDPPR_ERR("i %d, invalid layer num %d",
 				  i, layer_num);
 			return -1;
 		}
@@ -2118,7 +2124,7 @@ static int check_disp_info(struct drm_mtk_layering_info *disp_info)
 
 	/* these are set by kernel, should be 0 */
 	if (disp_info->res_idx || disp_info->hrt_weight || disp_info->hrt_idx) {
-		DDPPR_ERR("[HRT] fail, res_idx %d, hrt_weight %u, hrt_idx %u\n",
+		DDPPR_ERR("fail, res_idx %d, hrt_weight %u, hrt_idx %u",
 			  disp_info->res_idx,
 			  disp_info->hrt_weight,
 			  disp_info->hrt_idx);
@@ -2129,7 +2135,7 @@ static int check_disp_info(struct drm_mtk_layering_info *disp_info)
 		if (disp_info->layer_num[disp_idx] > 0 &&
 		    disp_info->input_config[disp_idx] == NULL) {
 			DDPPR_ERR(
-				"[HRT]input config is empty,disp:%d,l_num:%d\n",
+				"input config is empty,disp:%d,l_num:%d",
 				disp_idx, disp_info->layer_num[disp_idx]);
 			return -1;
 		}
@@ -2138,7 +2144,7 @@ static int check_disp_info(struct drm_mtk_layering_info *disp_info)
 		gtail = disp_info->gles_tail[disp_idx];
 		if ((ghead < 0 && gtail >= 0) || (gtail < 0 && ghead >= 0)) {
 			dump_disp_info(disp_info, DISP_DEBUG_LEVEL_ERR);
-			DDPPR_ERR("[HRT]gles invalid,disp:%d,head:%d,tail:%d\n",
+			DDPPR_ERR("gles invalid,disp:%d,head:%d,tail:%d",
 				  disp_idx, disp_info->gles_head[disp_idx],
 				  disp_info->gles_tail[disp_idx]);
 			return -1;
@@ -2165,7 +2171,7 @@ _copy_layer_info_from_disp(struct drm_mtk_layering_info *disp_info_user,
 	layer_size = sizeof(struct drm_mtk_layer_config) * layer_num;
 	l_info->input_config[disp_idx] = vzalloc(layer_size);
 	if (l_info->input_config[disp_idx] == NULL) {
-		DDPPR_ERR("%s:%d invalid input_config[%d]:0x%p\n",
+		DDPPR_ERR("%s:%d invalid input_config[%d]:0x%p",
 			__func__, __LINE__,
 			disp_idx, l_info->input_config[disp_idx]);
 		return -ENOMEM;
@@ -2174,7 +2180,7 @@ _copy_layer_info_from_disp(struct drm_mtk_layering_info *disp_info_user,
 	mml_cfg_size = sizeof(struct mml_frame_info) * layer_num;
 	l_info->mml_cfg[disp_idx] = vzalloc(mml_cfg_size);
 	if (l_info->mml_cfg[disp_idx] == NULL) {
-		DDPPR_ERR("%s:%d invalid mml_cfg[%d]:0x%p\n",
+		DDPPR_ERR("%s:%d invalid mml_cfg[%d]:0x%p",
 			__func__, __LINE__,
 			disp_idx, l_info->mml_cfg[disp_idx]);
 		return -ENOMEM;
@@ -2187,7 +2193,7 @@ _copy_layer_info_from_disp(struct drm_mtk_layering_info *disp_info_user,
 		if (copy_from_user(l_info->input_config[disp_idx],
 				   disp_info_user->input_config[disp_idx],
 				   layer_size)) {
-			DDPPR_ERR("%s:%d copy failed:(0x%p,0x%p), size:%ld\n",
+			DDPPR_ERR("%s:%d copy failed:(0x%p,0x%p), size:%ld",
 					__func__, __LINE__,
 					l_info->input_config[disp_idx],
 					disp_info_user->input_config[disp_idx],
@@ -2197,7 +2203,7 @@ _copy_layer_info_from_disp(struct drm_mtk_layering_info *disp_info_user,
 		if (copy_from_user(l_info->mml_cfg[disp_idx],
 				   disp_info_user->mml_cfg[disp_idx],
 				   mml_cfg_size)) {
-			DDPMSG("%s:%d copy failed:(0x%p,0x%p), size:%ld\n",
+			DDPMSG("%s:%d copy failed:(0x%p,0x%p), size:%ld",
 					__func__, __LINE__,
 					l_info->mml_cfg[disp_idx],
 					disp_info_user->mml_cfg[disp_idx],
@@ -2251,7 +2257,7 @@ _copy_layer_info_by_disp(struct drm_mtk_layering_info *disp_info_user,
 	} else {
 		if (copy_to_user(disp_info_user->input_config[disp_idx],
 				 l_info->input_config[disp_idx], layer_size)) {
-			DDPINFO("[DISP][FB]: copy_to_user failed! line:%d\n",
+			DDPINFO(": copy_to_user failed! line:%d",
 				__LINE__);
 			ret = -EFAULT;
 		}
@@ -2300,11 +2306,11 @@ static int set_hrt_state(enum HRT_SYS_STATE sys_state, int en)
 			l_rule_info->hrt_sys_state &= ~(1 << sys_state);
 		break;
 	default:
-		DDPPR_ERR("unknown hrt scenario\n");
+		DDPPR_ERR("unknown hrt scenario");
 		break;
 	}
 
-	DDPMSG("Set hrt sys_state:%d, en:%d\n", sys_state, en);
+	DDPMSG("set hrt sys_state:%d, en:%d", sys_state, en);
 	return 0;
 }
 #endif
@@ -2315,6 +2321,12 @@ void mtk_register_layering_rule_ops(struct layering_rule_ops *ops,
 	l_rule_ops = ops;
 	l_rule_info = info;
 }
+
+void lye_add_blob_ids(struct drm_mtk_layering_info *l_info,
+		      struct mtk_drm_lyeblob_ids *lyeblob_ids,
+		      struct drm_device *drm_dev,
+		      int crtc_num,
+		      int crtc_mask);
 
 void lye_add_blob_ids(struct drm_mtk_layering_info *l_info,
 		      struct mtk_drm_lyeblob_ids *lyeblob_ids,
@@ -2331,7 +2343,7 @@ void lye_add_blob_ids(struct drm_mtk_layering_info *l_info,
 	for (i = 0 ; i < HRT_DISP_TYPE_NUM ; i++) {
 		if (lye_state.scn[i] < NONE ||
 				lye_state.scn[i] >= ADDON_SCN_NR) {
-			DDPPR_ERR("[%s]abnormal scn[%u]:%d,set scn to 0\n",
+			DDPPR_ERR("[%s]abnormal scn[%u]:%d,set scn to 0",
 				__func__, i, lye_state.scn[i]);
 			lye_state.scn[i] = NONE;
 		}
@@ -2388,7 +2400,7 @@ static int is_same_ratio(struct drm_mtk_layer_config *ref,
 	int diff_w, diff_h;
 
 	if (!ref->dst_width || !ref->dst_height) {
-		DDPPR_ERR("%s:ref dst(%dx%d)\n", __func__, ref->dst_width,
+		DDPPR_ERR("%s:ref dst(%dx%d)", __func__, ref->dst_width,
 			  ref->dst_height);
 		return -EINVAL;
 	}
@@ -2489,7 +2501,7 @@ static int check_cross_pipe_rpo(
 	param[tile_idx].sub_offset = (u32)(sub_offset[0] & 0x1fffff);
 	param[tile_idx].in_len = tile_in_len[0];
 	param[tile_idx].out_len = tile_out_len[0];
-	DDPINFO("HRT %s:%s:step:%u,offset:%u.%u,len:%u->%u,out_x:%u\n", __func__,
+	DDPINFO("HRT %s:%s:step:%u,offset:%u.%u,len:%u->%u,out_x:%u", __func__,
 		   is_dual ? "dual" : "single",
 		   param[0].step,
 		   param[0].int_offset,
@@ -2510,7 +2522,7 @@ static int check_cross_pipe_rpo(
 	 *	(src_w / 2 - tile_loss - (offset[0] ? 1 : 0) + 1) * UNIT +
 	 *	UNIT;
 	 */
-	DDPINFO("HRT %s,in_ph:%d,off[1]:%d\n", __func__, init_phase, offset[1]);
+	DDPINFO("HRT %s,in_ph:%d,off[1]:%d", __func__, init_phase, offset[1]);
 	int_offset[1] = offset[1] / UNIT;
 	sub_offset[1] = offset[1] - UNIT * int_offset[1];
 	/*
@@ -2527,7 +2539,7 @@ static int check_cross_pipe_rpo(
 	param[1].in_len = tile_in_len[1];
 	param[1].out_len = tile_out_len[1];
 
-	DDPINFO("HRT %s:%s:step:%u,offset:%u.%u,len:%u->%u,out_x:%u\n", __func__,
+	DDPINFO("HRT %s:%s:step:%u,offset:%u.%u,len:%u->%u,out_x:%u", __func__,
 		   is_dual ? "dual" : "single",
 		   param[1].step,
 		   param[1].int_offset,
@@ -2537,7 +2549,7 @@ static int check_cross_pipe_rpo(
 		   param[1].out_x);
 
 	if (param[1].in_len == param[1].out_len) {
-		DDPDBG("skip_pipe1_no_scale\n");
+		DDPDBG("skip_pipe1_no_scale");
 		return -1;
 	}
 
@@ -2632,7 +2644,7 @@ static int RPO_rule(struct drm_crtc *crtc,
 		if (src_roi.width > dst_roi.width ||
 		    src_roi.height > dst_roi.height) {
 			DDPPR_ERR(
-				"L%d:scale down(%d,%d,%dx%d)->(%d,%d,%dx%d)\n",
+				"l%d:scale down(%d,%d,%dx%d)->(%d,%d,%dx%d)",
 				i, src_roi.x, src_roi.y, src_roi.width,
 				src_roi.height, dst_roi.x, dst_roi.y,
 				dst_roi.width, dst_roi.height);
@@ -2711,12 +2723,12 @@ static enum MTK_LAYERING_CAPS query_MML(struct drm_device *dev,
 	} else {
 		if (mml_info) {
 			if (mtk_crtc && mtk_crtc->is_mml_debug) {
-				DDPINFO("%s:%d\n", __func__, __LINE__);
+				DDPINFO("%s:%d", __func__, __LINE__);
 				print_mml_frame_info(*mml_info);
-				DDPINFO("%s:%d\n", __func__, __LINE__);
+				DDPINFO("%s:%d", __func__, __LINE__);
 			}
 			mode = mml_drm_query_cap(mtk_drm_get_mml_drm_ctx(dev, crtc), mml_info);
-			DDPDBG("%s, mml_drm_query_cap mode:%d\n", __func__, mode);
+			DDPDBG("%s, mml_drm_query_cap mode:%d", __func__, mode);
 
 			// temp patch for CMD mode not in MML IR
 			if ((mode == MML_MODE_RACING) &&
@@ -2725,9 +2737,9 @@ static enum MTK_LAYERING_CAPS query_MML(struct drm_device *dev,
 						     MTK_DRM_OPT_MML_SUPPORT_CMD_MODE))) {
 				mode = MML_MODE_MML_DECOUPLE;
 			}
-			DDPDBG("%s, final mml mode:%d\n", __func__, mode);
+			DDPDBG("%s, final mml mode:%d", __func__, mode);
 		} else
-			DDPMSG("%s, mml_info is null\n", __func__);
+			DDPMSG("%s, mml_info is null", __func__);
 	}
 
 	switch (mode) {
@@ -2816,7 +2828,7 @@ static void check_is_mml_layer(const int disp_idx,
 					if (mml_ability == 1) {
 						c->layer_caps &= ~MTK_MML_DISP_DECOUPLE_LAYER;
 						c->layer_caps |= MTK_MML_DISP_MDP_LAYER;
-						DDPINFO("second mml layer, push to MDP\n");
+						DDPINFO("second mml layer, push to MDP");
 					}
 					--mml_ability;
 				}
@@ -2906,7 +2918,7 @@ static int get_crtc_num(
 	int input_config_num;
 
 	if (!crtc_mask) {
-		DDPPR_ERR("%s:%d null crtc_mask\n",
+		DDPPR_ERR("%s:%d null crtc_mask",
 				__func__, __LINE__);
 		return 0;
 	}
@@ -2949,7 +2961,7 @@ static int get_crtc_num(
 	}
 
 	if (input_config_num != crtc_num) {
-		DDPPR_ERR("%s:%d mode[%d] num:%d not matched config num:%d\n",
+		DDPPR_ERR("%s:%d mode[%d] num:%d not matched config num:%d",
 				__func__, __LINE__,
 				disp_info_user->disp_mode[0],
 				crtc_num, input_config_num);
@@ -2972,7 +2984,7 @@ static void mtk_ovl_wcg_enable(struct drm_mtk_layering_info *disp_info,
 			continue;
 		for (j = 0; j < disp_info->layer_num[i]; j++) {
 			layer_info = &disp_info->input_config[i][j];
-			DDPINFO("%s:%d dataspace:%d\n", __func__, __LINE__, layer_info->dataspace);
+			DDPINFO("%s:%d dataspace:%d", __func__, __LINE__, layer_info->dataspace);
 			if(layer_info->dataspace == MTK_DRM_DATASPACE_DISPLAY_P3)
 				enable = 1;
 		}
@@ -2980,7 +2992,7 @@ static void mtk_ovl_wcg_enable(struct drm_mtk_layering_info *disp_info,
 	mtk_drm_helper_set_opt_by_name(priv->helper_opt,
 					"MTK_DRM_OPT_OVL_WCG", enable);
 
-	DDPINFO("%s:%d enable:%d\n", __func__, __LINE__, enable);
+	DDPINFO("%s:%d enable:%d", __func__, __LINE__, enable);
 }
 #endif
 
@@ -3003,7 +3015,7 @@ static int layering_rule_start(struct drm_mtk_layering_info *disp_info_user,
 	if (l_rule_ops == NULL || l_rule_info == NULL) {
 		DRM_MMP_MARK(layering, 0, 0);
 		DRM_MMP_EVENT_END(layering, 0, 0);
-		DDPPR_ERR("Layering rule has not been initialize:(%p,%p)\n",
+		DDPPR_ERR("layering rule has not been initialize:(%p,%p)",
 				l_rule_ops, l_rule_info);
 		return -EFAULT;
 	}
@@ -3011,7 +3023,7 @@ static int layering_rule_start(struct drm_mtk_layering_info *disp_info_user,
 	if (check_disp_info(disp_info_user) < 0) {
 		DRM_MMP_MARK(layering, 0, 1);
 		DRM_MMP_EVENT_END(layering, 0, 0);
-		DDPPR_ERR("check_disp_info fail\n");
+		DDPPR_ERR("check_disp_info fail");
 		return -EFAULT;
 	}
 
@@ -3023,7 +3035,7 @@ static int layering_rule_start(struct drm_mtk_layering_info *disp_info_user,
 
 	print_disp_info_to_log_buffer(&layering_info);
 #ifdef HRT_DEBUG_LEVEL1
-	DDPMSG("[Input data]\n");
+	DDPMSG("");
 	dump_disp_info(&layering_info, DISP_DEBUG_LEVEL_INFO);
 #endif
 
@@ -3113,7 +3125,7 @@ static int layering_rule_start(struct drm_mtk_layering_info *disp_info_user,
 					       ADJUST_LAYOUT_OVERLAP_CAL);
 	overlap_num = calc_hrt_num(dev, &layering_info);
 	layering_info.hrt_weight = overlap_num;
-	DDPINFO("overlap_num %u layers(0x%x, 0x%x, 0x%x)\n", layering_info.hrt_weight,
+	DDPINFO("overlap_num %u layers(0x%x, 0x%x, 0x%x)", layering_info.hrt_weight,
 		g_debug_info[HRT_PRIMARY].max_bw_layers,
 		g_debug_info[HRT_SECONDARY].max_bw_layers,
 		g_debug_info[HRT_THIRD].max_bw_layers);
@@ -3252,7 +3264,7 @@ static char *parse_hrt_data_value(char *start, long *value)
 		*tok_end = 0;
 	ret = kstrtol(tok_start + 1, 10, value);
 	if (ret)
-		DDPINFO("Parsing error gles_num:%d, p:%s, ret:%d\n",
+		DDPINFO("parsing error gles_num:%d, p:%s, ret:%d",
 			(int)*value, tok_start + 1, ret);
 
 	return tok_end;
@@ -3260,7 +3272,7 @@ static char *parse_hrt_data_value(char *start, long *value)
 
 static void print_drm_mtk_layer_config(struct drm_mtk_layer_config *c)
 {
-	DDPMSG("L%u/(%u,%u,%u,%u)/(%u,%u,%u,%u)/cpr%d/e%d/cap0x%x/cl%x\n",
+	DDPMSG("l%u/(%u,%u,%u,%u)/(%u,%u,%u,%u)/cpr%d/e%d/cap0x%x/cl%x",
 	       c->ovl_id, c->src_offset_x, c->src_offset_y, c->src_width,
 	       c->src_height, c->dst_offset_x, c->dst_offset_y, c->dst_width,
 	       c->dst_height, c->compress, c->ext_sel_layer, c->layer_caps,
@@ -3272,10 +3284,10 @@ static void print_hrt_result(struct drm_mtk_layering_info *disp_info)
 	unsigned int i = 0, j = 0;
 
 	for (i = 0; i < HRT_DISP_TYPE_NUM; i++) {
-		DDPMSG("### DISP%d ###\n", i);
-		DDPMSG("[head]%d[tail]%d\n", disp_info->gles_head[i],
+		DDPMSG("### DISP%d ###", i);
+		DDPMSG("%d[tail]%d", disp_info->gles_head[i],
 		       disp_info->gles_tail[i]);
-		DDPMSG("[hrt_num]%d\n", disp_info->hrt_num);
+		DDPMSG("%d", disp_info->hrt_num);
 		for (j = 0; j < disp_info->layer_num[i]; j++)
 			print_drm_mtk_layer_config(
 				&(disp_info->input_config[i][j]));
@@ -3301,12 +3313,12 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 	set_fs(KERNEL_DS);
 	filp = filp_open(filename, O_RDONLY, 0777);
 	if (IS_ERR(filp)) {
-		DDPINFO("File open error:%s\n", filename);
+		DDPINFO("file open error:%s", filename);
 		return -1;
 	}
 
 	if (!filp->f_op) {
-		DDPINFO("File Operation Method Error!!\n");
+		DDPINFO("file Operation Method Error!!");
 		return -1;
 	}
 
@@ -3373,8 +3385,8 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 			is_end = true;
 		} else if (strncmp(line_buf, "[print_out_test_result]", 23) ==
 			   0) {
-			DDPINFO("Test case %d is %s\n", (int)test_case,
-				is_test_pass ? "Pass" : "Fail");
+			DDPINFO("test case %d is %s", (int)test_case,
+				is_test_pass ? "pass" : "fail");
 		} else if (strncmp(line_buf, "[layer_result]", 14) == 0) {
 			long layer_result = 0, layer_id;
 
@@ -3391,7 +3403,7 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 			input_config =
 				&disp_info->input_config[disp_id][layer_id];
 			if (layer_result != input_config->ovl_id) {
-				DDPINFO("case:%d,ovl_id incorrect,%d/%d\n",
+				DDPINFO("case:%d,ovl_id incorrect,%d/%d",
 					(int)test_case, input_config->ovl_id,
 					(int)layer_result);
 				is_test_pass = false;
@@ -3400,7 +3412,7 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 				goto end;
 			tok = parse_hrt_data_value(tok, &layer_result);
 			if (layer_result != input_config->ext_sel_layer) {
-				DDPINFO("case:%d,ext_sel_layer wrong,%d/%d\n",
+				DDPINFO("case:%d,ext_sel_layer wrong,%d/%d",
 					(int)test_case,
 					input_config->ext_sel_layer,
 					(int)layer_result);
@@ -3417,7 +3429,7 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 				goto end;
 			tok = parse_hrt_data_value(tok, &gles_num);
 			if (gles_num != disp_info->gles_head[disp_id]) {
-				DDPINFO("case:%d,gles head err,%d/%d\n",
+				DDPINFO("case:%d,gles head err,%d/%d",
 					(int)test_case,
 					disp_info->gles_head[disp_id],
 					(int)gles_num);
@@ -3428,7 +3440,7 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 				goto end;
 			tok = parse_hrt_data_value(tok, &gles_num);
 			if (gles_num != disp_info->gles_tail[disp_id]) {
-				DDPINFO("case:%d,gles tail err,%d/%d\n",
+				DDPINFO("case:%d,gles tail err,%d/%d",
 					(int)test_case,
 					disp_info->gles_tail[disp_id],
 					(int)gles_num);
@@ -3440,7 +3452,7 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 
 			tok = parse_hrt_data_value(line_buf, &hrt_num);
 			if (hrt_num != HRT_GET_DVFS_LEVEL(disp_info->hrt_num))
-				DDPINFO("case:%d,hrt num err,%d/%d\n",
+				DDPINFO("case:%d,hrt num err,%d/%d",
 					(int)test_case,
 					HRT_GET_DVFS_LEVEL(disp_info->hrt_num),
 					(int)hrt_num);
@@ -3451,7 +3463,7 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 			path_scen = HRT_GET_PATH_SCENARIO(disp_info->hrt_num) &
 				    0x1F;
 			if (hrt_num != path_scen) {
-				DDPINFO("case:%d,hrt path err,%d/%d\n",
+				DDPINFO("case:%d,hrt path err,%d/%d",
 					(int)test_case, path_scen,
 					(int)hrt_num);
 				is_test_pass = false;
@@ -3462,7 +3474,7 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 			tok = parse_hrt_data_value(tok, &hrt_num);
 			if (hrt_num !=
 			    HRT_GET_SCALE_SCENARIO(disp_info->hrt_num)) {
-				DDPINFO("case:%d, hrt scale err,%d/%d\n",
+				DDPINFO("case:%d, hrt scale err,%d/%d",
 					(int)test_case,
 					HRT_GET_SCALE_SCENARIO(
 						disp_info->hrt_num),
@@ -3522,7 +3534,7 @@ static int load_hrt_test_data(struct drm_mtk_layering_info *disp_info,
 end:
 	filp_close(filp, NULL);
 	set_fs(oldfs);
-	DDPINFO("end set_fs\n");
+	DDPINFO("end set_fs");
 	return 0;
 }
 
@@ -3580,7 +3592,7 @@ static int gen_hrt_pattern(struct drm_device *dev)
 	disp_info.gles_head[1] = -1;
 	disp_info.gles_tail[1] = -1;
 
-	DDPMSG("free test pattern\n");
+	DDPMSG("free test pattern");
 	vfree(disp_info.input_config[0]);
 	msleep(50);
 #endif
@@ -3598,7 +3610,7 @@ int mtk_layering_rule_ioctl(struct drm_device *dev, void *data,
 
 	ret = layering_rule_start(disp_info_user, 0, dev);
 	if (ret < 0)
-		DDPPR_ERR("layering_rule_start error:%d\n", ret);
+		DDPPR_ERR("layering_rule_start error:%d", ret);
 
 	return 0;
 }

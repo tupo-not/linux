@@ -732,7 +732,7 @@ static void wrot_color_fmt(struct mml_frame_config *cfg,
 		wrot_frm->ver_sh_uv = 1;
 		break;
 	default:
-		mml_err("[wrot] not support format %x", fmt);
+		mml_err("not support format %x", fmt);
 		break;
 	}
 
@@ -763,7 +763,7 @@ static void wrot_color_fmt(struct mml_frame_config *cfg,
 		else if (profile_in == MML_YCBCR_PROFILE_JPEG)
 			wrot_frm->mat_sel = 4;
 		else
-			mml_err("[wrot] unknown profile conversion %x",
+			mml_err("unknown profile conversion %x",
 				profile_in);
 	} else {
 		if (profile_in == MML_YCBCR_PROFILE_JPEG &&
@@ -1955,12 +1955,16 @@ static const struct mml_comp_config_ops wrot_cfg_ops = {
 	.reframe = wrot_reconfig_frame,
 };
 
+u32 wrot_datasize_get(struct mml_task *task, struct mml_comp_config *ccfg);
+
 u32 wrot_datasize_get(struct mml_task *task, struct mml_comp_config *ccfg)
 {
 	struct wrot_frame_data *wrot_frm = wrot_frm_data(ccfg);
 
 	return wrot_frm->datasize;
 }
+
+u32 wrot_format_get(struct mml_task *task, struct mml_comp_config *ccfg);
 
 u32 wrot_format_get(struct mml_task *task, struct mml_comp_config *ccfg)
 {
@@ -2167,6 +2171,9 @@ static const struct mtk_ddp_comp_funcs ddp_comp_funcs = {
 };
 
 phys_addr_t mml_get_node_base_pa(struct platform_device *pdev, const char *name,
+	u32 idx, void __iomem **base);
+
+phys_addr_t mml_get_node_base_pa(struct platform_device *pdev, const char *name,
 	u32 idx, void __iomem **base)
 {
 	struct device *dev = &pdev->dev;
@@ -2183,7 +2190,7 @@ phys_addr_t mml_get_node_base_pa(struct platform_device *pdev, const char *name,
 
 	base_pa = res.start;
 	*base = of_iomap(node, 0);
-	mml_log("[wrot]%s%u %pa %p", name, idx, &base_pa, *base);
+	mml_log("%s%u %pa %p", name, idx, &base_pa, *base);
 
 done:
 	if (node)
@@ -2270,8 +2277,9 @@ static int probe(struct platform_device *pdev)
 	if (ret)
 		dev_err(dev, "Failed to add component: %d\n", ret);
 
-	mml_log("wrot%d (%u) smi larb con %#lx event eof %hu sync %hu/%hu/%hu",
-		priv->idx, priv->comp.id, priv->smi_larb_con,
+	mml_log("wrot%d (%u) smi larb con %#llx event eof %hu sync %hu/%hu/%hu",
+		priv->idx, priv->comp.id,
+		(unsigned long long)priv->smi_larb_con,
 		priv->event_eof,
 		priv->event_bufa,
 		priv->event_bufb,
@@ -2352,12 +2360,12 @@ static s32 dbg_get(char *buf, const struct kernel_param *kp)
 			struct mml_comp *comp = &dbg_probed_components[i]->comp;
 
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  - [%d] mml comp_id: %d.%d @%08x name: %s bound: %d\n", i,
-				comp->id, comp->sub_idx, comp->base_pa,
+				"  - [%d] mml comp_id: %d.%d @%08llx name: %s bound: %d\n", i,
+				comp->id, comp->sub_idx, (unsigned long long)comp->base_pa,
 				comp->name ? comp->name : "(null)", comp->bound);
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  -         larb_port: %d @%08x pw: %d clk: %d\n",
-				comp->larb_port, comp->larb_base,
+				"  -         larb_port: %d @%08llx pw: %d clk: %d\n",
+				comp->larb_port, (unsigned long long)comp->larb_base,
 				comp->pw_cnt, comp->clk_cnt);
 			length += snprintf(buf + length, PAGE_SIZE - length,
 				"  -     ddp comp_id: %d bound: %d\n",

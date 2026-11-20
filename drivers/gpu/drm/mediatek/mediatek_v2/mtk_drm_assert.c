@@ -36,7 +36,7 @@ static DEFINE_SEMAPHORE(dal_sem, 0);
 static inline int DAL_LOCK(void)
 {
 	if (down_interruptible(&dal_sem)) {
-		DDPPR_ERR("Can't get semaphore in %s\n", __func__);
+		DDPPR_ERR("can't get semaphore in %s", __func__);
 		return -1;
 	}
 	return 0;
@@ -63,11 +63,13 @@ static u32 DAL_GetLayerSize(void)
 		if (ctxt)
 			size = ctxt->fb_width * ctxt->fb_height * DAL_BPP;
 		else
-			DDPPR_ERR("%s MFC_CONTEXT is NULL\n", __func__);
+			DDPPR_ERR("%s MFC_CONTEXT is NULL", __func__);
 	}
 
 	return size;
 }
+
+int mtk_drm_dal_setscreencolor(enum DAL_COLOR color);
 
 int mtk_drm_dal_setscreencolor(enum DAL_COLOR color)
 {
@@ -89,7 +91,7 @@ int mtk_drm_dal_setscreencolor(enum DAL_COLOR color)
 
 	size = DAL_GetLayerSize();
 	if (!size) {
-		DDPPR_ERR("%s wrong fb size\n", __func__);
+		DDPPR_ERR("%s wrong fb size", __func__);
 		return 0;
 	}
 	size -= offset;
@@ -127,7 +129,7 @@ int DAL_SetScreenColor(enum DAL_COLOR color)
 
 	size = DAL_GetLayerSize();
 	if (!size) {
-		DDPPR_ERR("%s wrong fb size\n", __func__);
+		DDPPR_ERR("%s wrong fb size", __func__);
 		return 0;
 	}
 	size -= offset;
@@ -173,14 +175,14 @@ static struct mtk_ddp_comp *_handle_phy_top_plane(struct mtk_drm_crtc *mtk_crtc)
 	}
 
 	if (ovl_comp == NULL) {
-		DDPPR_ERR("No proper ovl module in CRTC %s\n",
+		DDPPR_ERR("no proper ovl module in CRTC %s",
 			  mtk_crtc->base.name);
 		return NULL;
 	}
 
 	lay_num = mtk_ovl_layer_num(ovl_comp);
 	if (lay_num < 0) {
-		DDPPR_ERR("invalid layer number:%d\n", lay_num);
+		DDPPR_ERR("invalid layer number:%d", lay_num);
 		return NULL;
 	}
 
@@ -226,11 +228,11 @@ static struct mtk_plane_state *drm_set_dal_plane_state(struct drm_crtc *crtc,
 		layer_id = mtk_ovl_layer_num(ovl_comp) - 1;
 
 	if (!ctxt) {
-		DDPPR_ERR("%s MFC_CONTEXT is NULL\n", __func__);
+		DDPPR_ERR("%s MFC_CONTEXT is NULL", __func__);
 		return NULL;
 	}
 	if (layer_id < 0) {
-		DDPPR_ERR("%s invalid layer id:%d\n", __func__, layer_id);
+		DDPPR_ERR("%s invalid layer id:%d", __func__, layer_id);
 		return NULL;
 	}
 
@@ -288,7 +290,7 @@ static void disable_attached_layer(struct drm_crtc *crtc, struct mtk_ddp_comp *o
 		if (comp == ovl_comp && plane_state->comp_state.lye_id &&
 				plane_state->comp_state.lye_id == layer_id &&
 				plane_state->comp_state.ext_lye_id) {
-			DDPINFO("plane %d comp_id %u lye_id %u ext_id %u\n",
+			DDPINFO("plane %d comp_id %u lye_id %u ext_id %u",
 				i, plane_state->comp_state.comp_id,
 				plane_state->comp_state.lye_id,
 				plane_state->comp_state.ext_lye_id);
@@ -324,12 +326,12 @@ int drm_show_dal(struct drm_crtc *crtc, bool enable)
 	int layer_id;
 
 	if (ovl_comp == NULL) {
-		DDPPR_ERR("%s: can't find ovl comp\n", __func__);
+		DDPPR_ERR("%s: can't find ovl comp", __func__);
 		return 0;
 	}
 	layer_id = mtk_ovl_layer_num(ovl_comp) - 1;
 	if (layer_id < 0) {
-		DDPPR_ERR("%s invalid layer id:%d\n", __func__, layer_id);
+		DDPPR_ERR("%s invalid layer id:%d", __func__, layer_id);
 		return 0;
 	}
 
@@ -341,7 +343,7 @@ int drm_show_dal(struct drm_crtc *crtc, bool enable)
 
 	plane_state = drm_set_dal_plane_state(crtc, enable);
 	if (!plane_state) {
-		DDPPR_ERR("%s: can't set dal plane_state\n", __func__);
+		DDPPR_ERR("%s: can't set dal plane_state", __func__);
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 		return 0;
 	}
@@ -381,18 +383,18 @@ void drm_set_dal(struct drm_crtc *crtc, struct cmdq_pkt *cmdq_handle)
 	int layer_id;
 
 	if (ovl_comp == NULL) {
-		DDPPR_ERR("%s: can't find ovl comp\n", __func__);
+		DDPPR_ERR("%s: can't find ovl comp", __func__);
 		return;
 	}
 	layer_id = mtk_ovl_layer_num(ovl_comp) - 1;
 	if (layer_id < 0) {
-		DDPPR_ERR("%s invalid layer id:%d\n", __func__, layer_id);
+		DDPPR_ERR("%s invalid layer id:%d", __func__, layer_id);
 		return;
 	}
 
 	plane_state = drm_set_dal_plane_state(crtc, true);
 	if (!plane_state) {
-		DDPPR_ERR("%s: can't set dal plane_state\n", __func__);
+		DDPPR_ERR("%s: can't set dal plane_state", __func__);
 		return;
 	}
 
@@ -468,7 +470,7 @@ int DAL_Printf(const char *fmt, ...)
 	va_end(args);
 
 	if (i >= DAL_STR_BUF_LEN) {
-		DDPPR_ERR("%s, string size %u exceed limit\n", __func__, i);
+		DDPPR_ERR("%s, string size %u exceed limit", __func__, i);
 		return -1;
 	}
 
@@ -499,7 +501,7 @@ void mtk_drm_assert_fb_init(struct drm_device *dev, u32 width, u32 height)
 
 	mtk_gem = mtk_drm_gem_create(dev, size, true);
 	if (IS_ERR(mtk_gem)) {
-		DDPINFO("alloc buffer fail\n");
+		DDPINFO("alloc buffer fail");
 		drm_gem_object_release(&mtk_gem->base);
 		return;
 	}
@@ -525,7 +527,7 @@ void mtk_drm_assert_init(struct drm_device *dev)
 
 	mtk_drm_crtc_get_panel_original_size(crtc, &width, &height);
 	if (width == 0 || height == 0) {
-		DDPFUNC("display size error(%dx%d).\n", width, height);
+		DDPFUNC("display size error(%dx%d).", width, height);
 		return;
 	}
 
@@ -533,7 +535,7 @@ void mtk_drm_assert_init(struct drm_device *dev)
 
 	mtk_gem = mtk_drm_gem_create(dev, size, true);
 	if (IS_ERR(mtk_gem)) {
-		DDPINFO("alloc buffer fail\n");
+		DDPINFO("alloc buffer fail");
 		drm_gem_object_release(&mtk_gem->base);
 		return;
 	}
@@ -551,7 +553,7 @@ void mtk_drm_assert_init(struct drm_device *dev)
 		RGB888_To_RGB565(DAL_COLOR_RED), mtk_gem->base.filp);
 
 	if (!dal_pa || !dal_va) {
-		DDPPR_ERR("init DAL without proper buffer\n");
+		DDPPR_ERR("init DAL without proper buffer");
 		return;
 	}
 
@@ -562,7 +564,7 @@ void mtk_drm_assert_init(struct drm_device *dev)
 int mtk_drm_assert_layer_init(struct drm_crtc *crtc)
 {
 	if (!dal_pa || !dal_va) {
-		DDPPR_ERR("init DAL without proper buffer\n");
+		DDPPR_ERR("init DAL without proper buffer");
 		return -1;
 	}
 

@@ -34,30 +34,33 @@ extern int mtk_mml_msg;
 extern int mml_cmdq_err;
 extern int mml_qos_log;
 
+/* Mainline-style logging: standard levels, no vendor tags.
+ * Verbose gates now use pr_debug (dynamic debug) instead of pr_notice.
+ */
 #define mml_msg(fmt, args...) \
 do { \
 	if (mtk_mml_msg) \
-		pr_notice("[mml]" fmt "\n", ##args); \
+		pr_debug(fmt, ##args); \
 } while (0)
 
 #define mml_log(fmt, args...) \
 do { \
-	pr_notice("[mml]" fmt "\n", ##args); \
+	pr_debug(fmt, ##args); \
 	if (mml_cmdq_err) \
-		cmdq_util_error_save("[mml]"fmt"\n", ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 } while (0)
 
 #define mml_err(fmt, args...) \
 do { \
-	pr_notice("[mml][err]" fmt "\n", ##args); \
+	pr_err(fmt, ##args); \
 	if (mml_cmdq_err) \
-		cmdq_util_error_save("[mml]"fmt"\n", ##args); \
+		cmdq_util_error_save(fmt"\n", ##args); \
 } while (0)
 
 #define mml_msg_qos(fmt, args...) \
 do { \
 	if (mml_qos_log) \
-		pr_notice("[mml]" fmt "\n", ##args); \
+		pr_debug(fmt, ##args); \
 } while (0)
 
 /* mml ftrace */

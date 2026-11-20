@@ -157,14 +157,14 @@ static void disp_c3d_lock_wake_lock(bool lock)
 			__pm_stay_awake(c3d_wake_lock);
 			c3d_wake_locked = true;
 		} else  {
-			DDPPR_ERR("%s: try lock twice\n", __func__);
+			DDPPR_ERR("%s: try lock twice", __func__);
 		}
 	} else {
 		if (c3d_wake_locked) {
 			__pm_relax(c3d_wake_lock);
 			c3d_wake_locked = false;
 		} else {
-			DDPPR_ERR("%s: try unlock twice\n", __func__);
+			DDPPR_ERR("%s: try unlock twice", __func__);
 		}
 	}
 }
@@ -176,14 +176,14 @@ static int mtk_disp_c3d_create_gce_pkt(struct drm_crtc *crtc,
 	int index = 0;
 
 	if (!mtk_crtc) {
-		DDPPR_ERR("%s:%d, invalid crtc:0x%p\n",
+		DDPPR_ERR("%s:%d, invalid crtc:0x%p",
 				__func__, __LINE__, crtc);
 		return -1;
 	}
 
 	index = drm_crtc_index(crtc);
 	if (index) {
-		DDPPR_ERR("%s:%d, invalid crtc:0x%p, index:%d\n",
+		DDPPR_ERR("%s:%d, invalid crtc:0x%p, index:%d",
 				__func__, __LINE__, crtc, index);
 		return -1;
 	}
@@ -270,7 +270,7 @@ static bool disp_c3d_write_sram(struct mtk_ddp_comp *comp, int cmd_type)
 	else
 		cmdq_handle = c3d1_sram_pkt;
 	if (!cmdq_handle) {
-		DDPMSG("%s: cmdq handle is null.\n");
+		DDPMSG("%s: cmdq handle is null.");
 		return false;
 	}
 	if (mtk_crtc->gce_obj.client[CLIENT_PQ])
@@ -410,16 +410,15 @@ static void disp_c3d_sram_write_init_sram(struct mtk_ddp_comp *comp)
 		}
 	}
 	if (comp->regs) {
-		u32 pre_en = readl(comp->regs + C3D_EN);
-		u32 pre_sram_cfg = readl(comp->regs + C3D_SRAM_CFG);
-		u32 pre_sram_status = readl(comp->regs + C3D_SRAM_STATUS);
-		u32 pre_if0 = readl(comp->regs + C3D_SRAM_RW_IF_0);
-		u32 pre_if1 = readl(comp->regs + C3D_SRAM_RW_IF_1);
-
+		/* Snapshot registers before the SRAM test writes below. */
+		(void)readl(comp->regs + C3D_EN);
+		(void)readl(comp->regs + C3D_SRAM_CFG);
+		(void)readl(comp->regs + C3D_SRAM_STATUS);
+		(void)readl(comp->regs + C3D_SRAM_RW_IF_0);
+		(void)readl(comp->regs + C3D_SRAM_RW_IF_1);
 
 		writel(0x12345678, comp->regs + C3D_SRAM_RW_IF_0);
 		writel(0x9abcdef0, comp->regs + C3D_SRAM_RW_IF_1);
-
 	}
 
 	if (comp->id == DDP_COMPONENT_C3D0)
@@ -437,6 +436,9 @@ static void disp_c3d_sram_init(struct mtk_ddp_comp *comp)
 }
 
 void disp_c3d_flip_sram(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
+	const char *caller);
+
+void disp_c3d_flip_sram(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	const char *caller)
 {
 	u32 sram_apb = 0, sram_int = 0, sram_cfg;
@@ -448,7 +450,7 @@ void disp_c3d_flip_sram(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 		sram_apb = 1;
 		sram_int = 0;
 	} else {
-		DDPINFO("[SRAM] Error when get hist_apb in %s", caller);
+		DDPINFO("error when get hist_apb in %s", caller);
 	}
 	sram_cfg = (sram_int << 6) | (sram_apb << 5) | (1 << 4);
 	C3DFLOW_LOG("[SRAM] hist_apb(%d) hist_int(%d) 0x%08x in %s",
@@ -485,7 +487,7 @@ static int disp_c3d_wait_irq(void)
 			C3DFLOW_LOG("wait_event_interruptible ---\n");
 			C3DFLOW_LOG("get_irq = 1, wake up, ret = %d\n", ret);
 		} else {
-			DDPINFO("%s: interrupted unexpected\n", __func__);
+			DDPINFO("%s: interrupted unexpected", __func__);
 		}
 	} else {
 		C3DFLOW_LOG("get_irq = 0");
@@ -647,7 +649,7 @@ int mtk_drm_ioctl_c3d_set_lut(struct drm_device *dev, void *data,
 				sizeof(struct DISP_C3D_LUT));
 	// 1. kick idle
 	if (!mtk_crtc) {
-		DDPMSG("%s:%d, invalid crtc:0x%p\n",
+		DDPMSG("%s:%d, invalid crtc:0x%p",
 				__func__, __LINE__, crtc);
 		return -1;
 	}
@@ -655,7 +657,7 @@ int mtk_drm_ioctl_c3d_set_lut(struct drm_device *dev, void *data,
 	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 
 	if (!(mtk_crtc->enabled)) {
-		DDPMSG("%s:%d, slepted\n", __func__, __LINE__);
+		DDPMSG("%s:%d, slepted", __func__, __LINE__);
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 		return 0;
 	}
@@ -682,7 +684,7 @@ int mtk_drm_ioctl_c3d_set_lut(struct drm_device *dev, void *data,
 					&& (mtk_crtc->enabled))
 				disp_c3d_write_3dlut_to_reg(comp_c3d1, &c3dIocData);
 			else {
-				DDPINFO("%s(line: %d): skip write_3dlut(mtk_crtc:%d)\n",
+				DDPINFO("%s(line: %d): skip write_3dlut(mtk_crtc:%d)",
 						__func__, __LINE__, mtk_crtc->enabled ? 1 : 0);
 
 				gSetLutFlag = false;
@@ -694,7 +696,7 @@ int mtk_drm_ioctl_c3d_set_lut(struct drm_device *dev, void *data,
 		}
 		gSetLutFlag = false;
 	} else {
-		DDPINFO("%s(line: %d): skip write_3dlut(mtk_crtc:%d)\n",
+		DDPINFO("%s(line: %d): skip write_3dlut(mtk_crtc:%d)",
 				__func__, __LINE__, mtk_crtc->enabled ? 1 : 0);
 
 		mutex_unlock(&g_c3d_power_lock);
@@ -860,7 +862,7 @@ static int disp_c3d_write_lut_to_reg(struct mtk_ddp_comp *comp,
 {
 	if (atomic_read(&g_c3d_force_relay[index_of_c3d(comp->id)]) == 1) {
 		// Set reply mode
-		DDPINFO("g_c3d_force_relay\n");
+		DDPINFO("g_c3d_force_relay");
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + C3D_CFG, 0x3, 0x3);
 	} else {
@@ -928,7 +930,7 @@ static int mtk_disp_c3d_user_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *han
 	case SET_C3DLUT:
 	{
 		if (disp_c3d_set_lut(comp, handle, data) < 0) {
-			DDPPR_ERR("SET_PARAM: fail\n");
+			DDPPR_ERR("SET_PARAM: fail");
 			return -EFAULT;
 		}
 	}
@@ -949,7 +951,7 @@ static int mtk_disp_c3d_user_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *han
 	}
 	break;
 	default:
-		DDPPR_ERR("error cmd: %d\n", cmd);
+		DDPPR_ERR("error cmd: %d", cmd);
 		return -EINVAL;
 	}
 	return 0;
@@ -982,7 +984,7 @@ static void mtk_disp_c3d_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handl
 
 	if (atomic_read(&g_c3d_force_relay[index_of_c3d(comp->id)]) == 1) {
 		// Set reply mode
-		DDPINFO("g_c3d_force_relay\n");
+		DDPINFO("g_c3d_force_relay");
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + C3D_CFG, 0x3, 0x3);
 	} else {
@@ -1027,19 +1029,18 @@ static void mtk_disp_c3d_prepare(struct mtk_ddp_comp *comp)
 		ddp_c3d_sram_write_table(comp);
 
 	if (comp->regs) {
-		u32 dbg_en = readl(comp->regs + C3D_EN);
-		u32 dbg_cfg = readl(comp->regs + C3D_CFG);
-		u32 dbg_intsta = readl(comp->regs + C3D_INTSTA);
-		u32 dbg_sram_cfg = readl(comp->regs + C3D_SRAM_CFG);
-		u32 dbg_sram_status = readl(comp->regs + C3D_SRAM_STATUS);
-		u32 dbg_if0 = readl(comp->regs + C3D_SRAM_RW_IF_0);
-		u32 dbg_if1 = readl(comp->regs + C3D_SRAM_RW_IF_1);
-
+		/* Snapshot debug registers before the SRAM test writes below. */
+		(void)readl(comp->regs + C3D_EN);
+		(void)readl(comp->regs + C3D_CFG);
+		(void)readl(comp->regs + C3D_INTSTA);
+		(void)readl(comp->regs + C3D_SRAM_CFG);
+		(void)readl(comp->regs + C3D_SRAM_STATUS);
+		(void)readl(comp->regs + C3D_SRAM_RW_IF_0);
+		(void)readl(comp->regs + C3D_SRAM_RW_IF_1);
 
 		/* write non-zero test values to see whether C3D SRAM writes stick */
 		writel(0x12345678, comp->regs + C3D_SRAM_RW_IF_0);
 		writel(0x9abcdef0, comp->regs + C3D_SRAM_RW_IF_1);
-
 	}
 
 	mutex_unlock(&c3d_lut_lock);
@@ -1061,6 +1062,9 @@ static void mtk_disp_c3d_unprepare(struct mtk_ddp_comp *comp)
 	mtk_ddp_comp_clk_unprepare(comp);
 	mutex_unlock(&g_c3d_power_lock);
 }
+
+void mtk_disp_c3d_first_cfg(struct mtk_ddp_comp *comp,
+	       struct mtk_ddp_config *cfg, struct cmdq_pkt *handle);
 
 void mtk_disp_c3d_first_cfg(struct mtk_ddp_comp *comp,
 	       struct mtk_ddp_config *cfg, struct cmdq_pkt *handle)
@@ -1118,7 +1122,7 @@ void mtk_c3d_dump(struct mtk_ddp_comp *comp)
 {
 	void __iomem  *baddr = comp->regs;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 	mtk_cust_dump_reg(baddr, 0x0, 0x4, 0x18, 0x8C);
 	mtk_cust_dump_reg(baddr, 0x24, 0x30, 0x34, 0x38);
 	mtk_cust_dump_reg(baddr, 0x3C, 0x40, 0x44, 0x48);
@@ -1143,7 +1147,7 @@ static int mtk_disp_c3d_probe(struct platform_device *pdev)
 
 	comp_id = mtk_ddp_comp_get_id(dev->of_node, MTK_DISP_C3D);
 	if ((int)comp_id < 0) {
-		DDPPR_ERR("Failed to identify by alias: %d\n", comp_id);
+		DDPPR_ERR("failed to identify by alias: %d", comp_id);
 		return comp_id;
 	}
 
@@ -1152,7 +1156,7 @@ static int mtk_disp_c3d_probe(struct platform_device *pdev)
 	ret = mtk_ddp_comp_init(dev, dev->of_node, &priv->ddp_comp, comp_id,
 				&mtk_disp_c3d_funcs);
 	if (ret != 0) {
-		DDPPR_ERR("Failed to initialize component: %d\n", ret);
+		DDPPR_ERR("failed to initialize component: %d", ret);
 		return ret;
 	}
 

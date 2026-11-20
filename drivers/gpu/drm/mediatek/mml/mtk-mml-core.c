@@ -107,7 +107,7 @@ int mml_topology_register_ip(const char *ip, const struct mml_topology_ops *op)
 	struct topology_ip_node *tp_node = kzalloc(sizeof(*tp_node),
 						   GFP_KERNEL);
 	if (!ip) {
-		mml_err("fail to register ip %s", ip);
+		mml_err("fail to register ip %s", ip ? ip : "(null)");
 		return -ENOMEM;
 	}
 
@@ -153,7 +153,7 @@ struct mml_topology_cache *mml_topology_create(struct mml_dev *mml,
 
 	err = of_property_read_string(pdev->dev.of_node, "topology", &ip);
 	if (err < 0) {
-		mml_err("fail to parse topology from dts %d");
+		mml_err("fail to parse topology from dts %d", err);
 		ip = "mt6893";
 	}
 
@@ -275,7 +275,7 @@ static s32 command_make(struct mml_task *task, u32 pipe)
 	s32 ret;
 
 	if (IS_ERR(pkt)) {
-		mml_err("%s fail err %d", __func__, PTR_ERR(pkt));
+		mml_err("%s fail err %ld", __func__, PTR_ERR(pkt));
 		return PTR_ERR(pkt);
 	}
 	task->pkts[pipe] = pkt;
@@ -1058,11 +1058,12 @@ static void core_taskdone_cb(struct cmdq_cb_data data)
 
 	mml_trace_begin_tid(MML_TID_IRQ, "mml_taskdone_cb_pipe%u", pipe);
 
-	if (data.err)
+	if (data.err) {
 		mml_mmp(irq_stop, MMPROFILE_FLAG_PULSE, task->job.jobid,
 			((data.err & GENMASK(15, 0)) << 16) | pipe);
-	else
+	} else {
 		mml_mmp(irq_done, MMPROFILE_FLAG_PULSE, task->job.jobid, pipe);
+	}
 
 	core_taskdone_check(task);
 	mml_trace_end();
@@ -1329,8 +1330,9 @@ static s32 core_flush(struct mml_task *task, u32 pipe)
 		(unsigned long)task->pkts[pipe]);
 	ret = cmdq_pkt_flush_async(pkt, core_taskdone_cb, (void *)task->pkts[pipe]);
 	/* only start at pipe 0 and end at receive both pipe irq */
-	if (pipe == 0)
+	if (pipe == 0) {
 		mml_mmp(exec, MMPROFILE_FLAG_START, task->job.jobid, 0);
+	}
 	mml_trace_ex_end();
 
 	mml_trace_ex_end();
@@ -1533,7 +1535,7 @@ void mml_core_init_config(struct mml_frame_config *cfg)
 	INIT_LIST_HEAD(&cfg->done_tasks);
 	mutex_init(&cfg->pipe_mutex);
 	/* create work_thread 0, wait thread */
-	cfg->wq_done = alloc_ordered_workqueue("mml_done", WORK_CPU_UNBOUND | WQ_HIGHPRI, 0);
+	cfg->wq_done = alloc_ordered_workqueue("mml_done", WORK_CPU_UNBOUND | WQ_HIGHPRI);
 }
 
 void mml_core_deinit_config(struct mml_frame_config *cfg)
@@ -1686,7 +1688,8 @@ static s32 mml_reuse_add_offset(struct mml_task_reuse *reuse,
 	off_begin = reuses->offs[reuses_idx].offset * reuses->offs[reuses_idx].cnt;
 	if (offset && offset == off_begin) {
 		if (!reuses->offs[reuses_idx].cnt)
-			mml_err("%s reuse idx %u no count offset %u", __func__, reuses_idx, offset);
+			mml_err("%s reuse idx %u no count offset %llu",
+				__func__, reuses_idx, (unsigned long long)offset);
 		/* reduce current label since it can offset by previous */
 		reuse->label_idx--;
 		goto inc;

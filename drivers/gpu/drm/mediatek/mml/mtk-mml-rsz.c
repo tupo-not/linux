@@ -344,7 +344,7 @@ static s32 rsz_config_frame(struct mml_comp *comp, struct mml_task *task,
 		for (i = 0; i < result->rsz_reg_cnt[ccfg->node->out_idx]; i++) {
 			cmdq_pkt_write(pkt, NULL, base_pa + regs[i].offset,
 				regs[i].value, regs[i].mask);
-			mml_msg("[rsz][config][%x] = %#x mask(%#x)",
+			mml_msg("[%x] = %#x mask(%#x)",
 				regs[i].offset, regs[i].value, regs[i].mask);
 		}
 	} else {
@@ -468,6 +468,8 @@ static const struct mml_comp_hw_ops rsz_hw_ops = {
 	.clk_disable = &mml_comp_clk_disable,
 	.task_done = rsz_task_done_callback,
 };
+
+const char *get_rsz_state(const u32 state);
 
 const char *get_rsz_state(const u32 state)
 {
@@ -764,12 +766,12 @@ static s32 dbg_get(char *buf, const struct kernel_param *kp)
 			struct mml_comp *comp = &dbg_probed_components[i]->comp;
 
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  - [%d] mml comp_id: %d.%d @%08x name: %s bound: %d\n", i,
-				comp->id, comp->sub_idx, comp->base_pa,
+				"  - [%d] mml comp_id: %d.%d @%08llx name: %s bound: %d\n", i,
+				comp->id, comp->sub_idx, (unsigned long long)comp->base_pa,
 				comp->name ? comp->name : "(null)", comp->bound);
 			length += snprintf(buf + length, PAGE_SIZE - length,
-				"  -         larb_port: %d @%08x pw: %d clk: %d\n",
-				comp->larb_port, comp->larb_base,
+				"  -         larb_port: %d @%08llx pw: %d clk: %d\n",
+				comp->larb_port, (unsigned long long)comp->larb_base,
 				comp->pw_cnt, comp->clk_cnt);
 			length += snprintf(buf + length, PAGE_SIZE - length,
 				"  -     ddp comp_id: %d bound: %d\n",

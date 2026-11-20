@@ -59,7 +59,7 @@ static int mtk_disp_tdshp_write_reg(struct mtk_ddp_comp *comp,
 
 	disp_tdshp_regs = g_disp_tdshp_regs[id];
 	if (disp_tdshp_regs == NULL) {
-		DDPINFO("%s: table [%d] not initialized\n", __func__, id);
+		DDPINFO("%s: table [%d] not initialized", __func__, id);
 		ret = -EFAULT;
 		goto thshp_write_reg_unlock;
 	}
@@ -311,7 +311,7 @@ static int mtk_disp_tdshp_set_reg(struct mtk_ddp_comp *comp,
 
 	tdshp_regs = kmalloc(sizeof(struct DISP_TDSHP_REG), GFP_KERNEL);
 	if (tdshp_regs == NULL) {
-		DDPPR_ERR("%s: no memory\n", __func__);
+		DDPPR_ERR("%s: no memory", __func__);
 		return -EFAULT;
 	}
 
@@ -337,7 +337,7 @@ static int mtk_disp_tdshp_set_reg(struct mtk_ddp_comp *comp,
 			if (old_tdshp_regs != NULL)
 				kfree(old_tdshp_regs);
 		} else {
-			DDPPR_ERR("%s: invalid ID = %d\n", __func__, comp->id);
+			DDPPR_ERR("%s: invalid ID = %d", __func__, comp->id);
 			ret = -EFAULT;
 		}
 	}
@@ -386,7 +386,7 @@ int mtk_drm_ioctl_tdshp_get_size(struct drm_device *dev, void *data,
 
 	mtk_drm_crtc_get_panel_original_size(crtc, &width, &height);
 	if (width == 0 || height == 0) {
-		DDPFUNC("panel original size error(%dx%d).\n", width, height);
+		DDPFUNC("panel original size error(%dx%d).", width, height);
 		width = crtc->mode.hdisplay;
 		height = crtc->mode.vdisplay;
 	}
@@ -417,7 +417,7 @@ static void mtk_disp_tdshp_config(struct mtk_ddp_comp *comp,
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_TDSHP_CTRL, ((0x0 << 2) | 0x1), ~0);
 	else
-		DDPPR_ERR("%s: Invalid bpc: %u\n", __func__, cfg->bpc);
+		DDPPR_ERR("%s: invalid bpc: %u", __func__, cfg->bpc);
 
 	if (comp->mtk_crtc->is_dual_pipe)
 		width = cfg->w / 2;
@@ -426,7 +426,7 @@ static void mtk_disp_tdshp_config(struct mtk_ddp_comp *comp,
 
 	val = (width << 16) | (cfg->h);
 
-	DDPINFO("%s: 0x%08x\n", __func__, val);
+	DDPINFO("%s: 0x%08x", __func__, val);
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		comp->regs_pa + DISP_TDSHP_INPUT_SIZE, val, ~0);
 	cmdq_pkt_write(handle, comp->cmdq_base,
@@ -475,7 +475,7 @@ static int mtk_disp_tdshp_user_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *h
 		struct DISP_TDSHP_REG *config = data;
 
 		if (mtk_disp_tdshp_set_reg(comp, handle, config) < 0) {
-			DDPPR_ERR("%s: failed\n", __func__);
+			DDPPR_ERR("%s: failed", __func__);
 			return -EFAULT;
 		}
 		if (comp->mtk_crtc->is_dual_pipe) {
@@ -485,7 +485,7 @@ static int mtk_disp_tdshp_user_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *h
 			struct mtk_ddp_comp *comp_tdshp1 = priv->ddp_comp[DDP_COMPONENT_TDSHP1];
 
 			if (mtk_disp_tdshp_set_reg(comp_tdshp1, handle, config) < 0) {
-				DDPPR_ERR("%s: comp_tdshp1 failed\n", __func__);
+				DDPPR_ERR("%s: comp_tdshp1 failed", __func__);
 				return -EFAULT;
 			}
 		}
@@ -509,7 +509,7 @@ static int mtk_disp_tdshp_user_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *h
 	}
 	break;
 	default:
-		DDPPR_ERR("%s: error cmd: %d\n", __func__, cmd);
+		DDPPR_ERR("%s: error cmd: %d", __func__, cmd);
 		return -EINVAL;
 	}
 	return 0;
@@ -557,6 +557,9 @@ static void mtk_disp_tdshp_unprepare(struct mtk_ddp_comp *comp)
 		__func__, __LINE__);
 	mtk_ddp_comp_clk_unprepare(comp);
 }
+
+void mtk_disp_tdshp_first_cfg(struct mtk_ddp_comp *comp,
+		struct mtk_ddp_config *cfg, struct cmdq_pkt *handle);
 
 void mtk_disp_tdshp_first_cfg(struct mtk_ddp_comp *comp,
 		struct mtk_ddp_config *cfg, struct cmdq_pkt *handle)
@@ -614,7 +617,7 @@ void mtk_disp_tdshp_dump(struct mtk_ddp_comp *comp)
 {
 	void __iomem *baddr = comp->regs;
 
-	DDPDUMP("== %s REGS:0x%x ==\n", mtk_dump_comp_str(comp), comp->regs_pa);
+	DDPDUMP("== %s REGS:0x%x ==", mtk_dump_comp_str(comp), comp->regs_pa);
 	mtk_cust_dump_reg(baddr, 0x0, 0x4, 0x8, 0xC);
 	mtk_cust_dump_reg(baddr, 0x14, 0x18, 0x1C, 0x20);
 	mtk_cust_dump_reg(baddr, 0x24, 0x40, 0x44, 0x48);
@@ -649,14 +652,14 @@ static int mtk_disp_tdshp_probe(struct platform_device *pdev)
 
 	comp_id = mtk_ddp_comp_get_id(dev->of_node, MTK_DISP_TDSHP);
 	if ((int)comp_id < 0) {
-		DDPPR_ERR("Failed to identify by alias: %d\n", comp_id);
+		DDPPR_ERR("failed to identify by alias: %d", comp_id);
 		return comp_id;
 	}
 
 	ret = mtk_ddp_comp_init(dev, dev->of_node, &priv->ddp_comp, comp_id,
 				&mtk_disp_tdshp_funcs);
 	if (ret != 0) {
-		DDPPR_ERR("Failed to initialize component: %d\n", ret);
+		DDPPR_ERR("failed to initialize component: %d", ret);
 		return ret;
 	}
 
