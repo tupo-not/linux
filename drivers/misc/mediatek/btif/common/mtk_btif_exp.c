@@ -14,6 +14,8 @@
 
 /*---------------------------------Function----------------------------------*/
 
+struct _mtk_btif_ *btif_exp_srh_id(unsigned long u_id);
+
 struct _mtk_btif_ *btif_exp_srh_id(unsigned long u_id)
 {
 	int index = 0;
@@ -520,6 +522,8 @@ EXPORT_SYMBOL(mtk_wcn_btif_parser_wmt_evt);
 
 /**********End of Debug Purpose API declearation**********/
 
+int btif_open_no_id(void);
+
 int btif_open_no_id(void)
 {
 	int i_ret = 0;
@@ -535,6 +539,8 @@ int btif_open_no_id(void)
 	return i_ret;
 }
 
+int btif_close_no_id(void);
+
 int btif_close_no_id(void)
 {
 	int i_ret = 0;
@@ -548,6 +554,8 @@ int btif_close_no_id(void)
 		BTIF_INFO_FUNC("btif_close succeed\n");
 	return i_ret;
 }
+
+int btif_write_no_id(const unsigned char *p_buf, unsigned int len);
 
 int btif_write_no_id(const unsigned char *p_buf, unsigned int len)
 {
@@ -569,6 +577,8 @@ int btif_write_no_id(const unsigned char *p_buf, unsigned int len)
 	BTIF_DBG_FUNC("--, i_ret:%d\n", i_ret);
 	return i_ret;
 }
+
+int btif_dpidle_ctrl_no_id(enum _ENUM_BTIF_DPIDLE_ en_flag);
 
 int btif_dpidle_ctrl_no_id(enum _ENUM_BTIF_DPIDLE_ en_flag)
 {
@@ -594,6 +604,8 @@ int btif_wakeup_consys_no_id(void)
 	return i_ret;
 }
 
+int btif_loopback_ctrl_no_id(enum _ENUM_BTIF_LPBK_MODE_ enable);
+
 int btif_loopback_ctrl_no_id(enum _ENUM_BTIF_LPBK_MODE_ enable)
 {
 	int i_ret = -1;
@@ -604,6 +616,8 @@ int btif_loopback_ctrl_no_id(enum _ENUM_BTIF_LPBK_MODE_ enable)
 
 	return i_ret;
 }
+
+int btif_dbg_ctrl_no_id(enum _ENUM_BTIF_DBG_ID_ flag);
 
 int btif_dbg_ctrl_no_id(enum _ENUM_BTIF_DBG_ID_ flag)
 {

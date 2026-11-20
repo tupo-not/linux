@@ -17,7 +17,7 @@ enum RC_CTRL_CMD {
 	MAX_RC_REQ_NUM
 };
 
-static const char * const rc_req_list[] = {
+static const char * const rc_req_list[] __maybe_unused = {
 	"HW",
 	"SW_OFF",
 	"SW_FPM",
