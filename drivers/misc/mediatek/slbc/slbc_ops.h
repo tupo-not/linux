@@ -131,18 +131,22 @@ extern int slbc_enable;
 extern char *slbc_uid_str[UID_MAX];
 extern int popcount(unsigned int x);
 
-#if IS_ENABLED(CONFIG_MTK_SLBC)
-extern int slbc_request(struct slbc_data *d);
-extern int slbc_release(struct slbc_data *d);
-extern int slbc_power_on(struct slbc_data *d);
-extern int slbc_power_off(struct slbc_data *d);
-extern int slbc_secure_on(struct slbc_data *d);
-extern int slbc_secure_off(struct slbc_data *d);
-extern void slbc_update_mm_bw(unsigned int bw);
-extern void slbc_update_mic_num(unsigned int num);
-extern void slbc_update_inner(unsigned int inner);
-extern void slbc_update_outer(unsigned int outer);
-#else
+/* Prototypes are needed in both branches: the weak stubs below are
+ * definitions, and -Wmissing-prototypes would otherwise fire once per
+ * translation unit including this header.
+ */
+int slbc_request(struct slbc_data *d);
+int slbc_release(struct slbc_data *d);
+int slbc_power_on(struct slbc_data *d);
+int slbc_power_off(struct slbc_data *d);
+int slbc_secure_on(struct slbc_data *d);
+int slbc_secure_off(struct slbc_data *d);
+void slbc_update_mm_bw(unsigned int bw);
+void slbc_update_mic_num(unsigned int num);
+void slbc_update_inner(unsigned int inner);
+void slbc_update_outer(unsigned int outer);
+
+#if !IS_ENABLED(CONFIG_MTK_SLBC)
 __attribute__ ((weak)) int slbc_request(struct slbc_data *d)
 {
 	return -EDISABLED;
