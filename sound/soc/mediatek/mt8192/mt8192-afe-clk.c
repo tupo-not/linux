@@ -604,6 +604,7 @@ int mt8192_mck_enable(struct mtk_base_afe *afe, int mck_id, int rate)
 
 	return 0;
 }
+EXPORT_SYMBOL_GPL(mt8192_mck_enable);
 
 void mt8192_mck_disable(struct mtk_base_afe *afe, int mck_id)
 {
@@ -615,6 +616,7 @@ void mt8192_mck_disable(struct mtk_base_afe *afe, int mck_id)
 	if (m_sel_id >= 0)
 		clk_disable_unprepare(afe_priv->clk[m_sel_id]);
 }
+EXPORT_SYMBOL_GPL(mt8192_mck_disable);
 
 int mt8192_init_clock(struct mtk_base_afe *afe)
 {

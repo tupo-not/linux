@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * mt6893-mt6359.c -- chopin (MT6893) speaker card.
+ * mt6893-mt6359.c -- Infinix Note 30 VIP (X6710, MT6893) speaker card.
  *
- * The board has no 3.5mm jack: playback leaves the AP through AFE I2S3 into a
- * pair of CS35L41 Class-D amplifiers on i2c6 (0x40 and 0x42), one per speaker.
- * The MT6359 PMIC codec is only needed for the microphone path and is not
- * wired into the card yet.
+ * Playback leaves the AP through AFE I2S3 into a stereo pair of Awinic
+ * AW87390 I2C smart PAs on i2c6 (0x58 left, 0x59 right), one per speaker.
+ * The AW87390 driver (sound/soc/codecs/aw87390.c) registers a component with
+ * no DAI - it is configured entirely over I2C from aw87390_acf.bin - so the
+ * amps attach to the card as aux-devs and are driven purely by DAPM; the I2S3
+ * back end uses a dummy codec and only supplies MCLK/BCLK/LRCK.
  *
- * This is deliberately a small card: one DPCM front end (AFE DL1) and one
- * back end (I2S3 + the two amps).  It is modelled on mt8192's mt6359 card for
- * the MTK plumbing and on mt8189's cs35l41 link for the codec side.
+ * The MT6359 PMIC codec handles the microphone path; it is not part of the
+ * speaker playback link.  All the MTK AFE/DPCM plumbing below is shared with
+ * the upstream mt8192 cards.
  */
 
 #include <linux/module.h>
@@ -22,7 +24,6 @@
 #include <sound/pcm_params.h>
 #include <sound/soc.h>
 
-#include "../../codecs/cs35l41.h"
 #include "../common/mtk-soc-card.h"
 #include "../common/mtk-afe-platform-driver.h"
 #include "../common/mtk-base-afe.h"
@@ -33,18 +34,17 @@
 
 #define DRIVER_NAME		"mt6893_mt6359"
 #define CARD_NAME		"mt6893_mt6359"
-#define CS35L41_CODEC_DAI	"cs35l41-pcm"
 
-/* FE */
+/* FE: AFE DL1 */
 SND_SOC_DAILINK_DEFS(playback1,
 		     DAILINK_COMP_ARRAY(COMP_CPU("DL1")),
 		     DAILINK_COMP_ARRAY(COMP_DUMMY()),
 		     DAILINK_COMP_ARRAY(COMP_EMPTY()));
 
-/* BE: the two amps are filled in from the sound node's speaker-codecs child */
+/* BE: AFE I2S3 -> dummy codec (the AW87390 PAs are aux-devs on this link) */
 SND_SOC_DAILINK_DEFS(i2s3,
 		     DAILINK_COMP_ARRAY(COMP_CPU("I2S3")),
-		     DAILINK_COMP_ARRAY(COMP_EMPTY()),
+		     DAILINK_COMP_ARRAY(COMP_DUMMY()),
 		     DAILINK_COMP_ARRAY(COMP_EMPTY()));
 
 static struct device *mt6893_afe_dev;
@@ -56,7 +56,7 @@ static struct mtk_base_afe *mt6893_afe_from_rtd(struct snd_soc_pcm_runtime *rtd)
 	return cmpnt ? snd_soc_component_get_drvdata(cmpnt) : NULL;
 }
 
-static int mt6893_cs35l41_i2s_hw_free(struct snd_pcm_substream *substream)
+static int mt6893_i2s_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct mtk_base_afe *afe = mt6893_afe_from_rtd(rtd);
@@ -72,56 +72,17 @@ static int mt6893_cs35l41_i2s_hw_free(struct snd_pcm_substream *substream)
 	return 0;
 }
 
-static int mt6893_cs35l41_i2s_hw_params(struct snd_pcm_substream *substream,
-					struct snd_pcm_hw_params *params)
+static int mt6893_i2s_hw_params(struct snd_pcm_substream *substream,
+				struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	unsigned int rate = params_rate(params);
 	unsigned int mclk_fs = rate * 128;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct snd_soc_dai *codec_dai;
-	/*
-	 * Match the vendor tune: S32_LE slots, so the bit clock is 64 fs and
-	 * the amplifier PLL reference is 2 * rate * 32 = 3.072 MHz at 48 kHz.
-	 * That is the exact PLL_CLK_CTRL value (0x430) the stock kernel uses.
-	 */
-	int clk_freq = rate * 64;
-	/*
-	 * The amps share one I2S data line: slot 0 carries the right speaker
-	 * (amp at 0x40), slot 1 the left one (amp at 0x42).
-	 */
-	int rx_slot[] = { 0, 1 };
 	struct mtk_base_afe *afe;
-	int i, ret;
+	int ret;
 
-	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		ret = snd_soc_component_set_sysclk(codec_dai->component,
-						   CS35L41_CLKID_SCLK, 0,
-						   clk_freq, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(codec_dai->dev,
-				"set component sysclk failed: %d\n", ret);
-			return ret;
-		}
-
-		ret = snd_soc_dai_set_sysclk(codec_dai, CS35L41_CLKID_SCLK,
-					     clk_freq, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(codec_dai->dev, "set sysclk failed: %d\n", ret);
-			return ret;
-		}
-
-		ret = snd_soc_dai_set_channel_map(codec_dai, 0, NULL,
-						  1, &rx_slot[i]);
-		if (ret < 0) {
-			dev_err(codec_dai->dev,
-				"set channel map failed: %d\n", ret);
-			return ret;
-		}
-	}
-
-	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk_fs,
-				     SND_SOC_CLOCK_OUT);
+	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk_fs, SND_SOC_CLOCK_OUT);
 	if (ret)
 		return ret;
 
@@ -130,17 +91,12 @@ static int mt6893_cs35l41_i2s_hw_params(struct snd_pcm_substream *substream,
 		mt6893_afe_dev = afe->dev;
 		pm_runtime_resume_and_get(afe->dev);
 
-		/*
-		 * AUDIO_TOP_CON0 bit2 is the aud_afe power-down bit and
-		 * AUDIO_TOP_CON1 bit6 the I2S3 block gate, both active low.
-		 * The clock framework does not get these enabled on this
-		 * board (its writes happen while the shared audsys regmap is
-		 * still cache-only), so clear them explicitly.
-		 */
+		/* AUDIO_TOP_CON0 bit2 (aud_afe pd) and CON1 bit6 (I2S3 gate),
+		 * both active low - the clock framework does not enable these
+		 * on this board (shared audsys regmap still cache-only). */
 		regmap_clear_bits(afe->regmap, 0x0, BIT(2));
 		regmap_clear_bits(afe->regmap, 0x4, BIT(6));
 
-		/* Program the I2S3 mclk divider (128 fs). */
 		ret = mt8192_mck_enable(afe, MT8192_I2S3_MCK, mclk_fs);
 		if (ret)
 			dev_warn(rtd->card->dev,
@@ -150,17 +106,12 @@ static int mt6893_cs35l41_i2s_hw_params(struct snd_pcm_substream *substream,
 	return 0;
 }
 
-static const struct snd_soc_ops mt6893_cs35l41_i2s_ops = {
-	.hw_params = mt6893_cs35l41_i2s_hw_params,
-	.hw_free = mt6893_cs35l41_i2s_hw_free,
+static const struct snd_soc_ops mt6893_i2s_ops = {
+	.hw_params = mt6893_i2s_hw_params,
+	.hw_free = mt6893_i2s_hw_free,
 };
 
-/*
- * Pin the back end to 16-bit samples: the codec SCLK above is 32 fs, which is
- * exactly two 16-bit slots per frame.  A wider format would make the I2S port
- * run 48/64 fs while the amplifier still expected 32 fs, so normalise the
- * stream here instead of relying on user space.
- */
+/* Pin the back end to 32-bit samples (the stock vendor tune uses S32_LE). */
 static int mt6893_i2s_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 				      struct snd_pcm_hw_params *params)
 {
@@ -172,7 +123,6 @@ static int mt6893_i2s_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 }
 
 static struct snd_soc_dai_link mt6893_mt6359_dai_links[] = {
-	/* Front end */
 	{
 		.name = "Playback_1",
 		.stream_name = "Playback_1",
@@ -183,11 +133,10 @@ static struct snd_soc_dai_link mt6893_mt6359_dai_links[] = {
 		.ops = &mtk_soundcard_common_playback_ops,
 		SND_SOC_DAILINK_REG(playback1),
 	},
-	/* Back end: AFE I2S3 -> CS35L41 pair */
 	{
 		.name = "I2S3",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC,
-		.ops = &mt6893_cs35l41_i2s_ops,
+		.ops = &mt6893_i2s_ops,
 		.be_hw_params_fixup = mt6893_i2s_hw_params_fixup,
 		.no_pcm = 1,
 		.playback_only = 1,
@@ -197,23 +146,15 @@ static struct snd_soc_dai_link mt6893_mt6359_dai_links[] = {
 };
 
 /*
- * The AFE connection matrix is a DAPM mixer: playback only reaches I2S3 when
- * the "DL1 -> I2S3_CHx" switches are on, and DPCM refuses to open the front
- * end when no backend DAI is reachable ("no backend DAIs enabled").  Android
- * sets these from its audio HAL/UCM profile; there is no UCM here, so do it
- * once when the card is instantiated.
+ * The AFE connection matrix is a DAPM mixer: playback reaches I2S3 only when
+ * the "DL1 -> I2S3_CHx" switches are on.  No UCM here, so flip them once the
+ * card widgets exist.
  */
 static const char * const mt6893_afe_matrix_switches[] = {
 	"I2S3_CH1 DL1_CH1",
 	"I2S3_CH2 DL1_CH2",
 };
 
-/*
- * The AFE connection-matrix switches are DAPM mixer controls, and those
- * only exist after snd_soc_dapm_new_widgets(), which runs *after* the
- * card's late_probe.  Flip them from a delayed work once the card is
- * registered, otherwise DL1 has no consumer and its memif never starts.
- */
 static void mt6893_afe_route_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(mt6893_afe_route_dw, mt6893_afe_route_work);
 static struct snd_soc_card *mt6893_afe_route_card;
@@ -247,20 +188,26 @@ static void mt6893_afe_route_work(struct work_struct *work)
 	}
 }
 
+/* DAPM: drive the two AW87390 amps from the I2S3 output.  The amps' input
+ * widgets are named "IN" (see aw87390.c). */
+static const struct snd_soc_dapm_widget mt6893_dapm_widgets[] = {
+	SND_SOC_DAPM_SPK("Speakers", NULL),
+};
+
+static const struct snd_soc_dapm_route mt6893_dapm_routes[] = {
+	{ "IN", NULL, "I2S3" },
+	{ "Speakers", NULL, "OUT" },
+};
+
 static int mt6893_mt6359_late_probe(struct snd_soc_card *card)
 {
 	struct snd_ctl_elem_value ucontrol = {};
 	struct snd_kcontrol *kctl;
 
-
 	mt6893_afe_route_card = card;
 	schedule_delayed_work(&mt6893_afe_route_dw, msecs_to_jiffies(1000));
 
-	/*
-	 * The vendor audio HAL also sets I2S3_HD_Mux to Low_Jitter (HD mode),
-	 * which makes the I2S3_HD_EN supply set AFE_I2S_CON3 bit12 for the
-	 * 32-bit slot format used above.
-	 */
+	/* I2S3_HD_Mux -> Low_Jitter (HD mode, 32-bit slot format). */
 	kctl = snd_soc_card_get_kcontrol(card, "I2S3_HD_Mux");
 	if (kctl) {
 		memset(&ucontrol, 0, sizeof(ucontrol));
@@ -276,6 +223,10 @@ static struct snd_soc_card mt6893_mt6359_card = {
 	.owner = THIS_MODULE,
 	.dai_link = mt6893_mt6359_dai_links,
 	.num_links = ARRAY_SIZE(mt6893_mt6359_dai_links),
+	.dapm_widgets = mt6893_dapm_widgets,
+	.num_dapm_widgets = ARRAY_SIZE(mt6893_dapm_widgets),
+	.dapm_routes = mt6893_dapm_routes,
+	.num_dapm_routes = ARRAY_SIZE(mt6893_dapm_routes),
 	.late_probe = mt6893_mt6359_late_probe,
 };
 
@@ -283,46 +234,9 @@ static int mt6893_mt6359_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 					bool legacy)
 {
 	struct snd_soc_card *card = soc_card_data->card_data->card;
-	struct device *dev = card->dev;
-	struct device_node *speaker_codec;
-	struct snd_soc_dai_link *dai_link;
-	int i, ret = 0;
 
-	/*
-	 * The legacy path is the normal one here: without "audio-routing"
-	 * the common probe does not parse per-link "codec" children, so the
-	 * amps are attached through the sound node's speaker-codecs phandles.
-	 */
-	if (!legacy)
-		return 0;
-
-	speaker_codec = of_get_child_by_name(dev->of_node, "speaker-codecs");
-	if (!speaker_codec)
-		return dev_err_probe(dev, -EINVAL,
-				     "speaker-codecs node missing or invalid\n");
-
-	for_each_card_prelinks(card, i, dai_link) {
-		if (strcmp(dai_link->name, "I2S3"))
-			continue;
-
-		ret = snd_soc_of_get_dai_link_codecs(dev, speaker_codec,
-						     dai_link);
-		if (ret < 0)
-			dev_err_probe(dev, ret, "get speaker codecs failed\n");
-		break;
-	}
-
-	of_node_put(speaker_codec);
-
-	if (ret)
-		return ret;
-
-	/*
-	 * Prepare the named audio pin states on the card device so the I2S3_EN
-	 * DAPM supply can mux BCLK/LRCK/DATA at every stream start (and undo
-	 * it afterwards) instead of relying on the one-shot "default" state.
-	 */
-	return mt8192_afe_gpio_init(card->dev);
+	/* Attach the AW87390 PAs listed in the sound node's "aux-devs". */
+	return snd_soc_of_parse_aux_devs(card, "aux-devs");
 }
 
 static const unsigned int mt6893_pcm_playback_channels[] = { 1, 2 };
@@ -367,5 +281,5 @@ static struct platform_driver mt6893_mt6359_driver = {
 };
 module_platform_driver(mt6893_mt6359_driver);
 
-MODULE_DESCRIPTION("MT6893-MT6359/CS35L41 ALSA SoC machine driver");
+MODULE_DESCRIPTION("MT6893-MT6359/AW87390 ALSA SoC machine driver");
 MODULE_LICENSE("GPL v2");

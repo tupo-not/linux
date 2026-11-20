@@ -373,8 +373,13 @@ static int aw87390_codec_probe(struct snd_soc_component *component)
 
 	ret = aw87390_request_firmware_file(aw87390);
 	if (ret)
-		return dev_err_probe(aw87390->aw_pa->dev, ret,
-				"aw87390_request_firmware_file failed\n");
+		/* A bad/foreign ACF must not block card registration; the PA
+		 * stays in its default (muted) state until a valid file is
+		 * installed in /lib/firmware.
+		 */
+		dev_warn(aw87390->aw_pa->dev,
+			 "aw87390 ACF unavailable (%d), continuing without DSP config\n",
+			 ret);
 
 	return 0;
 }
