@@ -354,6 +354,7 @@ static int chopin_mtcmos_on(struct panfrost_device *pfdev)
 static void chopin_gpu_rails_on(struct device *dev)
 {
 	struct regulator *vsram, *vgpu;
+	int ret;
 
 	if (!of_machine_is_compatible("mediatek,mt6893"))
 		return;
@@ -361,12 +362,18 @@ static void chopin_gpu_rails_on(struct device *dev)
 	/* Same order as the vendor gpufreq driver.  Going through the SPM
 	 * domain-supply path instead hard-resets this board. */
 	vsram = regulator_get(NULL, "vsram_others");
-	if (!IS_ERR_OR_NULL(vsram))
-		regulator_enable(vsram);
+	if (!IS_ERR_OR_NULL(vsram)) {
+		ret = regulator_enable(vsram);
+		if (ret)
+			dev_err(dev, "failed to enable vsram_others: %d\n", ret);
+	}
 
 	vgpu = regulator_get(NULL, "vgpu11");
-	if (!IS_ERR_OR_NULL(vgpu))
-		regulator_enable(vgpu);
+	if (!IS_ERR_OR_NULL(vgpu)) {
+		ret = regulator_enable(vgpu);
+		if (ret)
+			dev_err(dev, "failed to enable vgpu11: %d\n", ret);
+	}
 }
 
 /*
