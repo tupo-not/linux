@@ -155,4 +155,13 @@ config LEDS_TPS6131X
 
 	  This driver can be built as a module, it will be called "leds-tps6131x".
 
+config LEDS_AW36515
+	tristate "LED support for Awinic AW36515 flash"
+	depends on I2C && GPIOLIB && LEDS_CLASS
+	help
+	  WIP: flashlight is not functional yet.  Minimal driver for the
+	  AW36515 flash controller found on the Infinix X6710 (I2C 0x63,
+	  HWEN GPIO).  Mirrors the stock init and on/off register sequence,
+	  but the values are unconfirmed and the LED has not lit in testing.
+
 endif # LEDS_CLASS_FLASH
