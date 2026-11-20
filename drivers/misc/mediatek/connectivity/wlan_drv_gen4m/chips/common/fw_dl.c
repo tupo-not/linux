@@ -741,6 +741,9 @@ uint32_t wlanImageSectionDownloadStage(
  */
 /*----------------------------------------------------------------------------*/
 uint32_t wlanPatchRecvSemaResp(IN struct ADAPTER *prAdapter,
+	IN uint8_t ucCmdSeqNum, OUT uint8_t *pucPatchStatus);
+
+uint32_t wlanPatchRecvSemaResp(IN struct ADAPTER *prAdapter,
 	IN uint8_t ucCmdSeqNum, OUT uint8_t *pucPatchStatus)
 {
 	struct mt66xx_chip_info *prChipInfo;
@@ -814,6 +817,9 @@ uint32_t wlanPatchRecvSemaResp(IN struct ADAPTER *prAdapter,
  */
 /*----------------------------------------------------------------------------*/
 uint32_t wlanPatchSendSemaControl(IN struct ADAPTER
+				  *prAdapter, OUT uint8_t *pucSeqNum);
+
+uint32_t wlanPatchSendSemaControl(IN struct ADAPTER
 				  *prAdapter, OUT uint8_t *pucSeqNum)
 {
 	struct mt66xx_chip_info *prChipInfo;
@@ -869,6 +875,8 @@ uint32_t wlanPatchSendSemaControl(IN struct ADAPTER
 
 	return u4Status;
 }
+
+u_int8_t wlanPatchIsDownloaded(IN struct ADAPTER *prAdapter);
 
 u_int8_t wlanPatchIsDownloaded(IN struct ADAPTER *prAdapter)
 {
@@ -2125,6 +2133,9 @@ uint32_t wlanGetConnacTailerInfo(IN struct WIFI_VER_INFO *prVerInfo,
  *                       others: use it as the start address
  */
 /*----------------------------------------------------------------------------*/
+
+uint32_t wlanDetectRamEntry(IN struct WIFI_VER_INFO
+			    *prVerInfo);
 
 uint32_t wlanDetectRamEntry(IN struct WIFI_VER_INFO
 			    *prVerInfo)

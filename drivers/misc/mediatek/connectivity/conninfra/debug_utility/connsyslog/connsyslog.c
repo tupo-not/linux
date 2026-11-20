@@ -141,6 +141,10 @@ static void connlog_dump_emi(struct connlog_dev* handler, int offset, int size);
 ********************************************************************************
 */
 
+const struct connlog_emi_config* get_connsyslog_platform_config(int conn_type);
+void *connlog_cache_allocate(size_t size);
+void connlog_cache_free(const void *dst);
+
 const struct connlog_emi_config* get_connsyslog_platform_config(int conn_type)
 {
 	if (conn_type < 0 || conn_type >= CONN_DEBUG_TYPE_END) {

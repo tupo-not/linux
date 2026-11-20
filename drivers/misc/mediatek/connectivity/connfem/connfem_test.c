@@ -13,7 +13,7 @@
 #ifdef pr_fmt
 #undef pr_fmt
 #endif
-#define pr_fmt(fmt) "["KBUILD_MODNAME"][TEST]" fmt
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 
 /*******************************************************************************

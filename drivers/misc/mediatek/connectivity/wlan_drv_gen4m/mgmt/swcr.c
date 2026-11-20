@@ -208,6 +208,8 @@ enum {
  *******************************************************************************
  */
 
+void dumpQueue(struct ADAPTER *prAdapter);
+
 void dumpQueue(struct ADAPTER *prAdapter)
 {
 
@@ -276,6 +278,8 @@ void dumpQueue(struct ADAPTER *prAdapter)
 	       prAdapter->rRxCtrl.ucNumRetainedPacket);
 
 }
+
+void dumpSTA(struct ADAPTER *prAdapter, struct STA_RECORD *prStaRec);
 
 void dumpSTA(struct ADAPTER *prAdapter, struct STA_RECORD *prStaRec)
 {
@@ -367,6 +371,9 @@ void dumpSTA(struct ADAPTER *prAdapter, struct STA_RECORD *prStaRec)
 	}
 
 }
+
+void dumpBss(struct ADAPTER *prAdapter,
+	     struct BSS_INFO *prBssInfo);
 
 void dumpBss(struct ADAPTER *prAdapter,
 	     struct BSS_INFO *prBssInfo)
@@ -848,6 +855,15 @@ testPsSendQoSNullFrame(IN struct ADAPTER *prAdapter,
 		       IN uint8_t ucBssIndex,
 		       IN u_int8_t fgBMC,
 		       IN u_int8_t fgIsBurstEnd, IN u_int8_t ucPacketType,
+		       IN u_int8_t ucPsSessionID, IN u_int8_t fgSetEOSP);
+
+void
+testPsSendQoSNullFrame(IN struct ADAPTER *prAdapter,
+		       IN struct STA_RECORD *prStaRec,
+		       IN uint8_t ucUP,
+		       IN uint8_t ucBssIndex,
+		       IN u_int8_t fgBMC,
+		       IN u_int8_t fgIsBurstEnd, IN u_int8_t ucPacketType,
 		       IN u_int8_t ucPsSessionID, IN u_int8_t fgSetEOSP)
 {
 	struct MSDU_INFO *prMsduInfo;
@@ -899,6 +915,9 @@ testPsSendQoSNullFrame(IN struct ADAPTER *prAdapter,
 	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
 
 }
+
+void testPsSetupBss(IN struct ADAPTER *prAdapter,
+		    IN uint8_t ucBssIndex);
 
 void testPsSetupBss(IN struct ADAPTER *prAdapter,
 		    IN uint8_t ucBssIndex)

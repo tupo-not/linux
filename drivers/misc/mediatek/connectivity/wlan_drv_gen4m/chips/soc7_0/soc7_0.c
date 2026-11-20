@@ -2358,7 +2358,7 @@ static void soc7_0_DumpPcLrLog(struct ADAPTER *prAdapter)
 	DBGLOG(HAL, LOUD,
 		"Host_CSR - dump PC log / LR log");
 
-	memset(log, 0, HANG_PC_LOG_NUM);
+	memset(log, 0, sizeof(log));
 
 	/* PC log */
 	u4DbgAddr = 0x18023604;
@@ -2445,7 +2445,7 @@ static void soc7_0_DumpN10CoreReg(struct ADAPTER *prAdapter)
 	DBGLOG(HAL, LOUD,
 		"Host_CSR - read N10 core register");
 
-	memset(log, 0, HANG_N10_CORE_LOG_NUM);
+	memset(log, 0, sizeof(log));
 
 	u4RdAddr = 0x18023608;
 	u4WrIdxAddr = 0x18023614;

@@ -78,6 +78,8 @@ int conn_pwr_core_suspend(void)
 	return 0;
 }
 
+int conn_pwr_get_low_battery_level(struct conn_pwr_update_info *info);
+
 int conn_pwr_get_low_battery_level(struct conn_pwr_update_info *info)
 {
 	int ret = CONN_PWR_THR_LV_0;
@@ -107,6 +109,8 @@ int conn_pwr_get_low_battery_level(struct conn_pwr_update_info *info)
 
 	return ret;
 }
+
+int conn_pwr_get_thermal_level(struct conn_pwr_update_info *info, int current_temp);
 
 int conn_pwr_get_thermal_level(struct conn_pwr_update_info *info, int current_temp)
 {
@@ -149,6 +153,8 @@ int conn_pwr_get_thermal_level(struct conn_pwr_update_info *info, int current_te
 
 	return ret;
 }
+
+int conn_pwr_set_level(struct conn_pwr_update_info *info, int radio_power_level[], int current_temp);
 
 int conn_pwr_set_level(struct conn_pwr_update_info *info, int radio_power_level[], int current_temp)
 {

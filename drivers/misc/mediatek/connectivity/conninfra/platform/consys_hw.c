@@ -206,6 +206,8 @@ int consys_hw_dump_bus_status(void)
 	return consys_reg_mng_dump_bus_status();
 }
 
+int consys_hw_dump_cpupcr(enum conn_dump_cpupcr_type dump_type, int times, unsigned long interval_us);
+
 int consys_hw_dump_cpupcr(enum conn_dump_cpupcr_type dump_type, int times, unsigned long interval_us)
 {
 	return consys_reg_mng_dump_cpupcr(dump_type, times, interval_us);
@@ -246,6 +248,8 @@ int consys_hw_pwr_off(unsigned int curr_status, unsigned int off_radio)
 
 	return 0;
 }
+
+int _consys_hw_pwr_on_rollback(enum conninfra_pwr_on_rollback_type type);
 
 int _consys_hw_pwr_on_rollback(enum conninfra_pwr_on_rollback_type type)
 {
@@ -665,6 +669,8 @@ int get_consys_platform_ops(struct platform_device *pdev)
 	}
 	return 0;
 }
+
+int consys_hw_tcxo_parser(struct platform_device *pdev);
 
 int consys_hw_tcxo_parser(struct platform_device *pdev)
 {

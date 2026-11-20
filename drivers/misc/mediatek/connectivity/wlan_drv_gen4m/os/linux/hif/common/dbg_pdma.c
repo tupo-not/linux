@@ -225,6 +225,8 @@ static void halDumpTxHangLog(struct ADAPTER *prAdapter, uint32_t u4TokenId)
 	halTriggerTxHangFwDebugSop(prAdapter, ucBssIndex);
 }
 
+bool halCheckFullDump(struct ADAPTER *prAdapter);
+
 bool halCheckFullDump(struct ADAPTER *prAdapter)
 {
 	bool ret = FALSE;

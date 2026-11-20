@@ -795,6 +795,10 @@ u_int8_t rsnSearchAKMSuite(IN struct ADAPTER *prAdapter,
 
 uint8_t rsnKeyMgmtWpa(IN struct ADAPTER *prAdapter,
 	IN enum ENUM_PARAM_AUTH_MODE eAuthMode,
+	IN uint8_t bssidx);
+
+uint8_t rsnKeyMgmtWpa(IN struct ADAPTER *prAdapter,
+	IN enum ENUM_PARAM_AUTH_MODE eAuthMode,
 	IN uint8_t bssidx)
 {
 	uint32_t i;
@@ -808,6 +812,11 @@ uint8_t rsnKeyMgmtWpa(IN struct ADAPTER *prAdapter,
 	       rsnSearchAKMSuite(prAdapter, RSN_AKM_SUITE_OWE, &i, bssidx) ||
 	       rsnSearchAKMSuite(prAdapter, RSN_AKM_SUITE_SAE, &i, bssidx);
 }
+
+uint8_t rsnKeyMgmtWpa3for6g(IN struct ADAPTER *prAdapter,
+	IN enum ENUM_PARAM_AUTH_MODE eAuthMode,
+	IN uint8_t bssidx,
+	IN struct BSS_DESC *prBss);
 
 uint8_t rsnKeyMgmtWpa3for6g(IN struct ADAPTER *prAdapter,
 	IN enum ENUM_PARAM_AUTH_MODE eAuthMode,
@@ -1437,6 +1446,9 @@ void rsnGenerateWpaNoneIE(IN struct ADAPTER *prAdapter,
 }				/* rsnGenerateWpaNoneIE */
 
 uint32_t _addWPAIE_impl(IN struct ADAPTER *prAdapter,
+	IN OUT struct MSDU_INFO *prMsduInfo);
+
+uint32_t _addWPAIE_impl(IN struct ADAPTER *prAdapter,
 	IN OUT struct MSDU_INFO *prMsduInfo)
 {
 	struct P2P_SPECIFIC_BSS_INFO *prP2pSpecBssInfo;
@@ -1491,6 +1503,9 @@ uint32_t _addWPAIE_impl(IN struct ADAPTER *prAdapter,
 	return FALSE;
 }
 
+
+uint32_t _addRSNIE_impl(IN struct ADAPTER *prAdapter,
+	IN OUT struct MSDU_INFO *prMsduInfo);
 
 uint32_t _addRSNIE_impl(IN struct ADAPTER *prAdapter,
 	IN OUT struct MSDU_INFO *prMsduInfo)
@@ -2205,6 +2220,9 @@ void rsnParserCheckForRSNCCMPPSK(struct ADAPTER *prAdapter,
  * \return (none)
  */
 /*----------------------------------------------------------------------------*/
+void rsnGenMicErrorEvent(IN struct ADAPTER *prAdapter,
+	IN struct STA_RECORD *prSta, IN u_int8_t fgFlags);
+
 void rsnGenMicErrorEvent(IN struct ADAPTER *prAdapter,
 	IN struct STA_RECORD *prSta, IN u_int8_t fgFlags)
 {
@@ -3083,6 +3101,11 @@ static u_int8_t rsnCheckWpaRsnInfo(struct BSS_INFO *prBss,
 u_int8_t rsnCheckSecurityModeChanged(
 			struct ADAPTER *prAdapter,
 			struct BSS_INFO *prBssInfo,
+			struct BSS_DESC *prBssDesc);
+
+u_int8_t rsnCheckSecurityModeChanged(
+			struct ADAPTER *prAdapter,
+			struct BSS_INFO *prBssInfo,
 			struct BSS_DESC *prBssDesc)
 {
 	uint8_t ucBssIdx = 0;
@@ -3299,6 +3322,9 @@ void rsnPmfGenerateTimeoutIE(struct ADAPTER *prAdapter,
  */
 /*----------------------------------------------------------------------------*/
 uint8_t rsnApCheckSaQueryTimeout(IN struct ADAPTER
+				 *prAdapter, IN struct STA_RECORD *prStaRec);
+
+uint8_t rsnApCheckSaQueryTimeout(IN struct ADAPTER
 				 *prAdapter, IN struct STA_RECORD *prStaRec)
 {
 	struct BSS_INFO *prBssInfo;
@@ -3360,6 +3386,9 @@ uint8_t rsnApCheckSaQueryTimeout(IN struct ADAPTER
  *      Called by: AAA module, Handle TX SAQ request
  */
 /*----------------------------------------------------------------------------*/
+void rsnApStartSaQueryTimer(IN struct ADAPTER *prAdapter,
+			    IN unsigned long ulParamPtr);
+
 void rsnApStartSaQueryTimer(IN struct ADAPTER *prAdapter,
 			    IN unsigned long ulParamPtr)
 {
@@ -3489,6 +3518,9 @@ void rsnApStartSaQuery(IN struct ADAPTER *prAdapter,
  */
 /*----------------------------------------------------------------------------*/
 void rsnApStopSaQuery(IN struct ADAPTER *prAdapter,
+		      IN struct STA_RECORD *prStaRec);
+
+void rsnApStopSaQuery(IN struct ADAPTER *prAdapter,
 		      IN struct STA_RECORD *prStaRec)
 {
 	cnmTimerStopTimer(prAdapter, &prStaRec->rPmfCfg.rSAQueryTimer);
@@ -3507,6 +3539,9 @@ void rsnApStopSaQuery(IN struct ADAPTER *prAdapter,
  *      Called by: AAA module, Handle Rx action request
  */
 /*----------------------------------------------------------------------------*/
+void rsnApSaQueryRequest(IN struct ADAPTER *prAdapter,
+			 IN struct SW_RFB *prSwRfb);
+
 void rsnApSaQueryRequest(IN struct ADAPTER *prAdapter,
 			 IN struct SW_RFB *prSwRfb)
 {

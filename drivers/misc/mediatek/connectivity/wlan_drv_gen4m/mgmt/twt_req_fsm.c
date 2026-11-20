@@ -140,6 +140,14 @@ twtReqFsmSteps(
 	struct STA_RECORD *prStaRec,
 	enum _ENUM_TWT_REQUESTER_STATE_T eNextState,
 	uint8_t ucTWTFlowId,
+	void *pParam);
+
+void
+twtReqFsmSteps(
+	struct ADAPTER *prAdapter,
+	struct STA_RECORD *prStaRec,
+	enum _ENUM_TWT_REQUESTER_STATE_T eNextState,
+	uint8_t ucTWTFlowId,
 	void *pParam)
 {
 	uint32_t rStatus = WLAN_STATUS_FAILURE;

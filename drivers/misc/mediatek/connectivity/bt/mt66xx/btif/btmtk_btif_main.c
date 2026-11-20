@@ -106,7 +106,7 @@ static int32_t bt_reg_init(void)
 
 			ret = of_address_to_resource(node, i, &res);
 			if (ret) {
-				BTMTK_ERR("Get Reg Index(%d) failed", i);
+				BTMTK_ERR("get Reg Index(%d) failed", i);
 				return -1;
 			}
 
@@ -115,13 +115,13 @@ static int32_t bt_reg_init(void)
 				(unsigned long) of_iomap(node, i);
 			of_get_address(node, i, &(base_addr->size), &flag);
 
-			BTMTK_DBG("Get Index(%d) phy(0x%zx) baseAddr=(0x%zx) size=(0x%zx)",
+			BTMTK_DBG("get Index(%d) phy(0x%zx) baseAddr=(0x%zx) size=(0x%llx)",
 				i, base_addr->phy_addr, base_addr->vir_addr,
 				base_addr->size);
 		}
 
 	} else {
-		BTMTK_ERR("[%s] can't find CONSYS compatible node\n", __func__);
+		BTMTK_ERR("%s: can't find CONSYS compatible node", __func__);
 		return -1;
 	}
 	return 0;
@@ -138,6 +138,8 @@ static int32_t bt_reg_init(void)
  *    N/A
  *
  */
+int32_t bt_reg_deinit(void);
+
 int32_t bt_reg_deinit(void)
 {
 	int i = 0;
@@ -152,6 +154,8 @@ int32_t bt_reg_deinit(void)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+int btmtk_disp_notify_cb(struct notifier_block *nb, unsigned long value, void *v);
+
 int btmtk_disp_notify_cb(struct notifier_block *nb, unsigned long value, void *v)
 {
 	int *data = (int *)v;
@@ -178,11 +182,11 @@ int btmtk_disp_notify_cb(struct notifier_block *nb, unsigned long value, void *v
 		}
 
 		if(cif_dev->bt_state == FUNC_ON) {
-			BTMTK_INFO("%s: blank state [%ld]->[%ld], and send cmd", __func__, cif_dev->blank_state, new_state);
+			BTMTK_INFO("%s: blank state [%d]->[%d], and send cmd", __func__, cif_dev->blank_state, new_state);
 			cif_dev->blank_state = new_state;
 			btmtk_intcmd_wmt_blank_status(g_sbdev->hdev, cif_dev->blank_state);
 		} else {
-			BTMTK_INFO("%s: blank state [%ld]->[%ld]", __func__, cif_dev->blank_state, new_state);
+			BTMTK_INFO("%s: blank state [%d]->[%d]", __func__, cif_dev->blank_state, new_state);
 			cif_dev->blank_state = new_state;
 		}
 	}
@@ -220,11 +224,11 @@ static int btmtk_fb_notifier_callback(struct notifier_block
 	}
 
 	if(cif_dev->bt_state == FUNC_ON) {
-		BTMTK_INFO("%s: blank state [%ld]->[%ld], and send cmd", __func__, cif_dev->blank_state, new_state);
+		BTMTK_INFO("%s: blank state [%d]->[%d], and send cmd", __func__, cif_dev->blank_state, new_state);
 		cif_dev->blank_state = new_state;
 		btmtk_intcmd_wmt_blank_status(g_sbdev->hdev, cif_dev->blank_state);
 	} else {
-		BTMTK_INFO("%s: blank state [%ld]->[%ld]", __func__, cif_dev->blank_state, new_state);
+		BTMTK_INFO("%s: blank state [%d]->[%d]", __func__, cif_dev->blank_state, new_state);
 		cif_dev->blank_state = new_state;
 	}
 end:
@@ -239,9 +243,9 @@ static int btmtk_fb_notify_register(void)
 
 	ret = fb_register_client(&bt_fb_notifier);
 	if (ret)
-		BTMTK_ERR("Register wlan_fb_notifier failed:%d\n", ret);
+		BTMTK_ERR("register wlan_fb_notifier failed:%d", ret);
 	else
-		BTMTK_DBG("Register wlan_fb_notifier succeed\n");
+		BTMTK_DBG("register wlan_fb_notifier succeed");
 
 	return ret;
 }
@@ -265,6 +269,7 @@ static int btmtk_pm_notifier_callback(struct notifier_block *nb,
 				BTMTK_INFO("%s: bt_state[%d], event[%ld]",
 						__func__, cif_dev->bt_state, event);
 			}
+			fallthrough;
 		case PM_POST_SUSPEND:
 			if(cif_dev->bt_state == FUNC_ON) {
 				bt_dump_bgfsys_suspend_wakeup_debug();
@@ -286,9 +291,9 @@ static int btmtk_pm_notify_register(void)
 
 	ret = register_pm_notifier(&bt_pm_notifier);
 	if (ret)
-		BTMTK_ERR("Register bt_pm_notifier failed:%d\n", ret);
+		BTMTK_ERR("register bt_pm_notifier failed:%d", ret);
 	else
-		BTMTK_DBG("Register bt_pm_notifier succeed\n");
+		BTMTK_DBG("register bt_pm_notifier succeed");
 
 	return ret;
 }
@@ -352,6 +357,8 @@ void btmtk_cif_dump_rxd_backtrace(void)
  *     N/A
  *
  */
+void btmtk_cif_dump_btif_tx_no_rsp(void);
+
 void btmtk_cif_dump_btif_tx_no_rsp(void)
 {
 	BTMTK_INFO("%s", __func__);
@@ -402,10 +409,10 @@ static int32_t btmtk_cif_fw_own_clr(void)
 		if ((retry & 0xF) == 0) { /* retry % 16 == 0 */
 			if (((retry < LPCR_POLLING_RTY_LMT && retry >= LPCR_MASS_DUMP_LMT) || (retry == 2048) || (retry == 32)) &&
 				((retry & 0x1F) == 0)) {
-				BTMTK_WARN("[DRV_OWN] failed in %d ms, retry[%d]", (LPCR_POLLING_RTY_LMT - retry) / 2, retry);
+				BTMTK_WARN("failed in %d ms, retry[%d]", (LPCR_POLLING_RTY_LMT - retry) / 2, retry);
 				bt_dump_cif_own_cr();
 				REG_WRITEL(BGF_LPCTL, BGF_HOST_CLR_FW_OWN_B);
-				BTMTK_WARN("[DRV_OWN] dump after write:");
+				BTMTK_WARN("dump after write:");
 				bt_dump_cif_own_cr();
 			} else
 				REG_WRITEL(BGF_LPCTL, BGF_HOST_CLR_FW_OWN_B);
@@ -422,7 +429,7 @@ static int32_t btmtk_cif_fw_own_clr(void)
 	} while (retry > 0);
 
 	if (retry == 0) {
-		BTMTK_ERR("[DRV_OWN] (Wakeup) failed!");
+		BTMTK_ERR("(wakeup) failed!");
 		if (g_bt_trace_pt)
 			bt_dbg_tp_evt(TP_ACT_DRVOWN_OUT, TP_PAR_FAIL, 0, NULL);
 		bt_dump_cif_own_cr();
@@ -434,7 +441,7 @@ static int32_t btmtk_cif_fw_own_clr(void)
 
 	if (g_bt_trace_pt)
 		bt_dbg_tp_evt(TP_ACT_DRVOWN_OUT, TP_PAR_PASS, 0, NULL);
-	BTMTK_DBG("[DRV_OWN] (Wakeup) success, retry[%d]", retry);
+	BTMTK_DBG("(wakeup) success, retry[%d]", retry);
 	return 0;
 }
 
@@ -460,10 +467,10 @@ static int32_t btmtk_cif_fw_own_set(void)
 		if ((retry & 0xF) == 0) { /* retry % 16 == 0 */
 			if (((retry < LPCR_POLLING_RTY_LMT && retry >= LPCR_MASS_DUMP_LMT) || (retry == 2048) || (retry == 32)) &&
 				((retry & 0x1F) == 0)) {
-				BTMTK_WARN("[FW_OWN] failed in %d ms, retry[%d]", (LPCR_POLLING_RTY_LMT - retry) / 2, retry);
+				BTMTK_WARN("failed in %d ms, retry[%d]", (LPCR_POLLING_RTY_LMT - retry) / 2, retry);
 				bt_dump_cif_own_cr();
 				REG_WRITEL(BGF_LPCTL, BGF_HOST_SET_FW_OWN_B);
-				BTMTK_WARN("[FW_OWN] dump after write:");
+				BTMTK_WARN("dump after write:");
 				bt_dump_cif_own_cr();
 			} else
 				REG_WRITEL(BGF_LPCTL, BGF_HOST_SET_FW_OWN_B);
@@ -490,7 +497,7 @@ static int32_t btmtk_cif_fw_own_set(void)
 	} while (retry > 0);
 
 	if (retry == 0) {
-		BTMTK_ERR("[FW_OWN] (Sleep) failed!");
+		BTMTK_ERR("(sleep) failed!");
 		if (g_bt_trace_pt)
 			bt_dbg_tp_evt(TP_ACT_FWOWN_OUT, TP_PAR_FAIL, 0, NULL);
 		bt_dump_cif_own_cr();
@@ -502,7 +509,7 @@ static int32_t btmtk_cif_fw_own_set(void)
 
 	if (g_bt_trace_pt)
 		bt_dbg_tp_evt(TP_ACT_FWOWN_OUT, TP_PAR_PASS, 0, NULL);
-	BTMTK_DBG("[FW_OWN] (Sleep) success, retry[%d]", retry);
+	BTMTK_DBG("(sleep) success, retry[%d]", retry);
 	return 0;
 }
 
@@ -528,6 +535,8 @@ void bt_notify_state(void)
  *     0 if success, otherwise error code
  *
  */
+void bt_report_hw_error(void);
+
 void bt_report_hw_error(void)
 {
 	const uint8_t HCI_EVT_HW_ERROR[] = {0x04, 0x10, 0x01, 0x00};
@@ -560,7 +569,7 @@ int bt_chip_reset_flow(enum bt_reset_level rst_level,
 	}
 
 	if (retry == 0) {
-		BTMTK_ERR("Unable to trigger pre_chip_rst due to unfinish previous reset");
+		BTMTK_ERR("unable to trigger pre_chip_rst due to unfinish previous reset");
 		return -1;
 	}
 
@@ -752,6 +761,8 @@ static int32_t bt_do_calibration(void)
 
 }
 
+void btmtk_time_change_notify(void);
+
 void btmtk_time_change_notify(void)
 {
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;
@@ -826,6 +837,8 @@ bool bt_pwrctrl_support(void)
 	return TRUE;
 }
 
+int bt_pwrctrl_level_change_cb(enum conn_pwr_event_type type, void *data);
+
 int bt_pwrctrl_level_change_cb(enum conn_pwr_event_type type, void *data)
 {
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;
@@ -839,10 +852,10 @@ int bt_pwrctrl_level_change_cb(enum conn_pwr_event_type type, void *data)
 		btmtk_inttrx_DynamicAdjustTxPower(HCI_CMD_DY_ADJ_PWR_SET, set_val, NULL, FALSE);
 		break;
 	case CONN_PWR_EVENT_MAX_TEMP:
-		BTMTK_ERR("Unsupport now");
+		BTMTK_ERR("unsupport now");
 		break;
 	default:
-		BTMTK_ERR("Uknown type for power throttling callback");
+		BTMTK_ERR("uknown type for power throttling callback");
 		break;
 	}
 
@@ -870,6 +883,8 @@ void bt_pwrctrl_post_off(void)
 	conn_pwr_drv_post_off(CONN_PWR_DRV_BT);
 }
 
+void bt_pwrctrl_register_evt(void);
+
 void bt_pwrctrl_register_evt(void)
 {
 	if (!bt_pwrctrl_support())
@@ -892,7 +907,7 @@ static void btmtk_btif_enter_deep_idle(struct work_struct *pwork)
 	struct btif_deepidle_ctrl *idle_ctrl = &cif_dev->btif_dpidle_ctrl;
 
 	down(&idle_ctrl->sem);
-	BTMTK_DBG("[DP_IDLE] idle = [%d]", idle_ctrl->is_dpidle);
+	BTMTK_DBG("idle = [%d]", idle_ctrl->is_dpidle);
 	if (idle_ctrl->is_dpidle) {
 		ret = mtk_wcn_btif_dpidle_ctrl(g_btif_id, BTIF_DPIDLE_ENABLE);
 		bt_release_wake_lock(&cif_dev->psm.wake_lock);
@@ -901,11 +916,11 @@ static void btmtk_btif_enter_deep_idle(struct work_struct *pwork)
 		if (g_bt_trace_pt)
 			bt_dbg_tp_evt(TP_ACT_DPI_ENTER, (ret == 0 ? TP_PAR_PASS : TP_PAR_FAIL), 0, NULL);
 		if (ret)
-			BTMTK_ERR("[DP_IDLE] BTIF enter dpidle failed(%d)", ret);
+			BTMTK_ERR("BTIF enter dpidle failed(%d)", ret);
 		else
-			BTMTK_DBG("[DP_IDLE] BTIF enter dpidle success");
+			BTMTK_DBG("BTIF enter dpidle success");
 	} else
-		BTMTK_DBG("[DP_IDLE] idle is set to false, skip this time");
+		BTMTK_DBG("idle is set to false, skip this time");
 	up(&idle_ctrl->sem);
 }
 
@@ -928,12 +943,12 @@ static int32_t btmtk_btif_dpidle_ctrl(u_int8_t enable)
 	down(&idle_ctrl->sem);
 
 	if (!g_btif_id) {
-		BTMTK_ERR("[DP_IDLE] NULL BTIF ID reference!");
+		BTMTK_ERR("NULL BTIF ID reference!");
 		return -1;
 	}
 
 	if(idle_ctrl->task != NULL) {
-		BTMTK_DBG("[DP_IDLE] enable = %d", enable);
+		BTMTK_DBG("enable = %d", enable);
 		/* 1. Remove active timer, and remove a unschedule timer does no harm */
 		cancel_delayed_work(&idle_ctrl->work);
 
@@ -947,18 +962,18 @@ static int32_t btmtk_btif_dpidle_ctrl(u_int8_t enable)
 			if (g_bt_trace_pt)
 				bt_dbg_tp_evt(TP_ACT_DPI_EXIT, (ret == 0 ? TP_PAR_PASS : TP_PAR_FAIL), 0, NULL);
 			if (ret)
-				BTMTK_ERR("[DP_IDLE] BTIF exit dpidle failed(%d)", ret);
+				BTMTK_ERR("BTIF exit dpidle failed(%d)", ret);
 			else
-				BTMTK_DBG("[DP_IDLE] BTIF exit dpidle success");
+				BTMTK_DBG("BTIF exit dpidle success");
 		} else {
-			BTMTK_DBG("[DP_IDLE] create timer for enable deep idle");
+			BTMTK_DBG("create timer for enable deep idle");
 			idle_ctrl->is_dpidle = TRUE;
 			/* enable deep idle, schedule a timer */
 			queue_delayed_work(idle_ctrl->task, &idle_ctrl->work,
 						(BTIF_IDLE_WAIT_TIME * HZ) >> 10);
 		}
 	} else {
-		BTMTK_INFO("[DP_IDLE] idle_ctrl->task already cancelled!");
+		BTMTK_INFO("idle_ctrl->task already cancelled!");
 	}
 
 	up(&idle_ctrl->sem);
@@ -966,6 +981,8 @@ static int32_t btmtk_btif_dpidle_ctrl(u_int8_t enable)
 }
 
 #endif
+
+int btmtk_cif_rx_packet_handler(struct hci_dev *hdev, struct sk_buff *skb);
 
 int btmtk_cif_rx_packet_handler(struct hci_dev *hdev, struct sk_buff *skb)
 {
@@ -1007,7 +1024,7 @@ static int32_t _check_wmt_evt_over_hci(
 
 	/* Sanity check */
 	if (len < (HCI_EVT_HDR_LEN + WMT_EVT_HDR_LEN)) {
-		BTMTK_ERR("Incomplete packet len %d for WMT event!", len);
+		BTMTK_ERR("incomplete packet len %d for WMT event!", len);
 		goto check_error;
 	}
 
@@ -1026,14 +1043,14 @@ static int32_t _check_wmt_evt_over_hci(
 	param_len = (p_wmt_evt->hdr.param_len[1] << 8) | (p_wmt_evt->hdr.param_len[0]);
 	/* Sanity check */
 	if (len < (HCI_EVT_HDR_LEN + WMT_EVT_HDR_LEN + param_len)) {
-		BTMTK_ERR("Incomplete packet len %d for WMT event!", len);
+		BTMTK_ERR("incomplete packet len %d for WMT event!", len);
 		goto check_error;
 	}
 
 	switch (opcode) {
 	case WMT_OPCODE_FUNC_CTRL:
 		if (param_len != sizeof(p_wmt_evt->params.u.func_ctrl_evt)) {
-			BTMTK_ERR("Unexpected event param len %d for WMT OpCode 0x%x!",
+			BTMTK_ERR("unexpected event param len %d for WMT OpCode 0x%x!",
 				      param_len, opcode);
 			break;
 		}
@@ -1044,13 +1061,13 @@ static int32_t _check_wmt_evt_over_hci(
 		sub_opcode = p_wmt_evt->params.u.rf_cal_evt.subop;
 
 		if (sub_opcode != 0x03) {
-			BTMTK_ERR("Unexpected subop 0x%x for WMT OpCode 0x%x!",
+			BTMTK_ERR("unexpected subop 0x%x for WMT OpCode 0x%x!",
 				      sub_opcode, opcode);
 			break;
 		}
 
 		if (param_len != sizeof(p_wmt_evt->params.u.rf_cal_evt)) {
-			BTMTK_ERR("Unexpected event param len %d for WMT OpCode 0x%x!",
+			BTMTK_ERR("unexpected event param len %d for WMT OpCode 0x%x!",
 				      param_len, opcode);
 			break;
 		}
@@ -1061,7 +1078,7 @@ static int32_t _check_wmt_evt_over_hci(
 		status = 0x00; // todo: need more check?
 		break;
 	default:
-		BTMTK_ERR("Unknown WMT OpCode 0x%x!", opcode);
+		BTMTK_ERR("unknown WMT OpCode 0x%x!", opcode);
 		break;
 	}
 
@@ -1071,7 +1088,7 @@ static int32_t _check_wmt_evt_over_hci(
 	}
 
 check_error:
-	BTMTK_DBG_RAW(buffer, len, "Dump data: ");
+	BTMTK_DBG_RAW(buffer, len, "dump data: ");
 	return WMT_EVT_INVALID;
 }
 
@@ -1087,6 +1104,8 @@ check_error:
  *    return check  - 0 for checking success, -1 otherwise
  *
  */
+int32_t btmtk_dispatch_event(struct sk_buff *skb);
+
 int32_t btmtk_dispatch_event(struct sk_buff *skb)
 {
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;
@@ -1120,6 +1139,8 @@ int32_t btmtk_dispatch_event(struct sk_buff *skb)
 }
 
 
+void btmtk_check_event_timeout(struct sk_buff *skb);
+
 void btmtk_check_event_timeout(struct sk_buff *skb)
 {
 	u8 event_code = skb->data[0];
@@ -1129,7 +1150,7 @@ void btmtk_check_event_timeout(struct sk_buff *skb)
 		cmd_opcode = (skb->data[3] << 8) | skb->data[4];
 
 		if (cmd_list_check(cmd_opcode) == FALSE) {
-			BTMTK_ERR("%s No match command %4X", __func__, cmd_opcode);
+			BTMTK_ERR("%s no match command %4X", __func__, cmd_opcode);
 		} else {
 			cmd_list_remove(cmd_opcode);
 			update_command_response_workqueue();
@@ -1138,7 +1159,7 @@ void btmtk_check_event_timeout(struct sk_buff *skb)
 		cmd_opcode = (skb->data[4] << 8) | skb->data[5];
 
 		if (cmd_list_check(cmd_opcode) == FALSE) {
-			BTMTK_ERR("%s No match command %4X", __func__, cmd_opcode);
+			BTMTK_ERR("%s no match command %4X", __func__, cmd_opcode);
 		} else {
 			cmd_list_remove(cmd_opcode);
 			update_command_response_workqueue();
@@ -1206,7 +1227,7 @@ int32_t btmtk_wcn_btif_open(void)
 	/* 2. Register rx callback */
 	ret = mtk_wcn_btif_rx_cb_register(g_btif_id, (MTK_WCN_BTIF_RX_CB)bt_receive_data_cb);
 	if (ret) {
-		BTMTK_ERR("Register rx cb to BTIF failed(%d)", ret);
+		BTMTK_ERR("register rx cb to BTIF failed(%d)", ret);
 		mtk_wcn_btif_close(g_btif_id);
 		return -1;
 	}
@@ -1271,6 +1292,8 @@ int32_t btmtk_wcn_btif_close(void)
 
 }
 
+int btmtk_btif_open(struct hci_dev *hdev);
+
 int btmtk_btif_open(struct hci_dev *hdev)
 {
 	int ret = 0;
@@ -1282,6 +1305,8 @@ int btmtk_btif_open(struct hci_dev *hdev)
 	return ret;
 }
 
+int btmtk_btif_close(struct hci_dev *hdev);
+
 int btmtk_btif_close(struct hci_dev *hdev)
 {
 	int ret = 0;
@@ -1292,6 +1317,8 @@ int btmtk_btif_close(struct hci_dev *hdev)
 	bt_release_wake_lock(&cif_dev->psm.wake_lock);
 	return ret;
 }
+
+int btmtk_btif_send_cmd_if(struct btmtk_dev *bdev, struct sk_buff *skb, int delay, int retry, int pkt_type);
 
 int btmtk_btif_send_cmd_if(struct btmtk_dev *bdev, struct sk_buff *skb, int delay, int retry, int pkt_type)
 {
@@ -1306,6 +1333,11 @@ int btmtk_btif_send_cmd_if(struct btmtk_dev *bdev, struct sk_buff *skb, int dela
 #endif
 	return 0;
 }
+
+int btmtk_btif_send_and_recv(struct btmtk_dev *bdev,
+		struct sk_buff *skb,
+		const uint8_t *event, const int event_len,
+		int delay, int retry, int pkt_type);
 
 int btmtk_btif_send_and_recv(struct btmtk_dev *bdev,
 		struct sk_buff *skb,
@@ -1411,8 +1443,8 @@ static void btmtk_btif_internal_trx_work(struct work_struct *work)
 
 	btmtk_send_data(g_sbdev->hdev, cif_dev->internal_trx.buf, cif_dev->internal_trx.buf_len);
 	if (!wait_for_completion_timeout(&cif_dev->internal_trx.comp, msecs_to_jiffies(2000)))
-		BTMTK_ERR("[internal trx] wait event timeout!");
-	BTMTK_INFO("[internal trx] complete");
+		BTMTK_ERR("wait event timeout!");
+	BTMTK_INFO("complete");
 	cif_dev->internal_trx.cb = NULL;
 }
 
@@ -1440,17 +1472,19 @@ int btmtk_btif_internal_trx (uint8_t *buf, uint32_t count,
 	}
 	memcpy(cif_dev->internal_trx.buf, buf, count);
 	cif_dev->internal_trx.buf_len = count;
-	BTMTK_INFO_RAW(buf, count, "[internal trx] len[%d] TX: ", count);
+	BTMTK_INFO_RAW(buf, count, "len[%d] TX: ", count);
 	if (is_blocking) {
 		btmtk_send_data(g_sbdev->hdev, cif_dev->internal_trx.buf, cif_dev->internal_trx.buf_len);
 		if (!wait_for_completion_timeout(&cif_dev->internal_trx.comp, msecs_to_jiffies(2000)))
-			BTMTK_ERR("[internal trx] wait event timeout!");
-		BTMTK_INFO("[internal trx] complete");
+			BTMTK_ERR("wait event timeout!");
+		BTMTK_INFO("complete");
 		cif_dev->internal_trx.cb = NULL;
 	} else
 		schedule_work(&internal_trx_work);
 	return 0;
 }
+
+int btmtk_btif_event_filter(struct btmtk_dev *bdev, struct sk_buff *skb);
 
 int btmtk_btif_event_filter(struct btmtk_dev *bdev, struct sk_buff *skb)
 {
@@ -1494,7 +1528,7 @@ int btmtk_btif_event_filter(struct btmtk_dev *bdev, struct sk_buff *skb)
 	if (cif_dev->internal_trx.cb != NULL) {
 		if (skb->data[0] == HCI_EVT_COMPLETE_EVT && \
 			cif_dev->internal_trx.opcode == skb->data[3] + (skb->data[4] << 8)) {
-			BTMTK_INFO_RAW(skb->data, (int)skb->len, "[internal trx] len[%d] RX: ", (int)skb->len);
+			BTMTK_INFO_RAW(skb->data, (int)skb->len, "len[%d] RX: ", (int)skb->len);
 			cif_dev->internal_trx.cb(skb->data, (int)skb->len);
 			complete(&cif_dev->internal_trx.comp);
 			if (!cif_dev->internal_trx.send_to_stack)
@@ -1541,7 +1575,7 @@ static int btmtk_cif_probe(struct platform_device *pdev)
 	cif_dev->pdev = pdev;
 	g_sbdev->chip_id = 0x6631;
 	if (bt_reg_init()) {
-		BTMTK_ERR("%s: Error allocating memory remap");
+		BTMTK_ERR("%s: error allocating memory remap", __func__);
 		return -1;
 	}
 
@@ -1579,7 +1613,7 @@ static int btmtk_cif_probe(struct platform_device *pdev)
 	cif_dev->blank_state = WMT_PARA_SCREEN_ON;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 	if (mtk_disp_notifier_register("btmtk_disp_notifier", &btmtk_disp_notifier)) {
-		BTMTK_ERR("Register mtk_disp_notifier failed\n");
+		BTMTK_ERR("register mtk_disp_notifier failed");
 	}
 #else
 	btmtk_fb_notify_register();
@@ -1605,7 +1639,7 @@ static int btmtk_cif_probe(struct platform_device *pdev)
 	/* Set ICB cif state */
 	btmtk_set_chip_state((void *)g_sbdev, BTMTK_STATE_WORKING);
 
-	BTMTK_INFO("%s: Done", __func__);
+	BTMTK_INFO("%s: done", __func__);
 	return 0;
 }
 
@@ -1712,7 +1746,7 @@ int btmtk_cif_register(void)
 		return -1;
 	}
 #endif
-	BTMTK_INFO("%s: Done", __func__);
+	BTMTK_INFO("%s: done", __func__);
 	return 0;
 }
 

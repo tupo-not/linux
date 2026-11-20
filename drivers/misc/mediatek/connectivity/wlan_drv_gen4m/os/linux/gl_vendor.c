@@ -920,6 +920,8 @@ nla_put_failure:
 
 
 #if CFG_SUPPORT_LLS
+void dumpLinkStatsIface(struct STATS_LLS_WIFI_IFACE_STAT *iface);
+
 void dumpLinkStatsIface(struct STATS_LLS_WIFI_IFACE_STAT *iface)
 {
 	DBGLOG(REQ, INFO, "Dump iface");
@@ -957,6 +959,9 @@ void dumpLinkStatsIface(struct STATS_LLS_WIFI_IFACE_STAT *iface)
 }
 
 void dumpLinkStatsAc(struct STATS_LLS_WMM_AC_STAT *ac_stat,
+		enum ENUM_STATS_LLS_AC ac);
+
+void dumpLinkStatsAc(struct STATS_LLS_WMM_AC_STAT *ac_stat,
 		enum ENUM_STATS_LLS_AC ac)
 {
 	static const char * const s[STATS_LLS_WIFI_AC_MAX] = {
@@ -982,6 +987,8 @@ void dumpLinkStatsAc(struct STATS_LLS_WMM_AC_STAT *ac_stat,
 }
 
 
+void dumpLinkStatsPeerInfo(struct STATS_LLS_PEER_INFO *peer, uint32_t idx);
+
 void dumpLinkStatsPeerInfo(struct STATS_LLS_PEER_INFO *peer, uint32_t idx)
 {
 	static const char * const type[STATS_LLS_WIFI_PEER_INVALID + 1] = {
@@ -997,6 +1004,8 @@ void dumpLinkStatsPeerInfo(struct STATS_LLS_PEER_INFO *peer, uint32_t idx)
 			peer->num_rate);
 }
 
+
+void dumpLinkStatsRate(struct STATS_LLS_RATE_STAT *rate, uint32_t idx);
 
 void dumpLinkStatsRate(struct STATS_LLS_RATE_STAT *rate, uint32_t idx)
 {
@@ -1019,6 +1028,8 @@ void dumpLinkStatsRate(struct STATS_LLS_RATE_STAT *rate, uint32_t idx)
 			rate->retries_long);
 }
 
+void dumpLinkStatsRadio(struct STATS_LLS_WIFI_RADIO_STAT *radio, uint32_t idx);
+
 void dumpLinkStatsRadio(struct STATS_LLS_WIFI_RADIO_STAT *radio, uint32_t idx)
 {
 	DBGLOG(REQ, INFO, "Radio(%u) %d %u %u %u %p %u %u %u %u %u %u %u [%u]",
@@ -1038,6 +1049,8 @@ void dumpLinkStatsRadio(struct STATS_LLS_WIFI_RADIO_STAT *radio, uint32_t idx)
 			radio->num_channels);
 }
 
+void dumpLinkStatsChannel(struct STATS_LLS_CHANNEL_STAT *channel, uint32_t idx);
+
 void dumpLinkStatsChannel(struct STATS_LLS_CHANNEL_STAT *channel, uint32_t idx)
 {
 	DBGLOG(REQ, INFO, "Channel(%u) %u %d %d %d %u %u",
@@ -1050,6 +1063,9 @@ void dumpLinkStatsChannel(struct STATS_LLS_CHANNEL_STAT *channel, uint32_t idx)
 			channel->cca_busy_time);
 }
 
+
+struct STA_RECORD *find_peer_starec(struct ADAPTER *prAdapter,
+		struct STATS_LLS_PEER_INFO *peer_info);
 
 struct STA_RECORD *find_peer_starec(struct ADAPTER *prAdapter,
 		struct STATS_LLS_PEER_INFO *peer_info)
@@ -1076,6 +1092,10 @@ struct STA_RECORD *find_peer_starec(struct ADAPTER *prAdapter,
 
 uint32_t receivedMpduCount(struct STA_RECORD *sta_rec,
 		struct STATS_LLS_RATE_STAT *rate_stats,
+		uint32_t ofdm_idx, uint32_t cck_idx);
+
+uint32_t receivedMpduCount(struct STA_RECORD *sta_rec,
+		struct STATS_LLS_RATE_STAT *rate_stats,
 		uint32_t ofdm_idx, uint32_t cck_idx)
 {
 	struct STATS_LLS_WIFI_RATE *rate = &rate_stats->rate;
@@ -1096,6 +1116,9 @@ uint32_t receivedMpduCount(struct STA_RECORD *sta_rec,
 		n = sta_rec->u4RxMpduHE[rate->nss][rate->bw][rate->rateMcsIdx];
 	return n;
 }
+
+uint8_t isValidRate(struct STATS_LLS_RATE_STAT *rate_stats,
+	uint32_t ofdm_idx, uint32_t cck_idx);
 
 uint8_t isValidRate(struct STATS_LLS_RATE_STAT *rate_stats,
 	uint32_t ofdm_idx, uint32_t cck_idx)
@@ -1156,6 +1179,9 @@ invalid_rate:
  *          num_rate
  *          STATS_LLS_RATE_STAT[] <- up to 200 () *rx_mpdu
  */
+uint32_t fill_peer_info(uint8_t *dst, struct PEER_INFO_RATE_STAT *src,
+		uint32_t *num_peers, struct ADAPTER *prAdapter);
+
 uint32_t fill_peer_info(uint8_t *dst, struct PEER_INFO_RATE_STAT *src,
 		uint32_t *num_peers, struct ADAPTER *prAdapter)
 {
@@ -1270,6 +1296,9 @@ uint32_t fill_peer_info(uint8_t *dst, struct PEER_INFO_RATE_STAT *src,
  *          STATS_LLS_RATE_STAT[] <- up to 200 () *rx_mpdu
  */
 uint32_t fill_iface(uint8_t *dst, struct HAL_LLS_FULL_REPORT *src,
+		struct ADAPTER *prAdapter);
+
+uint32_t fill_iface(uint8_t *dst, struct HAL_LLS_FULL_REPORT *src,
 		struct ADAPTER *prAdapter)
 {
 	struct STATS_LLS_WIFI_IFACE_STAT *iface;
@@ -1311,6 +1340,9 @@ uint32_t fill_iface(uint8_t *dst, struct HAL_LLS_FULL_REPORT *src,
  *     num_channels
  *     STATS_LLS_CHANNEL_STAT[] <-- up to 46 (2.4 + 5G; 6G will be more)
  */
+uint32_t fill_radio(uint8_t *dst, struct WIFI_RADIO_CHANNEL_STAT *src,
+		uint32_t num_radio, struct ADAPTER *prAdapter);
+
 uint32_t fill_radio(uint8_t *dst, struct WIFI_RADIO_CHANNEL_STAT *src,
 		uint32_t num_radio, struct ADAPTER *prAdapter)
 {

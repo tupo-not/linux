@@ -104,7 +104,7 @@ static void consys_bus_hang_dump_c(void)
 	for (i = 0; i < ARRAY_SIZE(debug_setting); i++) {
 		CONSYS_REG_WRITE(debug_addr, debug_setting[i]);
 		value = CONSYS_REG_READ(out_addr);
-		pr_debug("[CONN_BUS_C] addr=0x%x value=0x%08x", debug_setting[i], value);
+		pr_debug("[CONN_BUS_C] addr=0x%lx value=0x%08lx", debug_setting[i], value);
 	}
 }
 
@@ -637,6 +637,12 @@ static int consys_is_host_csr(unsigned long addr)
 	return 0;
 }
 
+unsigned long consys_reg_validate_idx_n_offset(unsigned int idx, unsigned long offset);
+int consys_find_can_write_reg_mt6893(unsigned int *idx, unsigned long *offset);
+unsigned long consys_reg_get_phy_addr_by_idx_mt6893(unsigned int idx);
+unsigned long consys_reg_get_virt_addr_by_idx_mt6893(unsigned int idx);
+int consys_reg_get_chip_id_idx_offset_mt6893(unsigned int *idx, unsigned long *offset);
+
 unsigned long consys_reg_validate_idx_n_offset(unsigned int idx, unsigned long offset)
 {
 	unsigned long res;
@@ -654,7 +660,7 @@ unsigned long consys_reg_validate_idx_n_offset(unsigned int idx, unsigned long o
 	}
 
 	if (offset >= conn_reg_mt6893.reg_base_addr[idx].size) {
-		pr_warn("ConnReg failed: index(%d), offset(%d) over max size(%llu) %s\n",
+		pr_warn("ConnReg failed: index(%d), offset(%d) over max size(%llu)\n",
 				idx, (int) offset, conn_reg_mt6893.reg_base_addr[idx].size);
 		return 0;
 	}
@@ -671,7 +677,7 @@ int consys_find_can_write_reg_mt6893(unsigned int *idx, unsigned long *offset)
 	addr = conn_reg_mt6893.reg_base_addr[CONN_INFRA_RGU_BASE_INDEX].vir_addr;
 	max = conn_reg_mt6893.reg_base_addr[CONN_INFRA_RGU_BASE_INDEX].size;
 
-	pr_debug("[%s] addr=[%p]\n", __func__, addr);
+	pr_debug("[%s] addr=[%p]\n", __func__, (void *)addr);
 
 	for (i = 0x0; i < max; i += 0x4) {
 		ret = 0;
@@ -689,7 +695,7 @@ int consys_find_can_write_reg_mt6893(unsigned int *idx, unsigned long *offset)
 
 		CONSYS_REG_WRITE_MASK(addr_offset, before, mask);
 
-		pr_debug("[%s] addr=[%p] [%d]\n", __func__, addr_offset, ret);
+		pr_debug("[%s] addr=[%p] [%d]\n", __func__, (void *)addr_offset, ret);
 		if (ret == 0) {
 			*idx = CONN_INFRA_RGU_BASE_INDEX;
 			*offset = i;
@@ -749,7 +755,7 @@ int consys_reg_init(struct platform_device *pdev)
 				(unsigned long) of_iomap(node, i);
 			of_get_address(node, i, &(base_addr->size), &flag);
 
-			pr_debug("Get Index(%d-%s) phy(0x%zx) baseAddr=(0x%zx) size=(0x%zx)",
+			pr_debug("Get Index(%d-%s) phy(0x%zx) baseAddr=(0x%zx) size=(0x%llx)",
 				i, consys_base_addr_index_to_str[i], base_addr->phy_addr,
 				base_addr->vir_addr, base_addr->size);
 		}

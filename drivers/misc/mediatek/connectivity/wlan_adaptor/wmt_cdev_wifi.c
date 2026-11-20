@@ -133,12 +133,16 @@ struct PARAM_CUSTOM_P2P_SET_STRUCT {
 typedef int32_t(*set_p2p_mode) (struct net_device *netdev, struct PARAM_CUSTOM_P2P_SET_STRUCT p2pmode);
 
 static set_p2p_mode pf_set_p2p_mode;
+void register_set_p2p_mode_handler(set_p2p_mode handler);
+
 void register_set_p2p_mode_handler(set_p2p_mode handler)
 {
 	WIFI_INFO_FUNC("(pid %d) register set p2p mode handler %p\n", current->pid, handler);
 	pf_set_p2p_mode = handler;
 }
 EXPORT_SYMBOL(register_set_p2p_mode_handler);
+
+void update_driver_loaded_status(uint8_t loaded);
 
 void update_driver_loaded_status(uint8_t loaded)
 {
@@ -168,11 +172,15 @@ static int atoh(const char *str, uint32_t *hval)
 	return 0;
 }
 
+void set_low_latency_mode(const char *mode);
+
 void set_low_latency_mode(const char *mode)
 {
 	atoh(mode, &low_latency_mode);
 	WIFI_INFO_FUNC("LLM : %d\n", low_latency_mode);
 }
+
+uint32_t get_low_latency_mode(void);
 
 uint32_t get_low_latency_mode(void)
 {
@@ -181,10 +189,14 @@ uint32_t get_low_latency_mode(void)
 }
 EXPORT_SYMBOL(get_low_latency_mode);
 
+void set_wifi_standalone_log_mode(const int mode);
+
 void set_wifi_standalone_log_mode(const int mode)
 {
 	wifi_standalone_log_mode = mode;
 }
+
+uint32_t get_wifi_standalone_log_mode(void);
 
 uint32_t get_wifi_standalone_log_mode(void)
 {
@@ -193,24 +205,32 @@ uint32_t get_wifi_standalone_log_mode(void)
 EXPORT_SYMBOL(get_wifi_standalone_log_mode);
 
 #if (CFG_ANDORID_CONNINFRA_SUPPORT == 1)
+void update_driver_reset_status(uint8_t fgIsResetting);
+
 void update_driver_reset_status(uint8_t fgIsResetting)
 {
 	WIFI_INFO_FUNC("update_driver_reset_status: %d\n", fgIsResetting);
 	driver_resetting = fgIsResetting;
 }
 EXPORT_SYMBOL(update_driver_reset_status);
+int32_t get_wifi_powered_status(void);
+
 int32_t get_wifi_powered_status(void)
 {
 	WIFI_INFO_FUNC("wifi power status : %d\n", powered);
 	return powered;
 }
 EXPORT_SYMBOL(get_wifi_powered_status);
+int32_t get_wifi_process_status(void);
+
 int32_t get_wifi_process_status(void)
 {
 	WIFI_INFO_FUNC("wifi write status: %d\n", write_processing);
 	return write_processing;
 }
 EXPORT_SYMBOL(get_wifi_process_status);
+void update_pre_cal_status(uint8_t fgIsPreCal);
+
 void update_pre_cal_status(uint8_t fgIsPreCal)
 {
 	WIFI_INFO_FUNC("update_pre_cal_status: %d\n", fgIsPreCal);
@@ -224,6 +244,8 @@ uint8_t get_pre_cal_status(void)
 }
 EXPORT_SYMBOL(get_pre_cal_status);
 #endif
+
+int32_t update_wr_mtx_down_up_status(uint8_t ucDownUp, uint8_t ucIsBlocking);
 
 int32_t update_wr_mtx_down_up_status(uint8_t ucDownUp, uint8_t ucIsBlocking)
 {
@@ -252,6 +274,8 @@ enum ENUM_WLAN_DRV_BUF_TYPE_T {
 typedef uint8_t(*file_buf_handler)(void *ctx, const char __user *buf, uint16_t length);
 static file_buf_handler buf_handler[BUF_TYPE_NUM];
 static void *buf_handler_ctx[BUF_TYPE_NUM];
+void register_file_buf_handler(file_buf_handler handler, void *handler_ctx, uint8_t ucType);
+
 void register_file_buf_handler(file_buf_handler handler, void *handler_ctx, uint8_t ucType)
 {
 	if (ucType < BUF_TYPE_NUM) {
@@ -275,6 +299,8 @@ EXPORT_SYMBOL(register_file_buf_handler);
  *  Receiving RESET_START message
  */
 /*-----------------------------------------------------------------*/
+int32_t wifi_reset_start(void);
+
 int32_t wifi_reset_start(void)
 {
 	struct net_device *netdev = NULL;
@@ -312,6 +338,8 @@ EXPORT_SYMBOL(wifi_reset_start);
  *  Receiving RESET_END/RESET_END_FAIL message
  */
 /*-----------------------------------------------------------------*/
+int32_t wifi_reset_end(enum ENUM_RESET_STATUS status);
+
 int32_t wifi_reset_end(enum ENUM_RESET_STATUS status)
 {
 	struct net_device *netdev = NULL;
@@ -411,6 +439,8 @@ static int WIFI_close(struct inode *inode, struct file *file)
 
 	return 0;
 }
+
+ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
 
 ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
 {
@@ -898,11 +928,15 @@ static void WIFI_exit(void)
 
 #ifdef MTK_WCN_BUILT_IN_DRIVER
 
+int mtk_wcn_wmt_wifi_init(void);
+
 int mtk_wcn_wmt_wifi_init(void)
 {
 	return WIFI_init();
 }
 EXPORT_SYMBOL(mtk_wcn_wmt_wifi_init);
+
+void mtk_wcn_wmt_wifi_exit(void);
 
 void mtk_wcn_wmt_wifi_exit(void)
 {

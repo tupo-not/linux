@@ -372,7 +372,7 @@ static void inline bt_dump_bgfsys_host_csr(void)
 	pos = &g_dump_cr_buffer[0];
 	end = pos + BT_CR_DUMP_BUF_SIZE - 1;
 
-	BTMTK_INFO("[BGF host csr] Count = 11");
+	BTMTK_INFO("count = 11");
 	for (i = 0x22C; i <= 0x244; i+=4) {
 		value = REG_READL(CON_REG_SPM_BASE_ADDR + i);
 		ret = snprintf(pos, (end - pos + 1), "%08x ", value);
@@ -409,7 +409,7 @@ static void inline bt_dump_bgfsys_mcusys_flag(void)
 	value |= (switch_flag << 2);
 	REG_WRITEL(CON_REG_SPM_BASE_ADDR + 0xA0, value);
 
-	BTMTK_INFO("[BGF MCUSYS debug flag] Count = (%d)", cr_count);
+	BTMTK_INFO("count = (%d)", cr_count);
 	for (i = 0x00020101; i <= 0x00706F01; i+= 0x20200, count++) {
 		REG_WRITEL(CON_REG_SPM_BASE_ADDR + 0xA8, i);
 		value = REG_READL(CON_REG_SPM_BASE_ADDR + 0x22C);
@@ -453,7 +453,7 @@ static void inline bt_dump_bgfsys_bus_flag(void)
 	} else
 		BTMTK_ERR("conninfra is not readable");
 
-	BTMTK_INFO("[BGF BUS debug flag] Count = (%d)", cr_count);
+	BTMTK_INFO("count = (%d)", cr_count);
 	for (i = 0x104A4901; i <= 0xA04A4901; i += 0x10000000) {
 		for (j = i; j <= i + 0x20200; j += 0x20200) {
 			REG_WRITEL(CON_REG_SPM_BASE_ADDR + 0xA8, j);
@@ -485,7 +485,7 @@ static void inline bt_dump_bgfsys_top_common_flag(void)
 	pos = &g_dump_cr_buffer[0];
 	end = pos + BT_CR_DUMP_BUF_SIZE - 1;
 
-	BTMTK_INFO("[BGF TOP common/bt part debug flag] Count = (%d)", cr_count);
+	BTMTK_INFO("count = (%d)", cr_count);
 	for (i = 0x80; i <= 0x93; i++, count++) {
 		REG_WRITEL(CON_REG_SPM_BASE_ADDR + 0xAC, i);
 		value = REG_READL(CON_REG_SPM_BASE_ADDR + 0x23C);
@@ -520,7 +520,7 @@ static void inline bt_dump_bgfsys_mcu_core_flag(void)
 	value |= (switch_flag << 2);
 	REG_WRITEL(CON_REG_SPM_BASE_ADDR + 0xA0, value);
 
-	BTMTK_INFO("[BGF MCU core debug flag] Count = (%d)", cr_count);
+	BTMTK_INFO("count = (%d)", cr_count);
 
 	/* gpr0 ~ ipc */
 	for (i = 0x3; i <= 0x25000003; i+= 0x1000000, count++) {
@@ -552,7 +552,7 @@ static inline void bt_dump_bgfsys_mcu_pc_log(void)
 	pos = &g_dump_cr_buffer[0];
 	end = pos + BT_CR_DUMP_BUF_SIZE - 1;
 
-	BTMTK_INFO("[BGF MCU PC log] Count = (%d)", cr_count);
+	BTMTK_INFO("count = (%d)", cr_count);
 	for (i = 0x00; i <= 0x2C; i++, count++) {
 		value = REG_READL(CON_REG_SPM_BASE_ADDR + 0xA0);
 		value &= 0xFFFFFF03; /* ignore [7:2] */
@@ -638,14 +638,14 @@ static inline void bt_dump_bgfsys_debug_cr(void)
 	if(bgfsys_check_conninfra_ready())
 		goto host_csr_only;
 
-	BTMTK_INFO("%s: M0 - M3 semaphore status:", __func__);
+	BTMTK_INFO("%s: m0 - M3 semaphore status:", __func__);
 	for (i = 0x18070400; i <= 0x18073400; i += 0x1000) {
 		value = bt_read_cr(i);
-		BTMTK_INFO("[0x%08x] = [0x%08x]", i, value);
+		BTMTK_INFO("reg 0x%08x = 0x%08x", i, value);
 	}
 
 	if (conninfra_reg_readable() && !bt_is_bgf_bus_timeout()) {
-		BTMTK_INFO("[BGF Bus hang debug CR (18800410~18000444)] Count = (14)");
+		BTMTK_INFO("count = (14)");
 
 		memset(g_dump_cr_buffer, 0, BT_CR_DUMP_BUF_SIZE);
 		pos = &g_dump_cr_buffer[0];
@@ -729,10 +729,10 @@ static inline void bt_dump_cif_own_cr(void)
 		value = REG_READL(CONN_INFRA_CFG_START + 0x0C04);
 		BTMTK_INFO("0x18001C04 = [0x%08x]", value);
 
-		BTMTK_INFO("%s: M0 - M3 semaphore status:", __func__);
+		BTMTK_INFO("%s: m0 - M3 semaphore status:", __func__);
 		for (i = 0x18070400; i <= 0x18073400; i += 0x1000) {
 			value = bt_read_cr(i);
-			BTMTK_INFO("[0x%08x] = [0x%08x]", i, value);
+			BTMTK_INFO("reg 0x%08x = 0x%08x", i, value);
 		}
 
 		value = bt_read_cr(0x18071400);
@@ -758,7 +758,7 @@ host_csr_only:
 	BTMTK_INFO("0x18060188 = [0x%08x]", value);
 
 	REG_WRITEL(CON_REG_SPM_BASE_ADDR + 0xA8, 0x194C4BA7);
-	BTMTK_INFO("Write [0x180600A8] = [0x194C4BA7]");
+	BTMTK_INFO("write [0x180600A8] = [0x194C4BA7]");
 
 	bt_dump_bgfsys_all();
 	/* release conn_infra force on */
@@ -829,10 +829,10 @@ static inline void bgfsys_power_on_dump_cr(void)
 	if(bgfsys_check_conninfra_ready())
 		goto host_csr_only;
 
-	BTMTK_INFO("%s: M0 - M3 semaphore status:", __func__);
+	BTMTK_INFO("%s: m0 - M3 semaphore status:", __func__);
 	for (i = 0x18070400; i <= 0x18073400; i += 0x1000) {
 		val_r = bt_read_cr(i);
-		BTMTK_INFO("[0x%08x] = [0x%08x]", i, val_r);
+		BTMTK_INFO("reg 0x%08x = 0x%08x", i, val_r);
 	}
 
 	BTMTK_INFO("%s: conninfra part:", __func__);
@@ -944,7 +944,7 @@ static void bgfsys_dump_conn_wt_slp_ctrl_reg(void)
 		iounmap(vir_addr);
 	} else
 		BTMTK_WARN("ioremap fail");
-	BTMTK_INFO("[%s] 0x18005008=[%x] 0x180050A8=[%x]", __func__, val1, val2);
+	BTMTK_INFO("%s: 0x18005008=[%x] 0x180050A8=[%x]", __func__, val1, val2);
 }
 
 /*********************************************************************

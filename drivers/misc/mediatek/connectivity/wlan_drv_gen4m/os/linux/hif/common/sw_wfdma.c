@@ -322,6 +322,8 @@ void halSwWfdmaGetDidx(struct GLUE_INFO *prGlueInfo, uint32_t *pu4Didx)
 	*pu4Didx = prSwWfdmaInfo->u4DmaIdx;
 }
 
+bool halSwWfdmaIsFull(struct GLUE_INFO *prGlueInfo);
+
 bool halSwWfdmaIsFull(struct GLUE_INFO *prGlueInfo)
 {
 	struct mt66xx_chip_info *prChipInfo;

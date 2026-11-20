@@ -76,7 +76,7 @@ static int32_t rx_pkt_enqueue(uint8_t *buffer, uint32_t length)
 	struct bt_ring_buffer_mgmt *p_ring = &cif_dev->rx_buffer;
 
 	if (length > HCI_MAX_FRAME_SIZE) {
-		BTMTK_ERR("Abnormal packet length %u, not enqueue!", length);
+		BTMTK_ERR("abnormal packet length %u, not enqueue!", length);
 		return -EINVAL;
 	}
 
@@ -104,7 +104,7 @@ int32_t rx_skb_enqueue(struct sk_buff *skb)
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;
 
 	if ( !skb || skb->len == 0) {
-		BTMTK_WARN("Inavlid data event, skip, skb = NULL or skb len = 0");
+		BTMTK_WARN("inavlid data event, skip, skb = NULL or skb len = 0");
 		ret = -1;
 		goto end;
 	}
@@ -250,6 +250,8 @@ void cmd_list_initialize(void)
 	spin_lock_init(&p_queue->lock);
 }
 
+struct bt_cmd_node* cmd_free_node(struct bt_cmd_node* node);
+
 struct bt_cmd_node* cmd_free_node(struct bt_cmd_node* node)
 {
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;
@@ -368,7 +370,7 @@ bool cmd_list_remove(uint16_t opcode)
 		prev = curr;
 		curr = curr->next;
 	}
-	BTMTK_ERR("%s No match opcode: %4X", __func__,opcode);
+	BTMTK_ERR("%s no match opcode: %4X", __func__,opcode);
 	spin_unlock(&p_queue->lock);
 	return FALSE;
 }
@@ -392,6 +394,8 @@ void cmd_list_destory(void)
 	spin_unlock(&p_queue->lock);
 }
 
+void command_response_timeout(struct work_struct *pwork);
+
 void command_response_timeout(struct work_struct *pwork)
 {
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;
@@ -401,7 +405,7 @@ void command_response_timeout(struct work_struct *pwork)
 	if (p_queue->size != 0) {
 		cif_dev->cmd_timeout_count++;
 
-		BTMTK_INFO("[%s] timeout [%d] sleep [%d] force_on [%d]", __func__,
+		BTMTK_INFO("%s: timeout [%d] sleep [%d] force_on [%d]", __func__,
 							cif_dev->cmd_timeout_count,
 							cif_dev->psm.sleep_flag,
 							cif_dev->psm.force_on);
@@ -410,7 +414,7 @@ void command_response_timeout(struct work_struct *pwork)
 		if (cif_dev->cmd_timeout_count == 4) {
 			spin_lock(&p_queue->lock);
 			if (p_queue->head)
-				BTMTK_ERR("%s,  !!!! Command Timeout !!!!  opcode 0x%4X", __func__, p_queue->head->opcode);
+				BTMTK_ERR("%s,  !!!! command Timeout !!!!  opcode 0x%4X", __func__, p_queue->head->opcode);
 			else
 				BTMTK_ERR("%s,  p_queue head is NULL", __func__);
 			spin_unlock(&p_queue->lock);
@@ -487,6 +491,8 @@ void cmd_workqueue_exit(void)
 #endif // (DRIVER_CMD_CHECK == 1)
 
 
+const char* direction_tostring (enum bt_direction_type direction_type);
+
 const char* direction_tostring (enum bt_direction_type direction_type) {
 	char *type[] = {"NONE", "TX", "RX"};
 	return type[direction_type];
@@ -536,6 +542,8 @@ void add_dump_packet(const uint8_t *buffer,const uint32_t length, enum bt_direct
 	spin_unlock(&d_queue->lock);
 }
 
+void print_dump_packet(struct bt_dump_packet *p_packet);
+
 void print_dump_packet(struct bt_dump_packet *p_packet){
 	int32_t copysize;
 	uint32_t sec, usec, ksec, knsec;
@@ -554,7 +562,7 @@ void print_dump_packet(struct bt_dump_packet *p_packet){
 	else
 		copysize = p_packet->data_length;
 
-	BTMTK_INFO_RAW(p_packet->data, copysize, "Dump: Time:%02d:%02d:%02d.%06u, Kernel Time:%6d.%09u, %s, Size = %3d, Data: "
+	BTMTK_INFO_RAW(p_packet->data, copysize, "dump: Time:%02d:%02d:%02d.%06u, Kernel Time:%6d.%09u, %s, Size = %3d, Data: "
 	, tm.tm_hour+8, tm.tm_min, tm.tm_sec, usec, ksec, knsec
 	, direction_tostring(p_packet->direction_type), p_packet->data_length);
 }

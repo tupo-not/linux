@@ -19,7 +19,7 @@ static int btmtk_buffer_mode_check_auto_mode(struct btmtk_buffer_mode_struct *bu
 
 	if (btmtk_efuse_read(buffer_mode->bdev, addr, &value)) {
 		BTMTK_WARN("read fail");
-		BTMTK_WARN("Use EEPROM Bin file mode");
+		BTMTK_WARN("use EEPROM Bin file mode");
 		buffer_mode->efuse_mode = BIN_FILE_MODE;
 		return -EIO;
 	}
@@ -30,7 +30,7 @@ static int btmtk_buffer_mode_check_auto_mode(struct btmtk_buffer_mode_struct *bu
 		buffer_mode->efuse_mode = EFUSE_MODE;
 	} else {
 		BTMTK_WARN("get efuse[1]: 0x%02x", value);
-		BTMTK_WARN("Use EEPROM Bin file mode");
+		BTMTK_WARN("use EEPROM Bin file mode");
 		buffer_mode->efuse_mode = BIN_FILE_MODE;
 	}
 
@@ -60,7 +60,7 @@ static int btmtk_buffer_mode_parse_mode(uint8_t *buf, size_t buf_size)
 	/* find string */
 	p = ptr = strstr(p_buf, BUFFER_MODE_SWITCH_FIELD);
 	if (!ptr) {
-		BTMTK_ERR("Can't find %s", BUFFER_MODE_SWITCH_FIELD);
+		BTMTK_ERR("can't find %s", BUFFER_MODE_SWITCH_FIELD);
 		goto out;
 	}
 
@@ -69,14 +69,14 @@ static int btmtk_buffer_mode_parse_mode(uint8_t *buf, size_t buf_size)
 		while ((*p == ' ') && (p != p_buf))
 			p--;
 		if (*p == '#') {
-			BTMTK_ERR("It's not EEPROM - Bin file mode");
+			BTMTK_ERR("it's not EEPROM - Bin file mode");
 			goto out;
 		}
 	}
 
 	/* check access mode */
 	ptr += (strlen(BUFFER_MODE_SWITCH_FIELD) + 1);
-	BTMTK_WARN("It's EEPROM bin mode: %c", *ptr);
+	BTMTK_WARN("it's EEPROM bin mode: %c", *ptr);
 	efuse_mode = *ptr - '0';
 	if (efuse_mode > AUTO_MODE)
 		efuse_mode = EFUSE_MODE;
@@ -94,7 +94,7 @@ static int btmtk_buffer_mode_set_addr(struct btmtk_buffer_mode_struct *buffer_mo
 	if (buffer_mode->bt0_mac[0] == 0x00 && buffer_mode->bt0_mac[1] == 0x00
 		&& buffer_mode->bt0_mac[2] == 0x00 && buffer_mode->bt0_mac[3] == 0x00
 		&& buffer_mode->bt0_mac[4] == 0x00 && buffer_mode->bt0_mac[5] == 0x00) {
-		BTMTK_WARN("BDAddr is Zero, not set");
+		BTMTK_WARN("bDAddr is Zero, not set");
 	} else {
 		cmd[SET_ADDRESS_CMD_PAYLOAD_OFFSET + 5] = buffer_mode->bt0_mac[0];
 		cmd[SET_ADDRESS_CMD_PAYLOAD_OFFSET + 4] = buffer_mode->bt0_mac[1];
@@ -103,7 +103,7 @@ static int btmtk_buffer_mode_set_addr(struct btmtk_buffer_mode_struct *buffer_mo
 		cmd[SET_ADDRESS_CMD_PAYLOAD_OFFSET + 1] = buffer_mode->bt0_mac[4];
 		cmd[SET_ADDRESS_CMD_PAYLOAD_OFFSET] = buffer_mode->bt0_mac[5];
 
-		BTMTK_INFO_RAW(cmd, SET_ADDRESS_CMD_LEN, "%s: Send", __func__);
+		BTMTK_INFO_RAW(cmd, SET_ADDRESS_CMD_LEN, "%s: send", __func__);
 		ret = btmtk_main_send_cmd(buffer_mode->bdev,
 				cmd, SET_ADDRESS_CMD_LEN,
 				event, SET_ADDRESS_EVT_LEN,
@@ -125,7 +125,7 @@ static int btmtk_buffer_mode_set_radio(struct btmtk_buffer_mode_struct *buffer_m
 	cmd[SET_RADIO_CMD_EDR_MAX_OFFSET] = buffer_mode->bt0_radio.radio_1 & 0x3F;		/* edr_max_pwr */
 	cmd[SET_RADIO_CMD_EDR_MODE_OFFSET] = (buffer_mode->bt0_radio.radio_0 & 0xC0) >> 6;	/* edr_pwr_mode */
 
-	BTMTK_INFO_RAW(cmd, SET_RADIO_CMD_LEN, "%s: Send", __func__);
+	BTMTK_INFO_RAW(cmd, SET_RADIO_CMD_LEN, "%s: send", __func__);
 	ret = btmtk_main_send_cmd(buffer_mode->bdev,
 			cmd, SET_RADIO_CMD_LEN,
 			event, SET_RADIO_EVT_LEN,
@@ -143,7 +143,7 @@ static int btmtk_buffer_mode_set_group_boundary(struct btmtk_buffer_mode_struct 
 
 	memcpy(&cmd[SET_GRP_CMD_PAYLOAD_OFFSET], buffer_mode->bt0_ant0_grp_boundary, BUFFER_MODE_GROUP_LENGTH);
 
-	BTMTK_INFO_RAW(cmd, SET_GRP_CMD_LEN, "%s: Send", __func__);
+	BTMTK_INFO_RAW(cmd, SET_GRP_CMD_LEN, "%s: send", __func__);
 	ret = btmtk_main_send_cmd(buffer_mode->bdev,
 			cmd, SET_GRP_CMD_LEN,
 			event, SET_GRP_EVT_LEN,
@@ -162,7 +162,7 @@ static int btmtk_buffer_mode_set_power_offset(struct btmtk_buffer_mode_struct *b
 
 	memcpy(&cmd[SET_PWR_OFFSET_CMD_PAYLOAD_OFFSET], buffer_mode->bt0_ant0_pwr_offset, BUFFER_MODE_CAL_LENGTH);
 
-	BTMTK_INFO_RAW(cmd, SET_PWR_OFFSET_CMD_LEN, "%s: Send", __func__);
+	BTMTK_INFO_RAW(cmd, SET_PWR_OFFSET_CMD_LEN, "%s: send", __func__);
 	ret = btmtk_main_send_cmd(buffer_mode->bdev,
 			cmd, SET_PWR_OFFSET_CMD_LEN,
 			event, SET_PWR_OFFSET_EVT_LEN,

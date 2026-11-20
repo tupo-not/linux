@@ -448,6 +448,9 @@ uint8_t twtGetTxInfoFlowId(
 }
 
 uint8_t twtGetRxSetupFlowId(
+	struct _IE_TWT_T *prTWTIE);
+
+uint8_t twtGetRxSetupFlowId(
 	struct _IE_TWT_T *prTWTIE)
 {
 	uint16_t u2ReqType;

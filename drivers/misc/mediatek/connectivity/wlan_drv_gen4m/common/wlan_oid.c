@@ -8638,10 +8638,10 @@ wlanoidSetAcpiDevicePowerState(IN struct ADAPTER *
 		break;
 	case ParamDeviceStateD1:
 		DBGLOG(REQ, INFO, "Set Power State: D1\n");
-	/* no break here */
+		fallthrough;
 	case ParamDeviceStateD2:
 		DBGLOG(REQ, INFO, "Set Power State: D2\n");
-	/* no break here */
+		fallthrough;
 	case ParamDeviceStateD3:
 		DBGLOG(REQ, INFO, "Set Power State: D3\n");
 		fgRetValue = nicpmSetAcpiPowerD3(prAdapter);
@@ -12114,15 +12114,15 @@ wlanoidSetNvramWrite(IN struct ADAPTER *prAdapter,
 			rNvRwInfo->info.rNvram.u2NvIndex,
 			rNvRwInfo->info.rNvram.u2NvData & 0x00FF);
 
-		DBGLOG(REQ, INFO, "status(%d),index=%#X, data=%#02X\n",
-			fgStatus,
-			rNvRwInfo->info.rNvram.u2NvIndex,
-			rNvRwInfo->info.rNvram.u2NvData);
+	DBGLOG(REQ, INFO, "status(%d),index=%#X, data=%#02X\n",
+		fgStatus,
+		rNvRwInfo->info.rNvram.u2NvIndex,
+		rNvRwInfo->info.rNvram.u2NvData);
 
-		/*update nvram to firmware*/
-		if (fgStatus == TRUE)
-			wlanLoadManufactureData(prAdapter,
-				kalGetConfiguration(prAdapter->prGlueInfo));
+	/*update nvram to firmware*/
+	if (fgStatus == TRUE)
+		wlanLoadManufactureData(prAdapter,
+			kalGetConfiguration(prAdapter->prGlueInfo));
 	else
 		fgStatus = kalCfgDataWrite16(prAdapter->prGlueInfo,
 				     rNvRwInfo->info.rEeprom.ucEepromIndex <<

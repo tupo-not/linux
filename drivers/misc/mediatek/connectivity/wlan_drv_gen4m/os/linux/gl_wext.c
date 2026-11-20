@@ -787,6 +787,9 @@ u_int8_t wextSrchDesiredWAPIIE(IN uint8_t *pucIEStart,
  */
 /*----------------------------------------------------------------------------*/
 u_int8_t wextIsDesiredHS20IE(IN uint8_t *pucCurIE,
+			     IN int32_t i4TotalIeLen);
+
+u_int8_t wextIsDesiredHS20IE(IN uint8_t *pucCurIE,
 			     IN int32_t i4TotalIeLen)
 {
 	int32_t i4InfoElemLen;
@@ -822,6 +825,9 @@ u_int8_t wextIsDesiredHS20IE(IN uint8_t *pucCurIE,
  * \note
  */
 /*----------------------------------------------------------------------------*/
+u_int8_t wextIsDesiredInterworkingIE(IN uint8_t *pucCurIE,
+				     IN int32_t i4TotalIeLen);
+
 u_int8_t wextIsDesiredInterworkingIE(IN uint8_t *pucCurIE,
 				     IN int32_t i4TotalIeLen)
 {
@@ -865,6 +871,9 @@ u_int8_t wextIsDesiredInterworkingIE(IN uint8_t *pucCurIE,
  */
 /*----------------------------------------------------------------------------*/
 u_int8_t wextIsDesiredAdvProtocolIE(IN uint8_t *pucCurIE,
+				    IN int32_t i4TotalIeLen);
+
+u_int8_t wextIsDesiredAdvProtocolIE(IN uint8_t *pucCurIE,
 				    IN int32_t i4TotalIeLen)
 {
 	int32_t i4InfoElemLen;
@@ -896,6 +905,9 @@ u_int8_t wextIsDesiredAdvProtocolIE(IN uint8_t *pucCurIE,
  * \note
  */
 /*----------------------------------------------------------------------------*/
+u_int8_t wextIsDesiredRoamingConsortiumIE(
+	IN uint8_t *pucCurIE, IN int32_t i4TotalIeLen);
+
 u_int8_t wextIsDesiredRoamingConsortiumIE(
 	IN uint8_t *pucCurIE, IN int32_t i4TotalIeLen)
 {
@@ -3780,6 +3792,9 @@ static int wext_set_country(IN struct net_device *prNetDev,
  *
  */
 /*----------------------------------------------------------------------------*/
+int wext_get_priv(IN struct net_device *prNetDev,
+		  OUT struct iw_point *prData);
+
 int wext_get_priv(IN struct net_device *prNetDev,
 		  OUT struct iw_point *prData)
 {

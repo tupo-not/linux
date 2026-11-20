@@ -191,6 +191,7 @@ void StatsEnvRxTime2Host(IN struct ADAPTER *prAdapter,
 		u2UdpDstPort = (pucEth[22] << 8) | pucEth[23];
 		if (g_u2RxUdpPort && (u2UdpSrcPort != g_u2RxUdpPort))
 			break;
+		fallthrough;
 	case IP_PRO_ICMP:
 		u4TotalRx++;
 		if (g_u4RxDelayThreshold && (u4Delay <= g_u4RxDelayThreshold)) {
@@ -287,6 +288,7 @@ void StatsEnvTxTime2Hif(IN struct ADAPTER *prAdapter,
 		u2UdpSrcPort = (pucEthBody[20] << 8) | pucEthBody[21];
 		if (g_u2TxUdpPort && (u2UdpDstPort != g_u2TxUdpPort))
 			break;
+		fallthrough;
 	case IP_PRO_ICMP:
 		u4TotalTx++;
 		if (g_u4TxDelayThreshold
@@ -305,6 +307,9 @@ void StatsEnvTxTime2Hif(IN struct ADAPTER *prAdapter,
 		break;
 	}
 }
+
+void statsParseARPInfo(struct sk_buff *skb,
+		uint8_t *pucEthBody, uint8_t eventType);
 
 void statsParseARPInfo(struct sk_buff *skb,
 		uint8_t *pucEthBody, uint8_t eventType)
@@ -337,6 +342,9 @@ void statsParseARPInfo(struct sk_buff *skb,
 		break;
 	}
 }
+
+void statsParseUDPInfo(struct sk_buff *skb, uint8_t *pucEthBody,
+		uint8_t eventType, uint16_t u2IpId);
 
 void statsParseUDPInfo(struct sk_buff *skb, uint8_t *pucEthBody,
 		uint8_t eventType, uint16_t u2IpId)
@@ -448,6 +456,9 @@ void statsParseUDPInfo(struct sk_buff *skb, uint8_t *pucEthBody,
 }
 
 void statsParseIPV4Info(struct sk_buff *skb,
+		uint8_t *pucEthBody, uint8_t eventType);
+
+void statsParseIPV4Info(struct sk_buff *skb,
 		uint8_t *pucEthBody, uint8_t eventType)
 {
 	/* IP header without options */
@@ -497,6 +508,8 @@ void statsParseIPV4Info(struct sk_buff *skb,
 		statsParseUDPInfo(skb, pucEthBody, eventType, u2IpId);
 	}
 }
+
+void statsLogData(uint8_t eventType, enum WAKE_DATA_TYPE wakeType);
 
 void statsLogData(uint8_t eventType, enum WAKE_DATA_TYPE wakeType)
 {

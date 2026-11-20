@@ -4971,6 +4971,11 @@ static int32_t HQA_MPSStop(struct net_device *prNetDev,
 int32_t hqa_genStatBandReport(
 	u_int8_t band_idx,
 	u_int8_t blk_idx,
+	struct hqa_rx_stat_band_format *rx_st_band);
+
+int32_t hqa_genStatBandReport(
+	u_int8_t band_idx,
+	u_int8_t blk_idx,
 	struct hqa_rx_stat_band_format *rx_st_band)
 {
 
@@ -5091,6 +5096,11 @@ int32_t hqa_genStatBandReport(
 int32_t hqa_genStatPathReport(
 	u_int8_t band_idx,
 	u_int8_t blk_idx,
+	struct hqa_rx_stat_path_format *rx_st_path);
+
+int32_t hqa_genStatPathReport(
+	u_int8_t band_idx,
+	u_int8_t blk_idx,
 	struct hqa_rx_stat_path_format *rx_st_path)
 {
 	int32_t ret = 0;
@@ -5136,6 +5146,11 @@ int32_t hqa_genStatPathReport(
 int32_t hqa_genStatUserReport(
 	u_int8_t band_idx,
 	u_int8_t blk_idx,
+	struct hqa_rx_stat_user_format *rx_st_user);
+
+int32_t hqa_genStatUserReport(
+	u_int8_t band_idx,
+	u_int8_t blk_idx,
 	struct hqa_rx_stat_user_format *rx_st_user)
 {
 	int32_t ret = WLAN_STATUS_SUCCESS;
@@ -5152,6 +5167,11 @@ int32_t hqa_genStatUserReport(
 
 	return ret;
 }
+
+int32_t hqa_genStatCommReport(
+	u_int8_t band_idx,
+	u_int8_t blk_idx,
+	struct hqa_rx_stat_comm_format *rx_st_comm);
 
 int32_t hqa_genStatCommReport(
 	u_int8_t band_idx,
@@ -5182,6 +5202,13 @@ int32_t hqa_genStatCommReport(
 	return ret;
 }
 
+
+int32_t hqa_getRxStatisticsByType(
+	struct GLUE_INFO *prGlueInfo,
+	u_int8_t band_idx,
+	u_int8_t blk_idx,
+	u_int8_t test_rx_stat_cat,
+	struct hqa_rx_stat_u *st);
 
 int32_t hqa_getRxStatisticsByType(
 	struct GLUE_INFO *prGlueInfo,

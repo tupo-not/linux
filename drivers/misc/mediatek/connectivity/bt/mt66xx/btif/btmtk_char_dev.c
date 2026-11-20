@@ -112,7 +112,7 @@ static size_t bt_report_hw_error(uint8_t *buf, size_t count, loff_t *f_pos)
 	size_t bytes_rest, bytes_read;
 
 	if (*f_pos == 0)
-		BTMTK_INFO("Send Hardware Error event to stack to restart Bluetooth");
+		BTMTK_INFO("send Hardware Error event to stack to restart Bluetooth");
 
 	bytes_rest = sizeof(HCI_EVT_HW_ERROR) - *f_pos;
 	bytes_read = count < bytes_rest ? count : bytes_rest;
@@ -227,13 +227,13 @@ static ssize_t __bt_write(uint8_t *buf, size_t count, uint32_t flags)
 		  * native program should not call write with no delay.
 		  */
 		if (flags & O_NONBLOCK) {
-			BTMTK_WARN("Non-blocking write, no space is available!");
+			BTMTK_WARN("non-blocking write, no space is available!");
 			retval = -EAGAIN;
 		} else {
 			/*TODO: blocking write case */
 		}
 	} else
-		BTMTK_DBG("Write bytes %d/%zd", retval, count);
+		BTMTK_DBG("write bytes %d/%zd", retval, count);
 
 	return retval;
 }
@@ -256,7 +256,7 @@ static ssize_t BT_write_iter(struct kiocb *iocb, struct iov_iter *from)
 
 	if (count > 0) {
 		if (count > BT_BUFFER_SIZE) {
-			BTMTK_WARN("Shorten write count from %zd to %d", count, BT_BUFFER_SIZE);
+			BTMTK_WARN("shorten write count from %zd to %d", count, BT_BUFFER_SIZE);
 			count = BT_BUFFER_SIZE;
 		}
 
@@ -290,7 +290,7 @@ static ssize_t BT_write(struct file *filp, const char __user *buf, size_t count,
 
 	if (count > 0) {
 		if (count > BT_BUFFER_SIZE) {
-			BTMTK_WARN("Shorten write count from %zd to %d", count, BT_BUFFER_SIZE);
+			BTMTK_WARN("shorten write count from %zd to %d", count, BT_BUFFER_SIZE);
 			count = BT_BUFFER_SIZE;
 		}
 
@@ -325,7 +325,7 @@ static ssize_t BT_read(struct file *filp, char __user *buf, size_t count, loff_t
 			 * O_NONBLOCK is specified during open().
 			 */
 			if (filp->f_flags & O_NONBLOCK) {
-				BTMTK_ERR("Non-blocking read, whole chip reset occurs! rstflag=%d", rstflag);
+				BTMTK_ERR("non-blocking read, whole chip reset occurs! rstflag=%d", rstflag);
 				retval = -EIO;
 				goto OUT;
 			}
@@ -354,7 +354,7 @@ static ssize_t BT_read(struct file *filp, char __user *buf, size_t count, loff_t
 	}
 
 	if (count > BT_BUFFER_SIZE) {
-		BTMTK_WARN("Shorten read count from %zd to %d", count, BT_BUFFER_SIZE);
+		BTMTK_WARN("shorten read count from %zd to %d", count, BT_BUFFER_SIZE);
 		count = BT_BUFFER_SIZE;
 	}
 
@@ -369,7 +369,7 @@ static ssize_t BT_read(struct file *filp, char __user *buf, size_t count, loff_t
 			 * O_NONBLOCK is specified during open().
 			 */
 			if (filp->f_flags & O_NONBLOCK) {
-				BTMTK_ERR("Non-blocking read, no data is available!");
+				BTMTK_ERR("non-blocking read, no data is available!");
 				retval = -EAGAIN;
 				goto OUT;
 			}
@@ -547,7 +547,7 @@ int BT_init(void)
 	/* Allocate char device */
 	alloc_err = register_chrdev_region(dev, BT_devs, BT_DRIVER_NAME);
 	if (alloc_err) {
-		BTMTK_ERR("Failed to register device numbers");
+		BTMTK_ERR("failed to register device numbers");
 		goto alloc_error;
 	}
 

@@ -328,6 +328,10 @@ void asicConnac2xFillInitCmdTxd(
 
 void asicConnac2xWfdmaDummyCrRead(
 	struct ADAPTER *prAdapter,
+	u_int8_t *pfgResult);
+
+void asicConnac2xWfdmaDummyCrRead(
+	struct ADAPTER *prAdapter,
 	u_int8_t *pfgResult)
 {
 	u_int32_t u4RegValue = 0;
@@ -1764,6 +1768,9 @@ void asicConnac2xInitRxdHook(
 #endif
 }
 
+
+void nicRxProcessRxvLinkStats(IN struct ADAPTER *prAdapter,
+	IN struct SW_RFB *prRetSwRfb, uint32_t u4RxVector0);
 
 void nicRxProcessRxvLinkStats(IN struct ADAPTER *prAdapter,
 	IN struct SW_RFB *prRetSwRfb, uint32_t u4RxVector0)

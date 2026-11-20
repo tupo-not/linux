@@ -198,6 +198,11 @@ twtPlannerDrvAgrtFind(struct ADAPTER *prAdapter, uint8_t ucBssIdx,
 uint32_t
 twtPlannerDrvAgrtAdd(struct ADAPTER *prAdapter,
 	uint8_t ucBssIdx, uint8_t ucFlowId,
+	struct _TWT_PARAMS_T *prTWTParams, uint8_t *pucIdx);
+
+uint32_t
+twtPlannerDrvAgrtAdd(struct ADAPTER *prAdapter,
+	uint8_t ucBssIdx, uint8_t ucFlowId,
 	struct _TWT_PARAMS_T *prTWTParams, uint8_t *pucIdx)
 {
 	uint8_t ucIdx;
@@ -219,6 +224,13 @@ twtPlannerDrvAgrtAdd(struct ADAPTER *prAdapter,
 
 	return rStatus;
 }
+
+uint32_t
+twtPlannerDrvAgrtModify(
+	struct ADAPTER *prAdapter,
+	uint8_t ucBssIdx, uint8_t ucFlowId,
+	struct _NEXT_TWT_INFO_T *prNextTWTInfo,
+	uint8_t *pucIdx, struct _TWT_PARAMS_T *prTWTParams);
 
 uint32_t
 twtPlannerDrvAgrtModify(
@@ -253,6 +265,11 @@ twtPlannerDrvAgrtModify(
 uint32_t
 twtPlannerDrvAgrtGet(struct ADAPTER *prAdapter,
 	uint8_t ucBssIdx, uint8_t ucFlowId,
+	uint8_t *pucIdx, struct _TWT_PARAMS_T *prTWTParams);
+
+uint32_t
+twtPlannerDrvAgrtGet(struct ADAPTER *prAdapter,
+	uint8_t ucBssIdx, uint8_t ucFlowId,
 	uint8_t *pucIdx, struct _TWT_PARAMS_T *prTWTParams)
 {
 	uint8_t ucIdx;
@@ -274,6 +291,9 @@ twtPlannerDrvAgrtGet(struct ADAPTER *prAdapter,
 }
 
 bool
+twtPlannerIsDrvAgrtExisting(struct ADAPTER *prAdapter);
+
+bool
 twtPlannerIsDrvAgrtExisting(struct ADAPTER *prAdapter)
 {
 	bool ret = FALSE;
@@ -290,6 +310,8 @@ twtPlannerIsDrvAgrtExisting(struct ADAPTER *prAdapter)
 
 	return ret;
 }
+
+void twtPlannerInit(IN struct _TWT_PLANNER_T *pTWTPlanner);
 
 void twtPlannerInit(IN struct _TWT_PLANNER_T *pTWTPlanner)
 {
@@ -875,6 +897,10 @@ void twtPlannerTearingdown(
 
 uint64_t twtPlannerAdjustNextTWT(struct ADAPTER *prAdapter,
 	uint8_t ucBssIdx, uint8_t ucFlowId,
+	uint64_t u8NextTWTOrig);
+
+uint64_t twtPlannerAdjustNextTWT(struct ADAPTER *prAdapter,
+	uint8_t ucBssIdx, uint8_t ucFlowId,
 	uint64_t u8NextTWTOrig)
 {
 	uint8_t ucAgrtTblIdx;
@@ -892,6 +918,11 @@ uint64_t twtPlannerAdjustNextTWT(struct ADAPTER *prAdapter,
 	return (rTWTParams.u8TWT +
 		(div_u64(u8Diff, u4WakeIntvl) + 1) * u4WakeIntvl);
 }
+
+void twtPlannerGetTsfDone(
+	struct ADAPTER *prAdapter,
+	struct CMD_INFO *prCmdInfo,
+	uint8_t *pucEventBuf);
 
 void twtPlannerGetTsfDone(
 	struct ADAPTER *prAdapter,

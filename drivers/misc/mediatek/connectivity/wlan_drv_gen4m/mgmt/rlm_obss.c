@@ -142,6 +142,9 @@ void rlmObssInit(struct ADAPTER *prAdapter)
  */
 /*----------------------------------------------------------------------------*/
 u_int8_t rlmObssUpdateChnlLists(struct ADAPTER *prAdapter,
+				struct SW_RFB *prSwRfb);
+
+u_int8_t rlmObssUpdateChnlLists(struct ADAPTER *prAdapter,
 				struct SW_RFB *prSwRfb)
 {
 	return TRUE;

@@ -1310,6 +1310,12 @@ void
 rlmDomainGetChnlList_V2(struct ADAPTER *prAdapter,
 			enum ENUM_BAND eSpecificBand, u_int8_t fgNoDfs,
 			uint8_t ucMaxChannelNum, uint8_t *pucNumOfChannel,
+			struct RF_CHANNEL_INFO *paucChannelList);
+
+void
+rlmDomainGetChnlList_V2(struct ADAPTER *prAdapter,
+			enum ENUM_BAND eSpecificBand, u_int8_t fgNoDfs,
+			uint8_t ucMaxChannelNum, uint8_t *pucNumOfChannel,
 			struct RF_CHANNEL_INFO *paucChannelList)
 {
 #if (CFG_SUPPORT_SINGLE_SKU == 1)
@@ -1644,6 +1650,8 @@ void rlmDomainSendCmd(struct ADAPTER *prAdapter)
  * @return (none)
  */
 /*----------------------------------------------------------------------------*/
+void rlmDomainSendDomainInfoCmd_V2(struct ADAPTER *prAdapter);
+
 void rlmDomainSendDomainInfoCmd_V2(struct ADAPTER *prAdapter)
 {
 #if (CFG_SUPPORT_SINGLE_SKU == 1)
@@ -1898,6 +1906,10 @@ void rlmDomainSendPassiveScanInfoCmd(struct ADAPTER *prAdapter)
  *         FALSE Illegal channel for current regulatory domain
  */
 /*----------------------------------------------------------------------------*/
+u_int8_t rlmDomainIsLegalChannel_V2(struct ADAPTER *prAdapter,
+				    enum ENUM_BAND eBand,
+				    uint8_t ucChannel);
+
 u_int8_t rlmDomainIsLegalChannel_V2(struct ADAPTER *prAdapter,
 				    enum ENUM_BAND eBand,
 				    uint8_t ucChannel)
@@ -2292,6 +2304,8 @@ rlmDomainIsValidRfSetting(struct ADAPTER *prAdapter,
  * This function coverts country code from alphabet chars to u32,
  * the caller need to pass country code chars and do size check
  */
+uint32_t rlmDomainAlpha2ToU32(uint8_t *pcAlpha2, uint8_t ucAlpha2Size);
+
 uint32_t rlmDomainAlpha2ToU32(uint8_t *pcAlpha2, uint8_t ucAlpha2Size)
 {
 	uint8_t ucIdx;
@@ -2308,6 +2322,9 @@ uint32_t rlmDomainAlpha2ToU32(uint8_t *pcAlpha2, uint8_t ucAlpha2Size)
 
 	return u4CountryCode;
 }
+
+uint8_t rlmDomainTxPwrLimitGetTableVersion(
+	uint8_t *pucBuf, uint32_t u4BufLen);
 
 uint8_t rlmDomainTxPwrLimitGetTableVersion(
 	uint8_t *pucBuf, uint32_t u4BufLen)
@@ -2351,6 +2368,10 @@ uint8_t rlmDomainTxPwrLimitGetTableVersion(
  * \retval FALSE Failure.
  */
 /*----------------------------------------------------------------------------*/
+u_int8_t rlmDomainTxPwrLimitGetCountryRange(
+	uint32_t u4CountryCode, uint8_t *pucBuf, uint32_t u4BufLen,
+	uint32_t *pu4CountryStart, uint32_t *pu4CountryEnd);
+
 u_int8_t rlmDomainTxPwrLimitGetCountryRange(
 	uint32_t u4CountryCode, uint8_t *pucBuf, uint32_t u4BufLen,
 	uint32_t *pu4CountryStart, uint32_t *pu4CountryEnd)
@@ -2399,6 +2420,9 @@ u_int8_t rlmDomainTxPwrLimitGetCountryRange(
 }
 
 u_int8_t rlmDomainTxPwrLimitSearchSection(const char *pSectionName,
+	uint8_t *pucBuf, uint32_t *pu4Pos, uint32_t u4BufEnd);
+
+u_int8_t rlmDomainTxPwrLimitSearchSection(const char *pSectionName,
 	uint8_t *pucBuf, uint32_t *pu4Pos, uint32_t u4BufEnd)
 {
 	uint32_t u4TmpPos = *pu4Pos;
@@ -2429,6 +2453,9 @@ u_int8_t rlmDomainTxPwrLimitSearchSection(const char *pSectionName,
 
 	return TRUE;
 }
+
+u_int8_t rlmDomainTxPwrLimitSectionEnd(uint8_t *pucBuf,
+	const char *pSectionName, uint32_t *pu4Pos, uint32_t u4BufEnd);
 
 u_int8_t rlmDomainTxPwrLimitSectionEnd(uint8_t *pucBuf,
 	const char *pSectionName, uint32_t *pu4Pos, uint32_t u4BufEnd)
@@ -2474,6 +2501,9 @@ u_int8_t rlmDomainTxPwrLimitSectionEnd(uint8_t *pucBuf,
 }
 
 int8_t rlmDomainTxPwrLimitGetChIdx(
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimit, uint8_t ucChannel);
+
+int8_t rlmDomainTxPwrLimitGetChIdx(
 	struct TX_PWR_LIMIT_DATA *pTxPwrLimit, uint8_t ucChannel)
 {
 	int8_t cIdx = 0;
@@ -2491,6 +2521,9 @@ int8_t rlmDomainTxPwrLimitGetChIdx(
 }
 
 u_int8_t rlmDomainTxPwrLimitIsTxBfBackoffSection(
+	uint8_t ucVersion, uint8_t ucSectionIdx);
+
+u_int8_t rlmDomainTxPwrLimitIsTxBfBackoffSection(
 	uint8_t ucVersion, uint8_t ucSectionIdx)
 {
 	if (ucVersion == 1 && ucSectionIdx == 8)
@@ -2498,6 +2531,10 @@ u_int8_t rlmDomainTxPwrLimitIsTxBfBackoffSection(
 
 	return FALSE;
 }
+u_int8_t rlmDomainTxPwrLimitLoadChannelSetting(
+	uint8_t ucVersion, uint8_t *pucBuf, uint32_t *pu4Pos, uint32_t u4BufEnd,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimit, uint8_t ucSectionIdx);
+
 u_int8_t rlmDomainTxPwrLimitLoadChannelSetting(
 	uint8_t ucVersion, uint8_t *pucBuf, uint32_t *pu4Pos, uint32_t u4BufEnd,
 	struct TX_PWR_LIMIT_DATA *pTxPwrLimit, uint8_t ucSectionIdx)
@@ -2646,6 +2683,9 @@ u_int8_t rlmDomainTxPwrLimitLoadChannelSetting(
 }
 
 void rlmDomainTxPwrLimitRemoveComments(
+	uint8_t *pucBuf, uint32_t u4BufLen);
+
+void rlmDomainTxPwrLimitRemoveComments(
 	uint8_t *pucBuf, uint32_t u4BufLen)
 {
 	uint32_t u4TmpPos = 0;
@@ -2668,6 +2708,11 @@ void rlmDomainTxPwrLimitRemoveComments(
 		u4TmpPos++;
 	}
 }
+
+u_int8_t rlmDomainTxPwrLimitLoad(
+	struct ADAPTER *prAdapter, uint8_t *pucBuf, uint32_t u4BufLen,
+	uint8_t ucVersion, uint32_t u4CountryCode,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimitData);
 
 u_int8_t rlmDomainTxPwrLimitLoad(
 	struct ADAPTER *prAdapter, uint8_t *pucBuf, uint32_t u4BufLen,
@@ -2724,6 +2769,11 @@ u_int8_t rlmDomainTxPwrLimitLoad(
 	DBGLOG(RLM, INFO, "Load %s finished\n", prFileName);
 	return TRUE;
 }
+
+void rlmDomainTxPwrLimitSetChValues(
+	uint8_t ucVersion,
+	struct CMD_CHANNEL_POWER_LIMIT_V2 *pCmd,
+	struct CHANNEL_TX_PWR_LIMIT *pChTxPwrLimit);
 
 void rlmDomainTxPwrLimitSetChValues(
 	uint8_t ucVersion,
@@ -2809,6 +2859,11 @@ void rlmDomainTxPwrLimitSetChValues(
 void rlmDomainTxPwrLimitPerRateSetChValues(
 	uint8_t ucVersion,
 	struct CMD_TXPOWER_CHANNEL_POWER_LIMIT_PER_RATE *pCmd,
+	struct CHANNEL_TX_PWR_LIMIT *pChTxPwrLimit);
+
+void rlmDomainTxPwrLimitPerRateSetChValues(
+	uint8_t ucVersion,
+	struct CMD_TXPOWER_CHANNEL_POWER_LIMIT_PER_RATE *pCmd,
 	struct CHANNEL_TX_PWR_LIMIT *pChTxPwrLimit)
 {
 	uint8_t section = 0, e = 0, count = 0;
@@ -2846,6 +2901,11 @@ void rlmDomainTxPwrLimitPerRateSetChValues(
 void rlmDomainTxPwrLimitSetValues(
 	uint8_t ucVersion,
 	struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT_V2 *pSetCmd,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimit);
+
+void rlmDomainTxPwrLimitSetValues(
+	uint8_t ucVersion,
+	struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT_V2 *pSetCmd,
 	struct TX_PWR_LIMIT_DATA *pTxPwrLimit)
 {
 	uint8_t ucIdx = 0;
@@ -2875,6 +2935,11 @@ void rlmDomainTxPwrLimitSetValues(
 void rlmDomainTxPwrLimitPerRateSetValues(
 	uint8_t ucVersion,
 	struct CMD_SET_TXPOWER_COUNTRY_TX_POWER_LIMIT_PER_RATE *pSetCmd,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimit);
+
+void rlmDomainTxPwrLimitPerRateSetValues(
+	uint8_t ucVersion,
+	struct CMD_SET_TXPOWER_COUNTRY_TX_POWER_LIMIT_PER_RATE *pSetCmd,
 	struct TX_PWR_LIMIT_DATA *pTxPwrLimit)
 {
 	uint8_t ucIdx = 0;
@@ -2900,6 +2965,10 @@ void rlmDomainTxPwrLimitPerRateSetValues(
 			pChPwrLimit, pChTxPwrLimit);
 	}
 }
+
+u_int8_t rlmDomainTxPwrLimitLoadFromFile(
+	struct ADAPTER *prAdapter,
+	uint8_t *pucConfigBuf, uint32_t *pu4ConfigReadLen);
 
 u_int8_t rlmDomainTxPwrLimitLoadFromFile(
 	struct ADAPTER *prAdapter,
@@ -2937,6 +3006,12 @@ error:
 
 	return bRet;
 }
+
+u_int8_t rlmDomainGetTxPwrLimit(
+	uint32_t country_code,
+	uint8_t *pucVersion,
+	struct GLUE_INFO *prGlueInfo,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimitData);
 
 u_int8_t rlmDomainGetTxPwrLimit(
 	uint32_t country_code,
@@ -3223,6 +3298,11 @@ uint16_t rlmDomainPwrLimitDefaultTableDecision(struct ADAPTER *prAdapter,
  * @return (none)
  */
 /*----------------------------------------------------------------------------*/
+void
+rlmDomainBuildCmdByDefaultTable(struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT
+				*prCmd,
+				uint16_t u2DefaultTableIndex);
+
 void
 rlmDomainBuildCmdByDefaultTable(struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT
 				*prCmd,
@@ -3564,6 +3644,9 @@ rlmDomainBuildCmdByDefaultTable(struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT
 }
 
 void rlmDomainCopyFromConfigTable(struct CMD_CHANNEL_POWER_LIMIT *prCmdPwrLimit,
+	struct COUNTRY_POWER_LIMIT_TABLE_CONFIGURATION *prPwrLimitConfig);
+
+void rlmDomainCopyFromConfigTable(struct CMD_CHANNEL_POWER_LIMIT *prCmdPwrLimit,
 	struct COUNTRY_POWER_LIMIT_TABLE_CONFIGURATION *prPwrLimitConfig)
 {
 
@@ -3648,6 +3731,9 @@ static void rlmDomainCompareFromConfigTable(int8_t *prPwrLmt,
  * @return (none)
  */
 /*----------------------------------------------------------------------------*/
+void rlmDomainBuildCmdByConfigTable(struct ADAPTER *prAdapter,
+			struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd);
+
 void rlmDomainBuildCmdByConfigTable(struct ADAPTER *prAdapter,
 			struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd)
 {
@@ -3901,6 +3987,9 @@ void rlmDomainBuildCmdByConfigTable(struct ADAPTER *prAdapter,
 }
 
 struct TX_PWR_LIMIT_DATA *
+rlmDomainInitTxPwrLimitData(struct ADAPTER *prAdapter);
+
+struct TX_PWR_LIMIT_DATA *
 rlmDomainInitTxPwrLimitData(struct ADAPTER *prAdapter)
 {
 	uint8_t ch_cnt = 0;
@@ -3972,6 +4061,11 @@ rlmDomainInitTxPwrLimitData(struct ADAPTER *prAdapter)
 
 	return pTxPwrLimitData;
 }
+
+void
+rlmDomainSendTxPwrLimitCmd(struct ADAPTER *prAdapter,
+	uint8_t ucVersion,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimitData);
 
 void
 rlmDomainSendTxPwrLimitCmd(struct ADAPTER *prAdapter,
@@ -4119,6 +4213,11 @@ error:
 u_int32_t rlmDomainInitTxPwrLimitPerRateCmd(
 	struct ADAPTER *prAdapter,
 	struct wiphy *prWiphy,
+	struct CMD_SET_TXPOWER_COUNTRY_TX_POWER_LIMIT_PER_RATE *prCmd[]);
+
+u_int32_t rlmDomainInitTxPwrLimitPerRateCmd(
+	struct ADAPTER *prAdapter,
+	struct wiphy *prWiphy,
 	struct CMD_SET_TXPOWER_COUNTRY_TX_POWER_LIMIT_PER_RATE *prCmd[])
 {
 	uint8_t ch_cnt = 0;
@@ -4181,6 +4280,11 @@ u_int32_t rlmDomainInitTxPwrLimitPerRateCmd(
 
 	return WLAN_STATUS_SUCCESS;
 }
+
+void rlmDomainTxPwrLimitSendPerRateCmd(
+	struct ADAPTER *prAdapter,
+	struct CMD_SET_TXPOWER_COUNTRY_TX_POWER_LIMIT_PER_RATE *prCmd[]
+);
 
 void rlmDomainTxPwrLimitSendPerRateCmd(
 	struct ADAPTER *prAdapter,
@@ -4274,6 +4378,12 @@ u_int32_t rlmDomainInitTxBfBackoffCmd(
 	struct ADAPTER *prAdapter,
 	struct wiphy *prWiphy,
 	struct CMD_TXPWR_TXBF_SET_BACKOFF **prCmd
+);
+
+u_int32_t rlmDomainInitTxBfBackoffCmd(
+	struct ADAPTER *prAdapter,
+	struct wiphy *prWiphy,
+	struct CMD_TXPWR_TXBF_SET_BACKOFF **prCmd
 )
 {
 	uint8_t ucChNum = TX_PWR_LIMIT_2G_CH_NUM + TX_PWR_LIMIT_5G_CH_NUM;
@@ -4329,6 +4439,11 @@ u_int32_t rlmDomainInitTxBfBackoffCmd(
 void rlmDomainTxPwrTxBfBackoffSetValues(
 	uint8_t ucVersion,
 	struct CMD_TXPWR_TXBF_SET_BACKOFF *prTxBfBackoffCmd,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimitData);
+
+void rlmDomainTxPwrTxBfBackoffSetValues(
+	uint8_t ucVersion,
+	struct CMD_TXPWR_TXBF_SET_BACKOFF *prTxBfBackoffCmd,
 	struct TX_PWR_LIMIT_DATA *pTxPwrLimitData)
 {
 	uint8_t ucIdx = 0;
@@ -4373,6 +4488,10 @@ void rlmDomainTxPwrTxBfBackoffSetValues(
 
 void rlmDomainTxPwrSendTxBfBackoffCmd(
 	struct ADAPTER *prAdapter,
+	struct CMD_TXPWR_TXBF_SET_BACKOFF *prCmd);
+
+void rlmDomainTxPwrSendTxBfBackoffCmd(
+	struct ADAPTER *prAdapter,
 	struct CMD_TXPWR_TXBF_SET_BACKOFF *prCmd)
 {
 	uint32_t rStatus;
@@ -4394,6 +4513,11 @@ void rlmDomainTxPwrSendTxBfBackoffCmd(
 		0);
 
 }
+
+void
+rlmDomainSendTxPwrLimitPerRateCmd(struct ADAPTER *prAdapter,
+	uint8_t ucVersion,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimitData);
 
 void
 rlmDomainSendTxPwrLimitPerRateCmd(struct ADAPTER *prAdapter,
@@ -4426,6 +4550,11 @@ error:
 void
 rlmDomainSendTxBfBackoffCmd(struct ADAPTER *prAdapter,
 	uint8_t ucVersion,
+	struct TX_PWR_LIMIT_DATA *pTxPwrLimitData);
+
+void
+rlmDomainSendTxBfBackoffCmd(struct ADAPTER *prAdapter,
+	uint8_t ucVersion,
 	struct TX_PWR_LIMIT_DATA *pTxPwrLimitData)
 {
 	struct wiphy *wiphy;
@@ -4448,6 +4577,8 @@ error:
 	if (prTxBfBackoffCmd)
 		cnmMemFree(prAdapter, prTxBfBackoffCmd);
 }
+
+void rlmDomainSendPwrLimitCmd_V2(struct ADAPTER *prAdapter);
 
 void rlmDomainSendPwrLimitCmd_V2(struct ADAPTER *prAdapter)
 {
@@ -4504,6 +4635,8 @@ error:
 #if CFG_SUPPORT_DYNAMIC_PWR_LIMIT
 /* dynamic tx power control: begin ********************************************/
 
+char *txPwrGetString(char **pcContent, char *delim);
+
 char *txPwrGetString(char **pcContent, char *delim)
 {
 	char *result = NULL;
@@ -4518,6 +4651,9 @@ char *txPwrGetString(char **pcContent, char *delim)
 
 	return result;
 }
+
+uint32_t txPwrParseNumber(char **pcContent, char *delim, uint8_t *op,
+			  int8_t *value);
 
 uint32_t txPwrParseNumber(char **pcContent, char *delim, uint8_t *op,
 			  int8_t *value) {
@@ -4559,6 +4695,8 @@ uint32_t txPwrParseNumber(char **pcContent, char *delim, uint8_t *op,
 }
 
 #if CFG_SUPPORT_DYNAMIC_PWR_LIMIT_ANT_TAG
+void txPwrParseTagDump(struct TX_PWR_CTRL_ELEMENT *pRecord);
+
 void txPwrParseTagDump(struct TX_PWR_CTRL_ELEMENT *pRecord)
 {
 	uint32_t i = 0, j = 0;
@@ -4579,6 +4717,11 @@ void txPwrParseTagDump(struct TX_PWR_CTRL_ELEMENT *pRecord)
 		}
 	}
 }
+
+int32_t txPwrParseTagXXXT(
+	char *pStart, char *pEnd, uint8_t cTagParaNum,
+	struct TX_PWR_CTRL_ELEMENT *pRecord,
+	enum ENUM_POWER_ANT_TAG eTag);
 
 int32_t txPwrParseTagXXXT(
 	char *pStart, char *pEnd, uint8_t cTagParaNum,
@@ -4823,6 +4966,9 @@ int32_t txPwrParseTagAllT6G(
 }
 
 int32_t txPwrParseTag(char *pTagStart, char *pTagEnd,
+	struct TX_PWR_CTRL_ELEMENT *pRecord);
+
+int32_t txPwrParseTag(char *pTagStart, char *pTagEnd,
 	struct TX_PWR_CTRL_ELEMENT *pRecord) {
 	uint8_t i = 0;
 	int32_t ret = 0;
@@ -4880,6 +5026,9 @@ int32_t txPwrParseTag(char *pTagStart, char *pTagEnd,
 }
 
 int32_t txPwrOnPreParseAppendTag(
+	struct TX_PWR_CTRL_ELEMENT *pRecord);
+
+int32_t txPwrOnPreParseAppendTag(
 	struct TX_PWR_CTRL_ELEMENT *pRecord) {
 
 	if (!pRecord)
@@ -4897,6 +5046,9 @@ int32_t txPwrOnPreParseAppendTag(
 	return 0;
 }
 
+
+int32_t txPwrParseAppendTag(char *pcStart,
+	char *pcEnd, struct TX_PWR_CTRL_ELEMENT *pRecord);
 
 int32_t txPwrParseAppendTag(char *pcStart,
 	char *pcEnd, struct TX_PWR_CTRL_ELEMENT *pRecord) {
@@ -4975,6 +5127,9 @@ int32_t txPwrParseAppendTag(char *pcStart,
 }
 #endif
 void txPwrOperate(enum ENUM_TX_POWER_CTRL_TYPE eCtrlType,
+		  int8_t *operand1, int8_t *operand2);
+
+void txPwrOperate(enum ENUM_TX_POWER_CTRL_TYPE eCtrlType,
 		  int8_t *operand1, int8_t *operand2)
 {
 	switch (eCtrlType) {
@@ -4996,6 +5151,11 @@ void txPwrOperate(enum ENUM_TX_POWER_CTRL_TYPE eCtrlType,
 	else if (*operand1 < MIN_TX_POWER)
 		*operand1 = MIN_TX_POWER;
 }
+
+uint32_t txPwrArbitrator(enum ENUM_TX_POWER_CTRL_TYPE eCtrlType,
+			 void *pvBuf,
+			 struct TX_PWR_CTRL_CHANNEL_SETTING *prChlSetting,
+			 enum ENUM_PWR_LIMIT_TYPE eType);
 
 uint32_t txPwrArbitrator(enum ENUM_TX_POWER_CTRL_TYPE eCtrlType,
 			 void *pvBuf,
@@ -5082,6 +5242,10 @@ uint32_t txPwrArbitrator(enum ENUM_TX_POWER_CTRL_TYPE eCtrlType,
 #if CFG_SUPPORT_DYNAMIC_PWR_LIMIT_ANT_TAG
 uint8_t txPwrIsAntTagSet(
 	struct TX_PWR_CTRL_ELEMENT *prCurElement,
+	enum ENUM_POWER_ANT_TAG tag);
+
+uint8_t txPwrIsAntTagSet(
+	struct TX_PWR_CTRL_ELEMENT *prCurElement,
 	enum ENUM_POWER_ANT_TAG tag) {
 	uint8_t i = 0;
 
@@ -5111,6 +5275,9 @@ uint8_t txPwrIsAntTagSet(
 }
 
 uint8_t txPwrIsAntTagNeedApply(
+	struct TX_PWR_CTRL_ELEMENT *prCurElement);
+
+uint8_t txPwrIsAntTagNeedApply(
 	struct TX_PWR_CTRL_ELEMENT *prCurElement) {
 	uint8_t fgAllTSet = 0, fg1TSet = 0, fg2TSet = 0;
 
@@ -5133,6 +5300,9 @@ uint8_t txPwrIsAntTagNeedApply(
 }
 
 uint32_t txPwrCheckPwrAntNum(
+	enum ENUM_POWER_ANT_TAG tag, uint8_t u1Num);
+
+uint32_t txPwrCheckPwrAntNum(
 	enum ENUM_POWER_ANT_TAG tag, uint8_t u1Num)
 {
 	if (u1Num >= POWER_LIMIT_ANT_CONFIG_NUM) {
@@ -5144,6 +5314,14 @@ uint32_t txPwrCheckPwrAntNum(
 
 	return WLAN_STATUS_SUCCESS;
 }
+
+uint32_t txPwrApplyPwrAnt(
+	uint8_t u1Idx,
+	enum ENUM_POWER_ANT_TAG tag,
+	uint8_t u1BandNum,
+	uint8_t u1AntNum,
+	struct CMD_CHANNEL_POWER_LIMIT_ANT *prCmdPwrAnt,
+	struct TX_PWR_CTRL_ELEMENT *prCurElem);
 
 uint32_t txPwrApplyPwrAnt(
 	uint8_t u1Idx,
@@ -5193,6 +5371,14 @@ uint32_t txPwrApplyPwrAnt6G(
 	uint8_t u1BandNum,
 	uint8_t u1AntNum,
 	struct CMD_CHANNEL_POWER_LIMIT_ANT *prCmdPwrAnt,
+	struct TX_PWR_CTRL_ELEMENT *prCurElem);
+
+uint32_t txPwrApplyPwrAnt6G(
+	uint8_t u1Idx,
+	enum ENUM_POWER_ANT_TAG tag,
+	uint8_t u1BandNum,
+	uint8_t u1AntNum,
+	struct CMD_CHANNEL_POWER_LIMIT_ANT *prCmdPwrAnt,
 	struct TX_PWR_CTRL_ELEMENT *prCurElem)
 {
 	uint8_t u1BandIdx = 0, u1AntIdx = 0;
@@ -5225,6 +5411,10 @@ uint32_t txPwrApplyPwrAnt6G(
 	}
 	return u1Idx;
 }
+
+uint32_t txPwrApplyOneSettingPwrAnt(
+	struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd,
+	struct TX_PWR_CTRL_ELEMENT *prCurElement);
 
 uint32_t txPwrApplyOneSettingPwrAnt(
 	struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd,
@@ -5292,6 +5482,10 @@ uint32_t txPwrApplyOneSettingPwrAnt(
 	return 0;
 }
 #endif /* CFG_SUPPORT_DYNAMIC_PWR_LIMIT_ANT_TAG */
+uint32_t txPwrApplyOneSetting(struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd,
+			      struct TX_PWR_CTRL_ELEMENT *prCurElement,
+			      uint8_t *bandedgeParam);
+
 uint32_t txPwrApplyOneSetting(struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd,
 			      struct TX_PWR_CTRL_ELEMENT *prCurElement,
 			      uint8_t *bandedgeParam)
@@ -5505,6 +5699,10 @@ uint32_t txPwrApplyOneSetting(struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd,
 	}
 	return 0;
 }
+
+uint32_t txPwrCtrlApplySettings(struct ADAPTER *prAdapter,
+			struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd,
+			uint8_t *bandedgeParam);
 
 uint32_t txPwrCtrlApplySettings(struct ADAPTER *prAdapter,
 			struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd,
@@ -6084,6 +6282,8 @@ clearLabel:
 }
 
 /* filterType: 0:no filter, 1:fgEnable is TRUE */
+int txPwrCtrlListSize(struct ADAPTER *prAdapter, uint8_t filterType);
+
 int txPwrCtrlListSize(struct ADAPTER *prAdapter, uint8_t filterType)
 {
 	struct LINK_ENTRY *prCur, *prNext;
@@ -6187,6 +6387,11 @@ void txPwrCtrlShowList(struct ADAPTER *prAdapter, uint8_t filterType,
 void _txPwrCtrlDeleteElement(struct ADAPTER *prAdapter,
 			     uint8_t *name,
 			     uint32_t index,
+			     struct LINK *prTxPwrCtrlList);
+
+void _txPwrCtrlDeleteElement(struct ADAPTER *prAdapter,
+			     uint8_t *name,
+			     uint32_t index,
 			     struct LINK *prTxPwrCtrlList)
 {
 	struct LINK_ENTRY *prCur, *prNext;
@@ -6238,6 +6443,11 @@ void txPwrCtrlDeleteElement(struct ADAPTER *prAdapter,
 		_txPwrCtrlDeleteElement(prAdapter, name, index,
 					&prAdapter->rTxPwr_DynamicList);
 }
+
+struct TX_PWR_CTRL_ELEMENT *_txPwrCtrlFindElement(struct ADAPTER *prAdapter,
+				 uint8_t *name, uint32_t index,
+				 u_int8_t fgCheckIsApplied,
+				 struct LINK *prTxPwrCtrlList);
 
 struct TX_PWR_CTRL_ELEMENT *_txPwrCtrlFindElement(struct ADAPTER *prAdapter,
 				 uint8_t *name, uint32_t index,
@@ -6308,6 +6518,8 @@ void txPwrCtrlAddElement(struct ADAPTER *prAdapter,
 	}
 }
 
+void txPwrCtrlFileBufToList(struct ADAPTER *prAdapter, uint8_t *pucFileBuf);
+
 void txPwrCtrlFileBufToList(struct ADAPTER *prAdapter, uint8_t *pucFileBuf)
 {
 	struct TX_PWR_CTRL_ELEMENT *prNewElement;
@@ -6339,6 +6551,8 @@ void txPwrCtrlFileBufToList(struct ADAPTER *prAdapter, uint8_t *pucFileBuf)
 	/* show the tx power ctrl list */
 	txPwrCtrlShowList(prAdapter, 0, "config list, after loading cfg file");
 }
+
+void txPwrCtrlGlobalVariableToList(struct ADAPTER *prAdapter);
 
 void txPwrCtrlGlobalVariableToList(struct ADAPTER *prAdapter)
 {
@@ -6377,6 +6591,8 @@ void txPwrCtrlGlobalVariableToList(struct ADAPTER *prAdapter)
 	txPwrCtrlShowList(prAdapter, 0,
 			  "config list, after loadding global variables");
 }
+
+void txPwrCtrlCfgFileToList(struct ADAPTER *prAdapter);
 
 void txPwrCtrlCfgFileToList(struct ADAPTER *prAdapter)
 {
@@ -6457,6 +6673,9 @@ void txPwrCtrlUninit(struct ADAPTER *prAdapter)
 }
 /* dynamic tx power control: end **********************************************/
 #endif /* CFG_SUPPORT_DYNAMIC_PWR_LIMIT */
+
+void rlmDomainShowPwrLimitPerCh(char *message,
+	struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd);
 
 void rlmDomainShowPwrLimitPerCh(char *message,
 	struct CMD_SET_COUNTRY_CHANNEL_POWER_LIMIT *prCmd)
@@ -7023,6 +7242,8 @@ enum regd_state rlmDomainGetCtrlState(void)
 }
 
 
+void rlmDomainResetActiveChannel(void);
+
 void rlmDomainResetActiveChannel(void)
 {
 	g_mtk_regd_control.n_channel_active_2g = 0;
@@ -7135,6 +7356,8 @@ enum ENUM_DBDC_BN rlmDomainGetDfsDbdcBand(void)
 	return g_mtk_regd_control.eDBDCBand;
 }
 
+void rlmDomainSetTempCountryCode(char *alpha2, u8 size_of_alpha2);
+
 void rlmDomainSetTempCountryCode(char *alpha2, u8 size_of_alpha2)
 {
 	u8 idx, max;
@@ -7222,6 +7445,8 @@ enum regd_state rlmDomainStateTransition(enum regd_state request_state,
  * @ buf: string buffer to put the transformed string
  * @ buf_size: size of the buf
  **/
+void rlmDomainChannelFlagString(u32 flags, char *buf, size_t buf_size);
+
 void rlmDomainChannelFlagString(u32 flags, char *buf, size_t buf_size)
 {
 	int32_t buf_written = 0;

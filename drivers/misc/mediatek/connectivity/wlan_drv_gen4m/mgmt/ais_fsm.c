@@ -137,6 +137,9 @@ static void aisFunClearAllTxReq(IN struct ADAPTER *prAdapter,
  *******************************************************************************
  */
 void aisResetBssTranstionMgtParam(IN struct ADAPTER *prAdapter,
+			IN uint8_t ucBssIndex);
+
+void aisResetBssTranstionMgtParam(IN struct ADAPTER *prAdapter,
 			IN uint8_t ucBssIndex)
 {
 #if CFG_SUPPORT_802_11V_BSS_TRANSITION_MGT
@@ -152,6 +155,9 @@ void aisResetBssTranstionMgtParam(IN struct ADAPTER *prAdapter,
 
 #if (CFG_SUPPORT_HE_ER == 1)
 uint8_t aisCheckPowerMatchERCondition(IN struct ADAPTER *prAdapter,
+	IN struct BSS_DESC *prBssDesc);
+
+uint8_t aisCheckPowerMatchERCondition(IN struct ADAPTER *prAdapter,
 	IN struct BSS_DESC *prBssDesc)
 {
 	int8_t txpwr = 0;
@@ -165,6 +171,9 @@ uint8_t aisCheckPowerMatchERCondition(IN struct ADAPTER *prAdapter,
 
 	return ((txpwr - (AP_TX_POWER - icBeaconRSSI)) < -95);
 }
+
+bool aisCheckUsingERRate(IN struct ADAPTER *prAdapter,
+	IN struct BSS_DESC *prBssDesc);
 
 bool aisCheckUsingERRate(IN struct ADAPTER *prAdapter,
 	IN struct BSS_DESC *prBssDesc)
@@ -674,6 +683,9 @@ bool aisFsmIsInProcessPostpone(IN struct ADAPTER *prAdapter,
 }
 
 bool aisFsmIsBeaconTimeout(IN struct ADAPTER *prAdapter,
+	uint8_t ucBssIndex);
+
+bool aisFsmIsBeaconTimeout(IN struct ADAPTER *prAdapter,
 	uint8_t ucBssIndex)
 {
 	struct BSS_INFO *prAisBssInfo = aisGetAisBssInfo(prAdapter, ucBssIndex);
@@ -684,6 +696,9 @@ bool aisFsmIsBeaconTimeout(IN struct ADAPTER *prAdapter,
 		 prAisBssInfo->ucReasonOfDisconnect ==
 			 DISCONNECT_REASON_CODE_RADIO_LOST_TX_ERR);
 }
+
+bool aisFsmIsReassociation(IN struct ADAPTER *prAdapter,
+	uint8_t ucBssIndex);
 
 bool aisFsmIsReassociation(IN struct ADAPTER *prAdapter,
 	uint8_t ucBssIndex)
@@ -1401,6 +1416,9 @@ void aisFsmRemoveRoamingRequest(
 }
 
 struct BSS_DESC *aisSearchBssDescByScore(
+	IN struct ADAPTER *prAdapter, IN uint8_t ucBssIndex);
+
+struct BSS_DESC *aisSearchBssDescByScore(
 	IN struct ADAPTER *prAdapter, IN uint8_t ucBssIndex)
 {
 	struct ROAMING_INFO *roam = aisGetRoamingInfo(prAdapter, ucBssIndex);
@@ -1408,6 +1426,8 @@ struct BSS_DESC *aisSearchBssDescByScore(
 	return scanSearchBssDescByScoreForAis(prAdapter,
 			roam->eReason, ucBssIndex);
 }
+
+uint8_t aisNeedTargetScan(IN struct ADAPTER *prAdapter, IN uint8_t ucBssIndex);
 
 uint8_t aisNeedTargetScan(IN struct ADAPTER *prAdapter, IN uint8_t ucBssIndex)
 {
@@ -1438,6 +1458,9 @@ uint8_t aisNeedTargetScan(IN struct ADAPTER *prAdapter, IN uint8_t ucBssIndex)
 	return (discovering && issued) ||
 	       (postponing && trial < AIS_ROAMING_CONNECTION_TRIAL_LIMIT);
 }
+
+enum ENUM_AIS_STATE aisSearchHandleBssDesc(IN struct ADAPTER *prAdapter,
+	struct BSS_DESC *prBssDesc, IN uint8_t ucBssIndex);
 
 enum ENUM_AIS_STATE aisSearchHandleBssDesc(IN struct ADAPTER *prAdapter,
 	struct BSS_DESC *prBssDesc, IN uint8_t ucBssIndex)
@@ -1721,6 +1744,9 @@ void aisCheckMultiStaStatus(struct ADAPTER *prAdapter,
 	}
 }
 #endif
+
+u_int8_t aisScanChannelFixed(struct ADAPTER *prAdapter, enum ENUM_BAND *prBand,
+	uint8_t *pucPrimaryChannel, IN uint8_t ucBssIndex);
 
 u_int8_t aisScanChannelFixed(struct ADAPTER *prAdapter, enum ENUM_BAND *prBand,
 	uint8_t *pucPrimaryChannel, IN uint8_t ucBssIndex)
@@ -2569,6 +2595,8 @@ enum ENUM_AIS_STATE aisFsmStateSearchAction(
 	return AIS_STATE_LOOKING_FOR;
 }
 
+void aisFsmQueryCandidates(IN struct ADAPTER *prAdapter, uint8_t ucBssIndex);
+
 void aisFsmQueryCandidates(IN struct ADAPTER *prAdapter, uint8_t ucBssIndex)
 {
 #if CFG_SUPPORT_802_11K
@@ -2974,6 +3002,7 @@ void aisFsmStateAbort(IN struct ADAPTER *prAdapter,
 
 	case AIS_STATE_ONLINE_SCAN:
 		fgIsCheckConnected = TRUE;
+		fallthrough;
 	case AIS_STATE_SCAN:
 		/* Do abort SCAN */
 		aisFsmStateAbort_SCAN(prAdapter, ucBssIndex);
@@ -3121,6 +3150,10 @@ void aisFsmRunEventJoinComplete(IN struct ADAPTER *prAdapter,
 	cnmMemFree(prAdapter, prMsgHdr);
 }				/* end of aisFsmRunEventJoinComplete() */
 
+
+uint8_t aisHandleJoinFailure(IN struct ADAPTER *prAdapter,
+	struct STA_RECORD *prStaRec,
+	IN struct SW_RFB *prAssocRspSwRfb, uint8_t ucBssIndex);
 
 uint8_t aisHandleJoinFailure(IN struct ADAPTER *prAdapter,
 	struct STA_RECORD *prStaRec,
@@ -3817,6 +3850,8 @@ void aisFsmRunEventFoundIBSSPeer(IN struct ADAPTER *prAdapter,
  * @return (none)
  */
 /*----------------------------------------------------------------------------*/
+void aisFsmDisconnectedAction(IN struct ADAPTER *prAdapter, uint8_t ucBssIndex);
+
 void aisFsmDisconnectedAction(IN struct ADAPTER *prAdapter, uint8_t ucBssIndex)
 {
 	struct AIS_FSM_INFO *prAisFsmInfo;

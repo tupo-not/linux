@@ -207,6 +207,13 @@ wfdFuncAppendAttriDevInfo(IN struct ADAPTER *prAdapter,
 		IN u_int8_t fgIsAssocFrame,
 		IN uint16_t *pu2Offset,
 		IN uint8_t *pucBuf,
+		IN uint16_t u2BufSize);
+
+uint32_t
+wfdFuncAppendAttriDevInfo(IN struct ADAPTER *prAdapter,
+		IN u_int8_t fgIsAssocFrame,
+		IN uint16_t *pu2Offset,
+		IN uint8_t *pucBuf,
 		IN uint16_t u2BufSize)
 {
 	uint32_t u4AttriLen = 0;

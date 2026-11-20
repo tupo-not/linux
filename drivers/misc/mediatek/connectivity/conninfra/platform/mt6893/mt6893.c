@@ -3,7 +3,7 @@
  * Copyright (c) 2020 MediaTek Inc.
  */
 
-#define pr_fmt(fmt) KBUILD_MODNAME "@(%s:%d) " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/clk.h>
 #include <linux/delay.h>

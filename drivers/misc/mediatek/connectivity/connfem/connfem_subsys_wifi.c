@@ -12,7 +12,7 @@
 #ifdef pr_fmt
 #undef pr_fmt
 #endif
-#define pr_fmt(fmt) "["KBUILD_MODNAME"][WF]" fmt
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 /*******************************************************************************
  *			    D A T A   T Y P E S

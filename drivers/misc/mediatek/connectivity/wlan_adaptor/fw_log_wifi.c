@@ -118,6 +118,8 @@ struct coredump_event_cb g_wifi_coredump_cb = {
 #endif /* CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT */
 #endif /* CFG_ANDORID_CONNINFRA_SUPPORT */
 
+void wifi_fwlog_event_func_register(wifi_fwlog_event_func_cb func);
+
 void wifi_fwlog_event_func_register(wifi_fwlog_event_func_cb func)
 {
 	WIFI_INFO_FUNC("wifi_fwlog_event_func_register %p\n", func);
@@ -125,12 +127,16 @@ void wifi_fwlog_event_func_register(wifi_fwlog_event_func_cb func)
 }
 EXPORT_SYMBOL(wifi_fwlog_event_func_register);
 
+void wifi_fwlog_get_fw_ver_register(wifi_fwlog_get_fw_ver_func_cb func);
+
 void wifi_fwlog_get_fw_ver_register(wifi_fwlog_get_fw_ver_func_cb func)
 {
 	WIFI_INFO_FUNC("wifi_fwlog_get_fw_ver_register %p\n", func);
 	pfFwGetFwVerCB = func;
 }
 EXPORT_SYMBOL(wifi_fwlog_get_fw_ver_register);
+
+int wifi_fwlog_onoff_status(void);
 
 int wifi_fwlog_onoff_status(void)
 {
@@ -256,6 +262,8 @@ int fw_log_wifi_irq_handler(void)
 EXPORT_SYMBOL(fw_log_wifi_irq_handler);
 
 #if (CFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT == 1)
+
+void fw_log_bug_hang_register(void *func);
 
 void fw_log_bug_hang_register(void *func)
 {

@@ -345,6 +345,8 @@ void nic_rxd_v2_fill_rfb(
 #endif
 }
 
+void nic_rxd_v2_parse_drop_pkt(struct SW_RFB *prSwRfb);
+
 void nic_rxd_v2_parse_drop_pkt(struct SW_RFB *prSwRfb)
 {
 	uint16_t *pu2EtherType;

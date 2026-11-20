@@ -1759,6 +1759,9 @@ static int32_t halWpdmaFreeRingDesc(struct GLUE_INFO *prGlueInfo,
 }
 
 bool halWpdmaAllocTxRing(struct GLUE_INFO *prGlueInfo, uint32_t u4Num,
+			 uint32_t u4Size, uint32_t u4DescSize, bool fgAllocMem);
+
+bool halWpdmaAllocTxRing(struct GLUE_INFO *prGlueInfo, uint32_t u4Num,
 			 uint32_t u4Size, uint32_t u4DescSize, bool fgAllocMem)
 {
 	struct GL_HIF_INFO *prHifInfo;

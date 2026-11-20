@@ -128,6 +128,8 @@ int mtk_wcn_wlan_reg(struct MTK_WCN_WLAN_CB_INFO *pWlanCbInfo)
 }
 EXPORT_SYMBOL(mtk_wcn_wlan_reg);
 
+int mtk_wcn_wlan_unreg(void);
+
 int mtk_wcn_wlan_unreg(void)
 {
 	WIFI_INFO_FUNC("wmt wlan cb unregister\n");
@@ -137,6 +139,8 @@ int mtk_wcn_wlan_unreg(void)
 	return 0;
 }
 EXPORT_SYMBOL(mtk_wcn_wlan_unreg);
+
+void kalSetOnoffEvent(enum ENUM_WLAN_OPID opId);
 
 void kalSetOnoffEvent(enum ENUM_WLAN_OPID opId)
 {

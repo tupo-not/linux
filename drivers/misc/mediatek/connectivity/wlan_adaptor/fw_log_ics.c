@@ -233,12 +233,16 @@ static void ics_ring_deinit(struct ics_ring *iRing)
 }
 
 /* function that export symbol */
+void wifi_ics_event_func_register(ics_fwlog_event_func_cb func);
+
 void wifi_ics_event_func_register(ics_fwlog_event_func_cb func)
 {
 	ICS_INFO("ics_fwlog_event_func_register %p\n", func);
 	gIcsDev->pfFwEventFuncCB = func;
 }
 EXPORT_SYMBOL(wifi_ics_event_func_register);
+
+ssize_t wifi_ics_fwlog_write(char *buf, size_t count);
 
 ssize_t wifi_ics_fwlog_write(char *buf, size_t count)
 {

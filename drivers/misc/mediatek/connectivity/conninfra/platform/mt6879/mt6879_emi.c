@@ -3,7 +3,7 @@
  * Copyright (c) 2021 MediaTek Inc.
  */
 
-#define pr_fmt(fmt) KBUILD_MODNAME "@(%s:%d) " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include "emi_mng.h"
 #include "mt6879.h"

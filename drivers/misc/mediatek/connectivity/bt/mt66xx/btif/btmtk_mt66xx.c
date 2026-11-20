@@ -255,10 +255,12 @@ int fwp_if_get_update_info(char *buf, int max_len)
 		return 0;
 	}
 	buf[strlen(buf)] = '\0';
-	BTMTK_INFO("%s: %s, %d", __func__, buf, strlen(buf));
+	BTMTK_INFO("%s: %s, %zu", __func__, buf, strlen(buf));
 	return strlen(buf) + 1;
 }
 #endif
+
+int fwp_if_get_datetime(char *buf, int max_len);
 
 int fwp_if_get_datetime(char *buf, int max_len)
 {
@@ -279,9 +281,11 @@ int fwp_if_get_datetime(char *buf, int max_len)
 		tmp = tmp + strlen(tmp);
 	}
 	buf[ret_len] = '\0';
-	BTMTK_INFO("%s: %s, %d", __func__, buf, strlen(buf));
+	BTMTK_INFO("%s: %s, %zu", __func__, buf, strlen(buf));
 	return ret_len + 1;
 }
+
+int fwp_if_get_bt_patch_path(char *buf, int max_len);
 
 int fwp_if_get_bt_patch_path(char *buf, int max_len)
 {
@@ -298,7 +302,7 @@ int fwp_if_get_bt_patch_path(char *buf, int max_len)
 #if (CUSTOMER_FW_UPDATE == 1)
 		ret = snprintf(buf, VER_STR_LEN, "/data/vendor/firmware/update/%s", g_fwp_names[1][fwp_from]);
 #else
-		ret = snprintf(buf, VER_STR_LEN, "");
+		ret = snprintf(buf, VER_STR_LEN, "%s", "");
 #endif
 	}
 
@@ -306,7 +310,7 @@ int fwp_if_get_bt_patch_path(char *buf, int max_len)
 		BTMTK_INFO("%s: snprintf error", __func__);
 		return 0;
 	}
-	BTMTK_INFO("%s: %s, %d", __func__, buf, strlen(buf));
+	BTMTK_INFO("%s: %s, %zu", __func__, buf, strlen(buf));
 	return strlen(buf) + 1;
 }
 
@@ -337,7 +341,7 @@ static void bgfsys_cal_data_backup(
 	 */
 	start_offset = start_addr & 0x00000FFF;
 	if (start_offset + data_len > 0x1000) {
-		BTMTK_ERR("Error sysram offset address start=[0x%08x], len = [%d]",
+		BTMTK_ERR("error sysram offset address start=[0x%08x], len = [%d]",
 								start_addr, data_len);
 		return;
 	}
@@ -382,7 +386,7 @@ static void bgfsys_cal_data_restore(uint32_t start_addr,
 	ready_offset = ready_addr & 0x00000FFF;
 
 	if (start_offset > 0x1000 || ready_offset > 0x1000) {
-		BTMTK_ERR("Error sysram offset address start=[0x%08x], ready=[0x%08x]",
+		BTMTK_ERR("error sysram offset address start=[0x%08x], ready=[0x%08x]",
 							start_addr, ready_addr);
 		return;
 	}
@@ -400,7 +404,7 @@ static void bgfsys_cal_data_restore(uint32_t start_addr,
 	/* Firmware will not do calibration again when BT func on */
 	REG_WRITEL(CON_REG_INFRA_SYS_ADDR + ready_offset, CAL_READY_BIT_PATTERN);
 	ready_status = REG_READL(CON_REG_INFRA_SYS_ADDR + ready_offset);
-	BTMTK_DBG("Ready pattern after restore cal=[0x%08x]", ready_status);
+	BTMTK_DBG("ready pattern after restore cal=[0x%08x]", ready_status);
 }
 
 /* __download_patch_to_emi
@@ -459,7 +463,7 @@ static int32_t __download_patch_to_emi(
 	memcpy(datetime, p_patch_hdr->date_time, sizeof(p_patch_hdr->date_time));
 	datetime[sizeof(p_patch_hdr->date_time) - 2] = '\0'; // 14 bytes actually
 	BTMTK_INFO(
-		"[Patch]BTime=%s,HVer=0x%04x,SVer=0x%04x,Plat=%c%c%c%c,Addr=0x%02x%02x%02x%02x,Type=%x",
+		"bTime=%s,HVer=0x%04x,SVer=0x%04x,Plat=%c%c%c%c,Addr=0x%02x%02x%02x%02x,Type=%x",
 		datetime,
 		((hw_ver & 0x00ff) << 8) | ((hw_ver & 0xff00) >> 8),
 		((sw_ver & 0x00ff) << 8) | ((sw_ver & 0xff00) >> 8),
@@ -490,8 +494,8 @@ static int32_t __download_patch_to_emi(
 	//if ((patch_emi_offset >= emi_start) &&
 	//    (patch_emi_offset + patch_size < emi_start + emi_size)) {
 		remap_addr = ioremap(emi_ap_phy_base + patch_emi_offset, patch_size);
-		BTMTK_INFO("[Patch] emi_ap_phy_base[0x%p], remap_addr[0x%08x]", emi_ap_phy_base, *remap_addr);
-		BTMTK_INFO("[Patch] patch_emi_offset[0x%08x], patch_size[0x%08x]", patch_emi_offset, patch_size);
+		BTMTK_INFO("emi_ap_phy_base[0x%pa], remap_addr[0x%08x]", &emi_ap_phy_base, *remap_addr);
+		BTMTK_INFO("patch_emi_offset[0x%08x], patch_size[0x%08x]", patch_emi_offset, patch_size);
 
 		if (remap_addr) {
 			memcpy_toio(remap_addr, p_buf, patch_size);
@@ -710,6 +714,8 @@ static void bt_hw_and_mcu_off(void)
 	bgfsys_power_off();
 }
 
+uint8_t *_internal_evt_result(u_int8_t wmt_evt_result);
+
 uint8_t *_internal_evt_result(u_int8_t wmt_evt_result)
 {
 
@@ -745,7 +751,7 @@ static int32_t _send_wmt_power_cmd(struct hci_dev *hdev, u_int8_t is_on)
 	struct bt_internal_cmd *p_inter_cmd = &cif_dev->internal_cmd;
 	int ret;
 
-	BTMTK_INFO("[InternalCmd] %s", __func__);
+	BTMTK_INFO("%s", __func__);
 
 	down(&cif_dev->internal_cmd_sem);
 	cif_dev->event_intercept = TRUE;
@@ -773,14 +779,14 @@ static int32_t _send_wmt_power_cmd(struct hci_dev *hdev, u_int8_t is_on)
 
 	ret = btmtk_main_send_cmd(bdev, buffer, pkt_len, NULL, 0, 0, 0, BTMTK_TX_WAIT_VND_EVT);
 	if (ret <= 0 && is_on) {
-		BTMTK_ERR("%s: Unable to get event in time, start dump and reset!", __func__);
+		BTMTK_ERR("%s: unable to get event in time, start dump and reset!", __func__);
 		bt_trigger_reset();
 	}
 
 	ret = (p_inter_cmd->result == WMT_EVT_SUCCESS) ? 0 : -EIO;
 	cif_dev->event_intercept = FALSE;
 	up(&cif_dev->internal_cmd_sem);
-	BTMTK_INFO("[InternalCmd] %s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
+	BTMTK_INFO("%s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
 	return ret;
 }
 
@@ -816,7 +822,7 @@ static int32_t _send_wmt_get_cal_data_cmd(
 	struct bt_internal_cmd *p_inter_cmd = &cif_dev->internal_cmd;
 	int ret;
 
-	BTMTK_INFO("[InternalCmd] %s", __func__);
+	BTMTK_INFO("%s", __func__);
 
 	down(&cif_dev->internal_cmd_sem);
 	cif_dev->event_intercept = TRUE;
@@ -844,7 +850,7 @@ static int32_t _send_wmt_get_cal_data_cmd(
 	ret = btmtk_main_send_cmd(bdev, buffer, pkt_len, NULL, 0, 0, 0, BTMTK_TX_WAIT_VND_EVT);
 
 	if (ret <= 0) {
-		BTMTK_ERR("Unable to get calibration event in time, start dump and reset!");
+		BTMTK_ERR("unable to get calibration event in time, start dump and reset!");
 		// TODO: FW request dump & reset, need apply to all internal cmdå
 		bt_trigger_reset();
 		up(&cif_dev->internal_cmd_sem);
@@ -869,11 +875,11 @@ static int32_t _send_wmt_get_cal_data_cmd(
 		uint8_t *data = NULL;
 
 		if(offset > 0x1000)
-			BTMTK_ERR("Error calibration offset (%d)", offset);
+			BTMTK_ERR("error calibration offset (%d)", offset);
 		else {
 			data = (uint8_t *)(CON_REG_INFRA_SYS_ADDR + offset);
 
-			BTMTK_ERR("Calibration fail, dump calibration data");
+			BTMTK_ERR("calibration fail, dump calibration data");
 			if(*p_data_len < BT_CR_DUMP_BUF_SIZE)
 				bt_dump_memory8(data, *p_data_len);
 			else
@@ -885,7 +891,7 @@ static int32_t _send_wmt_get_cal_data_cmd(
 	/* Whether succeed or not, no one is waiting, reset the flag here */
 	cif_dev->event_intercept = FALSE;
 	up(&cif_dev->internal_cmd_sem);
-	BTMTK_INFO("[InternalCmd] %s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
+	BTMTK_INFO("%s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
 	return ret;
 }
 
@@ -1023,6 +1029,8 @@ int btmtk_inttrx_DynamicAdjustTxPower(uint8_t mode, int8_t req_val, BT_RX_EVT_HA
  *     0 if success, otherwise -EIO
  *
  */
+int32_t btmtk_intcmd_wmt_power_on(struct hci_dev *hdev);
+
 int32_t btmtk_intcmd_wmt_power_on(struct hci_dev *hdev)
 {
 	//struct btmtk_dev *bdev = hci_get_drvdata(hdev);
@@ -1045,6 +1053,8 @@ int32_t btmtk_intcmd_wmt_power_on(struct hci_dev *hdev)
 
 	return ret;
 }
+
+int32_t btmtk_intcmd_wmt_send_antenna_cmd(struct hci_dev *hdev);
 
 int32_t btmtk_intcmd_wmt_send_antenna_cmd(struct hci_dev *hdev)
 {
@@ -1128,7 +1138,7 @@ int32_t btmtk_intcmd_wmt_send_antenna_cmd(struct hci_dev *hdev)
 	cmd[6] = cmd[10] + 3;
 	cmd[3] = cmd[6] + 4;
 
-	BTMTK_DBG_RAW(cmd, len, "%s: Send: ", __func__);
+	BTMTK_DBG_RAW(cmd, len, "%s: send: ", __func__);
 
 	down(&cif_dev->internal_cmd_sem);
 	cif_dev->event_intercept = TRUE;
@@ -1141,7 +1151,7 @@ int32_t btmtk_intcmd_wmt_send_antenna_cmd(struct hci_dev *hdev)
 
 	cif_dev->event_intercept  = FALSE;
 	up(&cif_dev->internal_cmd_sem);
-	BTMTK_INFO("[InternalCmd] %s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
+	BTMTK_INFO("%s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
 	ret = p_inter_cmd->result;
 
 done:
@@ -1161,6 +1171,8 @@ done:
  *     0 if success, otherwise -EIO
  *
  */
+int32_t btmtk_intcmd_wmt_power_off(struct hci_dev *hdev);
+
 int32_t btmtk_intcmd_wmt_power_off(struct hci_dev *hdev)
 {
 	//struct btmtk_dev *bdev = hci_get_drvdata(hdev);
@@ -1174,7 +1186,7 @@ int32_t btmtk_intcmd_wmt_power_off(struct hci_dev *hdev)
 	} else if (cif_dev->bt_state != RESET_START)
 		ret = _send_wmt_power_cmd(hdev, FALSE);
 
-	BTMTK_DBG("%s: Done", __func__);
+	BTMTK_DBG("%s: done", __func__);
 	return ret;
 }
 
@@ -1220,10 +1232,10 @@ int32_t btmtk_intcmd_wmt_calibration(struct hci_dev *hdev)
 				    &cal_data_ready_addr,
 				    &cal_data_len);
 	if (ret)
-		BTMTK_ERR("Get cal data ref failed!");
+		BTMTK_ERR("get cal data ref failed!");
 	else {
 		BTMTK_DBG(
-			"Get cal data ref: saddr(0x%08x) raddr(0x%08x) len(%d)",
+			"get cal data ref: saddr(0x%08x) raddr(0x%08x) len(%d)",
 			cal_data_start_addr, cal_data_ready_addr, cal_data_len);
 
 		/* Allocate a cache buffer to backup the calibration data in driver */
@@ -1236,10 +1248,10 @@ int32_t btmtk_intcmd_wmt_calibration(struct hci_dev *hdev)
 				cif_dev->cal_data.start_addr = cal_data_start_addr;
 				cif_dev->cal_data.ready_addr = cal_data_ready_addr;
 			} else
-				BTMTK_ERR("Failed to allocate cache buffer for backup!");
+				BTMTK_ERR("failed to allocate cache buffer for backup!");
 		} else
 			BTMTK_ERR(
-				"Abnormal cal data length! something error with F/W!");
+				"abnormal cal data length! something error with F/W!");
 	}
 	return ret;
 }
@@ -1268,7 +1280,7 @@ int32_t btmtk_intcmd_query_thermal(void)
 	/* To-Do, for event check */
 	/* u8 event[] = { 0x04, 0x0E, 0x08, 0x01, 0x91, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x00 }; */
 
-	BTMTK_INFO("[InternalCmd] %s", __func__);
+	BTMTK_INFO("%s", __func__);
 
 	down(&cif_dev->internal_cmd_sem);
 	cif_dev->event_intercept = TRUE;
@@ -1282,7 +1294,7 @@ int32_t btmtk_intcmd_query_thermal(void)
 		NULL, 0, 0, 0, BTMTK_TX_WAIT_VND_EVT);
 
 	if (ret <= 0) {
-		BTMTK_ERR("Unable to send thermal cmd");
+		BTMTK_ERR("unable to send thermal cmd");
 		up(&cif_dev->internal_cmd_sem);
 		return -1;
 	}
@@ -1297,7 +1309,7 @@ int32_t btmtk_intcmd_query_thermal(void)
 
 	cif_dev->event_intercept = FALSE;
 	up(&cif_dev->internal_cmd_sem);
-	BTMTK_INFO("[InternalCmd] %s done, result = %s, thermal = %d",
+	BTMTK_INFO("%s done, result = %s, thermal = %d",
 		__func__,  _internal_evt_result(p_inter_cmd->result), thermal);
 	return thermal;
 }
@@ -1321,7 +1333,7 @@ int32_t btmtk_intcmd_wmt_blank_status(struct hci_dev *hdev, int32_t blank)
 	uint8_t cmd[] =  { 0x01, 0x6F, 0xFC, 0x06, 0x01, 0xF0, 0x02, 0x00, 0x03, 0x00 };
 	/* uint8_t evt[] = {0x04, 0xE4, 0x06, 0x02, 0xF0, 0x02, 0x00, 0x03, 0x00}; */
 
-	BTMTK_INFO("[InternalCmd] %s", __func__);
+	BTMTK_INFO("%s", __func__);
 
 	down(&cif_dev->internal_cmd_sem);
 	cif_dev->event_intercept = TRUE;
@@ -1338,7 +1350,7 @@ int32_t btmtk_intcmd_wmt_blank_status(struct hci_dev *hdev, int32_t blank)
 
 	cif_dev->event_intercept = FALSE;
 	up(&cif_dev->internal_cmd_sem);
-	BTMTK_INFO("[InternalCmd] %s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
+	BTMTK_INFO("%s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
 	return 0;
 }
 
@@ -1364,7 +1376,7 @@ int32_t btmtk_intcmd_wmt_utc_sync(void)
 	uint32_t sec, usec;
 	/* uint8_t evt[] = {0x04, 0xE4, 0x06, 0x02, 0xF0, 0x02, 0x00, 0x02, 0x00}; */
 
-	BTMTK_INFO("[InternalCmd] %s", __func__);
+	BTMTK_INFO("%s", __func__);
 
 	down(&cif_dev->internal_cmd_sem);
 	cif_dev->event_intercept = TRUE;
@@ -1383,7 +1395,7 @@ int32_t btmtk_intcmd_wmt_utc_sync(void)
 
 	cif_dev->event_intercept = FALSE;
 	up(&cif_dev->internal_cmd_sem);
-	BTMTK_INFO("[InternalCmd] %s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
+	BTMTK_INFO("%s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
 	return 0;
 }
 
@@ -1434,12 +1446,12 @@ int32_t btmtk_intcmd_set_fw_log(uint8_t flag)
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;
 
 	if (cif_dev->rst_level != RESET_LEVEL_NONE) {
-		BTMTK_WARN("Resetting, skip %s [%d]", __func__, flag);
+		BTMTK_WARN("resetting, skip %s [%d]", __func__, flag);
 		return -1;
 	}
 
 	HCI_CMD_FW_LOG_DEBUG[7] = flag;
-	BTMTK_DBG("hci_cmd: %02x %02x %02x %02x %02x %02x %02x %02x\n",
+	BTMTK_DBG("hci_cmd: %02x %02x %02x %02x %02x %02x %02x %02x",
 			HCI_CMD_FW_LOG_DEBUG[0], HCI_CMD_FW_LOG_DEBUG[1],
 			HCI_CMD_FW_LOG_DEBUG[2], HCI_CMD_FW_LOG_DEBUG[3],
 			HCI_CMD_FW_LOG_DEBUG[4], HCI_CMD_FW_LOG_DEBUG[5],
@@ -1452,7 +1464,7 @@ int32_t btmtk_intcmd_set_fw_log(uint8_t flag)
 	up(&cif_dev->internal_cmd_sem);
 
 	if (ret < 0) {
-		BTMTK_ERR("Send F/W log cmd failed!\n");
+		BTMTK_ERR("send F/W log cmd failed!");
 		return ret;
 	}
 	return 0;
@@ -1469,6 +1481,8 @@ int32_t btmtk_intcmd_set_fw_log(uint8_t flag)
  *    N/A
  *
  */
+int32_t btmtk_intcmd_send_connfem_cmd(void);
+
 int32_t btmtk_intcmd_send_connfem_cmd(void)
 {
 	struct connfem_epaelna_fem_info fem_info;
@@ -1483,7 +1497,7 @@ int32_t btmtk_intcmd_send_connfem_cmd(void)
 	uint32_t cmd_len = 0, i = 0, offset = 0;
 	const uint32_t pin_struct_size = sizeof(struct connfem_epaelna_pin);
 
-	BTMTK_INFO("[InternalCmd] %s", __func__);
+	BTMTK_INFO("%s", __func__);
 
 	/* Get data from connfem_api */
 	connfem_epaelna_get_fem_info(&fem_info);
@@ -1547,7 +1561,7 @@ int32_t btmtk_intcmd_send_connfem_cmd(void)
 	cmd[offset++] = fem_info.part[CONNFEM_PORT_BT].vid;
 	cmd[offset++] = fem_info.part[CONNFEM_PORT_BT].pid;
 
-	BTMTK_INFO_RAW(cmd, offset, "%s: Send: ", __func__);
+	BTMTK_INFO_RAW(cmd, offset, "%s: send: ", __func__);
 
 	down(&cif_dev->internal_cmd_sem);
 	cif_dev->event_intercept = TRUE;
@@ -1561,7 +1575,7 @@ int32_t btmtk_intcmd_send_connfem_cmd(void)
 	cif_dev->event_intercept  = FALSE;
 	vfree(cmd);
 	up(&cif_dev->internal_cmd_sem);
-	BTMTK_INFO("[InternalCmd] %s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
+	BTMTK_INFO("%s done, result = %s", __func__, _internal_evt_result(p_inter_cmd->result));
 	return p_inter_cmd->result;
 }
 
@@ -1604,7 +1618,7 @@ int32_t btmtk_set_power_on(struct hci_dev *hdev, u_int8_t for_precal)
 	if (!for_precal)
 	{
 		if (conninfra_pwr_on(CONNDRV_TYPE_BT)) {
-			BTMTK_ERR("ConnInfra power on failed!");
+			BTMTK_ERR("connInfra power on failed!");
 			ret = -EIO;
 			goto conninfra_error;
 		}
@@ -1639,7 +1653,7 @@ int32_t btmtk_set_power_on(struct hci_dev *hdev, u_int8_t for_precal)
 	/* 3. clear coredump */
 #if SUPPORT_COREDUMP
 	if (!cif_dev->coredump_handle)
-		BTMTK_ERR("Coredump handle is NULL\n");
+		BTMTK_ERR("coredump handle is NULL");
 	else
 		connsys_coredump_clean(cif_dev->coredump_handle);
 #endif
@@ -1713,7 +1727,7 @@ int32_t btmtk_set_power_on(struct hci_dev *hdev, u_int8_t for_precal)
 
 #if SUPPORT_COREDUMP
 	if (!cif_dev->coredump_handle)
-		BTMTK_ERR("Coredump handle is NULL\n");
+		BTMTK_ERR("coredump handle is NULL");
 	else
 		connsys_coredump_setup_dump_region(cif_dev->coredump_handle);
 #endif
@@ -1838,7 +1852,7 @@ int32_t btmtk_set_power_off(struct hci_dev *hdev, u_int8_t for_precal)
 	down(&cif_dev->halt_sem);
 
 	if (cif_dev->bt_state == FUNC_OFF) {
-		BTMTK_WARN("Alread in off state, skip");
+		BTMTK_WARN("alread in off state, skip");
 		up(&cif_dev->halt_sem);
 		return 0;
 	/* Do not power off while chip reset thread is doing coredump */
@@ -1902,7 +1916,7 @@ int32_t btmtk_set_power_off(struct hci_dev *hdev, u_int8_t for_precal)
 	if (cif_dev->rst_level != RESET_LEVEL_0)
 		bt_notify_state();
 
-	BTMTK_INFO("ConnInfra power off!");
+	BTMTK_INFO("connInfra power off!");
 
 	return 0;
 }
@@ -1934,12 +1948,12 @@ int32_t btmtk_set_sleep(struct hci_dev *hdev, uint8_t need_wait)
 		return 0;
 
 	if (!wait_for_completion_timeout(&cif_dev->psm.comp, msecs_to_jiffies(1000))) {
-		BTMTK_ERR("[PSM]Timeout for BGFSYS to enter sleep!");
+		BTMTK_ERR("timeout for BGFSYS to enter sleep!");
 		cif_dev->psm.sleep_flag = FALSE;
 		return -1;
 	}
 
-	BTMTK_DBG("[PSM]sleep return %s, sleep(%d), wakeup(%d)",
+	BTMTK_DBG("sleep return %s, sleep(%d), wakeup(%d)",
 		      (cif_dev->psm.result == 0) ? "success" : "failure",
 		      cif_dev->psm.sleep_flag, cif_dev->psm.wakeup_flag);
 
@@ -1964,6 +1978,8 @@ int32_t btmtk_set_sleep(struct hci_dev *hdev, uint8_t need_wait)
  *    N/A
  *
  */
+int32_t btmtk_set_wakeup(struct hci_dev *hdev, uint8_t need_wait);
+
 int32_t btmtk_set_wakeup(struct hci_dev *hdev, uint8_t need_wait)
 {
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;
@@ -1976,12 +1992,12 @@ int32_t btmtk_set_wakeup(struct hci_dev *hdev, uint8_t need_wait)
 		return 0;
 
 	if (!wait_for_completion_timeout(&cif_dev->psm.comp, msecs_to_jiffies(1000))) {
-		BTMTK_ERR("[PSM] Timeout for BGFSYS to enter wakeup!");
+		BTMTK_ERR("timeout for BGFSYS to enter wakeup!");
 		cif_dev->psm.wakeup_flag = FALSE;
 		return -1;
 	}
 
-	BTMTK_INFO("[PSM] wakeup return %s, sleep(%d), wakeup(%d)",
+	BTMTK_INFO("wakeup return %s, sleep(%d), wakeup(%d)",
 			(cif_dev->psm.result == 0) ? "success" : "failure",
 			cif_dev->psm.sleep_flag, cif_dev->psm.wakeup_flag);
 	return 0;

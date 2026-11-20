@@ -485,7 +485,7 @@ do { \
 	FORMAT_STRING(buf, len, max_len, sec_len, "</main>\n");
 
 format_finish:
-	pr_debug("== Issue info ==\n", buf);
+	pr_debug("== Issue info ==\n");
 	pr_debug("%s\n", buf);
 	pr_debug("===== END =====\n");
 	ret = conndump_netlink_send_to_native(ctx->conn_type, "INFO", buf, len);

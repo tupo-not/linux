@@ -541,6 +541,11 @@ static void soc3_0asicConnac2xWfdmaControl(
 void soc3_0asicConnac2xWpdmaConfig(
 	struct GLUE_INFO *prGlueInfo,
 	u_int8_t enable,
+	bool fgResetHif);
+
+void soc3_0asicConnac2xWpdmaConfig(
+	struct GLUE_INFO *prGlueInfo,
+	u_int8_t enable,
 	bool fgResetHif)
 {
 	struct ADAPTER *prAdapter = prGlueInfo->prAdapter;
@@ -575,6 +580,10 @@ void soc3_0asicConnac2xWpdmaConfig(
 		}
 	}
 }
+
+void soc3_0ReadExtIntStatus(
+	struct ADAPTER *prAdapter,
+	uint32_t *pu4IntStatus);
 
 void soc3_0ReadExtIntStatus(
 	struct ADAPTER *prAdapter,
@@ -629,6 +638,8 @@ void soc3_0ReadExtIntStatus(
 		ap_write_value);
 
 }
+
+void soc3_0asicConnac2xProcessTxInterrupt(IN struct ADAPTER *prAdapter);
 
 void soc3_0asicConnac2xProcessTxInterrupt(IN struct ADAPTER *prAdapter)
 {
@@ -687,6 +698,9 @@ void soc3_0asicConnac2xProcessTxInterrupt(IN struct ADAPTER *prAdapter)
 }
 
 void soc3_0asicConnac2xProcessRxInterrupt(
+	struct ADAPTER *prAdapter);
+
+void soc3_0asicConnac2xProcessRxInterrupt(
 	struct ADAPTER *prAdapter)
 {
 	struct GL_HIF_INFO *prHifInfo = &prAdapter->prGlueInfo->rHifInfo;
@@ -713,6 +727,8 @@ void soc3_0asicConnac2xProcessRxInterrupt(
 		(prAdapter->u4NoMoreRfb & BIT(RX_RING_TXDONE1_IDX_4)))
 		halRxReceiveRFBs(prAdapter, RX_RING_TXDONE1_IDX_4, TRUE);
 }
+
+void soc3_0ProcessAbnormalInterrupt(struct ADAPTER *prAdapter);
 
 void soc3_0ProcessAbnormalInterrupt(struct ADAPTER *prAdapter)
 {
@@ -741,6 +757,9 @@ static void soc3_0SetMDRXRingPriorityInterrupt(struct ADAPTER *prAdapter)
 	HAL_MCR_WR(prAdapter,
 		WF_WFDMA_HOST_DMA1_WPDMA_INT_RX_PRI_SEL_ADDR, val);
 }
+
+void soc3_0asicConnac2xWfdmaManualPrefetch(
+	struct GLUE_INFO *prGlueInfo);
 
 void soc3_0asicConnac2xWfdmaManualPrefetch(
 	struct GLUE_INFO *prGlueInfo)
@@ -828,6 +847,9 @@ void soc3_0_WfdmaAxiCtrl(
 	HAL_MCR_WR(prAdapter, WFDMA_AXI0_R2A_CTRL_0, u4Val);
 
 }
+
+void soc3_0_ConstructPatchName(struct GLUE_INFO *prGlueInfo,
+	uint8_t **apucName, uint8_t *pucNameIdx);
 
 void soc3_0_ConstructPatchName(struct GLUE_INFO *prGlueInfo,
 	uint8_t **apucName, uint8_t *pucNameIdx)
@@ -1239,6 +1261,8 @@ void soc3_0_DumpWfsysdebugflag(void)
 
 }
 
+void soc3_0_DumpWfsysInfo(void);
+
 void soc3_0_DumpWfsysInfo(void)
 {
 	int value = 0;
@@ -1296,6 +1320,8 @@ int soc3_0_Trigger_fw_assert(void)
 
 	return ret;
 }
+
+void soc3_0_CheckBusHangUT(void);
 
 void soc3_0_CheckBusHangUT(void)
 {
@@ -1383,7 +1409,7 @@ static void soc3_0_DumpPcLrLog(struct ADAPTER *prAdapter)
 	DBGLOG(HAL, LOUD,
 		"Host_CSR - dump PC log / LR log");
 
-	memset(log, 0, HANG_PC_LOG_NUM);
+	memset(log, 0, sizeof(log));
 
 	/* PC log
 	* dbg_pc_log_sel	Write	0x1806_0090 [7:2]	6'h20
@@ -1478,7 +1504,7 @@ static void soc3_0_DumpN10CoreReg(struct ADAPTER *prAdapter)
 	DBGLOG(HAL, LOUD,
 		"Host_CSR - read N10 core register");
 
-	memset(log, 0, HANG_N10_CORE_LOG_NUM);
+	memset(log, 0, sizeof(log));
 
 /*
 *	[31:26]: gpr_index_sel (set different sets of gpr) = 0
@@ -1634,7 +1660,7 @@ static void soc3_0_DumpSpecifiedWfTop(struct ADAPTER *prAdapter)
 	DBGLOG(HAL, LOUD,
 		"Host_CSR - specified WF TOP monflg on");
 
-	memset(log, 0, HANG_TOP_LOG_NUM);
+	memset(log, 0, sizeof(log));
 
 /* 0x1806009C[28]=1	write	enable wf_mcu_misc */
 
@@ -2047,6 +2073,8 @@ int soc3_0_CheckBusHang(void *adapter, uint8_t ucWfResetEnable)
 	return ret;
 }
 
+void soc3_0_DumpBusHangdebuglog(void);
+
 void soc3_0_DumpBusHangdebuglog(void)
 {
 	uint32_t u4Value = 0;
@@ -2066,6 +2094,8 @@ void soc3_0_DumpBusHangdebuglog(void)
 		"dump: 0x1800c00c = 0x%08x\n", u4Value);
 
 }
+void soc3_0_DumpPwrStatedebuglog(void);
+
 void soc3_0_DumpPwrStatedebuglog(void)
 {
 	uint32_t u4Value = 0;

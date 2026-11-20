@@ -362,7 +362,7 @@ static int btmtk_cif_allocate_memory(struct btmtk_sdio_dev *cif_dev)
 		}
 	}
 
-	BTMTK_INFO("%s: Done", __func__);
+	BTMTK_INFO("%s: done", __func__);
 	return 0;
 err:
 	kfree(cif_dev->transfer_buf);
@@ -379,7 +379,7 @@ static void btmtk_cif_free_memory(struct btmtk_sdio_dev *cif_dev)
 	kfree(cif_dev->sdio_packet);
 	cif_dev->sdio_packet = NULL;
 
-	BTMTK_INFO("%s: Success", __func__);
+	BTMTK_INFO("%s: success", __func__);
 }
 
 int btmtk_sdio_read_wifi_mcu_pc(u8 PcLogSel, u32 *val)
@@ -669,7 +669,7 @@ static void btmtk_sdio_print_debug_sr(struct btmtk_sdio_dev *cif_dev)
 		CHIER_Value, CTFSR_Value, CRPLR_Value, SWPCDBGR_Value);
 	BTMTK_INFO("CCCR 00: 0x%x, 04: 0x%x, 05: 0x%x",
 		X0_Value, X4_Value, X5_Value);
-	BTMTK_INFO("F8: 0x%x, F9: 0x%x, FA: 0x%x, FB: 0x%x",
+	BTMTK_INFO("f8: 0x%x, F9: 0x%x, FA: 0x%x, FB: 0x%x",
 		F8_Value, F9_Value, FA_Value, FB_Value);
 	BTMTK_INFO("FC: 0x%x, FD: 0x%x, FE: 0x%x, FF: 0x%x",
 		FC_Value, FD_Value, FE_Value, FF_Value);
@@ -788,7 +788,7 @@ int btmtk_sdio_send_cmd(struct btmtk_dev *bdev, struct sk_buff *skb,
 		!memcmp(skb->data, fw_assert_cmd, FW_ASSERT_CMD_LEN))
 		|| (skb->len == FW_ASSERT_CMD1_LEN &&
 		!memcmp(skb->data, fw_assert_cmd1, FW_ASSERT_CMD1_LEN))) {
-		BTMTK_INFO_RAW(skb->data, skb->len, "%s: Trigger FW assert, dump CR", __func__);
+		BTMTK_INFO_RAW(skb->data, skb->len, "%s: trigger FW assert, dump CR", __func__);
 #if BTMTK_SDIO_DEBUG
 		rx_debug_print();
 #endif
@@ -1183,7 +1183,7 @@ static int btmtk_sdio_register_dev(struct btmtk_sdio_dev *bdev)
 	int ret = 0;
 
 	if (!bdev || !bdev->func) {
-		BTMTK_ERR("Error: card or function is NULL!");
+		BTMTK_ERR("error: card or function is NULL!");
 		ret = -EINVAL;
 		goto failed;
 	}
@@ -1271,10 +1271,10 @@ int btmtk_sdio_disable_host_int(struct btmtk_sdio_dev *cif_dev)
 	/* workaround for some platform no host clock sometimes */
 
 	btmtk_sdio_readl(CSDIOCSR, &read_data, cif_dev->func);
-	BTMTK_INFO("%s read CSDIOCSR is 0x%X\n", __func__, read_data);
+	BTMTK_INFO("%s read CSDIOCSR is 0x%X", __func__, read_data);
 	read_data = read_data & ~(0x04);
 	btmtk_sdio_writel(CSDIOCSR, read_data, cif_dev->func);
-	BTMTK_INFO("%s write CSDIOCSR is 0x%X\n", __func__, read_data);
+	BTMTK_INFO("%s write CSDIOCSR is 0x%X", __func__, read_data);
 
 	return ret;
 }
@@ -1408,7 +1408,7 @@ static int btmtk_sdio_subsys_reset(struct btmtk_dev *bdev)
 			FW_INT_IND_INDICATOR | TX_COMPLETE_COUNT |
 			TX_UNDER_THOLD | TX_EMPTY | RX_DONE, cif_dev->func);
 	if (ret) {
-		BTMTK_ERR("Set interrupt output fail(%d)", ret);
+		BTMTK_ERR("set interrupt output fail(%d)", ret);
 		ret = -EIO;
 		return ret;
 	}
@@ -1657,7 +1657,7 @@ static int btmtk_sdio_probe(struct sdio_func *func,
 
 	bdev = sdio_get_drvdata(func);
 	if (!bdev) {
-		BTMTK_ERR("[ERR] bdev is NULL");
+		BTMTK_ERR("bdev is NULL");
 		return -ENOMEM;
 	}
 
@@ -1672,7 +1672,7 @@ static int btmtk_sdio_probe(struct sdio_func *func,
 	spin_lock_init(&bdev->rxlock);
 
 	if (btmtk_sdio_register_dev(cif_dev) < 0) {
-		BTMTK_ERR("Failed to register BT device!");
+		BTMTK_ERR("failed to register BT device!");
 		return -ENODEV;
 	}
 
@@ -1705,7 +1705,7 @@ static int btmtk_sdio_probe(struct sdio_func *func,
 			FW_INT_IND_INDICATOR | TX_COMPLETE_COUNT |
 			TX_UNDER_THOLD | TX_EMPTY | RX_DONE, cif_dev->func);
 	if (err) {
-		BTMTK_ERR("Set interrupt output fail(%d)", err);
+		BTMTK_ERR("set interrupt output fail(%d)", err);
 		err = -EIO;
 		goto free_thread;
 	}
@@ -1728,13 +1728,13 @@ static int btmtk_sdio_probe(struct sdio_func *func,
 
 	err = btmtk_cif_allocate_memory(cif_dev);
 	if (err < 0) {
-		BTMTK_ERR("[ERR] btmtk_cif_allocate_memory failed!");
+		BTMTK_ERR("btmtk_cif_allocate_memory failed!");
 		goto free_thread;
 	}
 
 	err = btmtk_main_cif_initialize(bdev, HCI_SDIO);
 	if (err < 0) {
-		BTMTK_ERR("[ERR] btmtk_main_cif_initialize failed!");
+		BTMTK_ERR("btmtk_main_cif_initialize failed!");
 		goto free_mem;
 	}
 
@@ -1908,7 +1908,7 @@ static int btmtk_cif_suspend(struct device *dev)
 	bt_woble = &cif_dev->bt_woble;
 
 	if (bdev->suspend_count++) {
-		BTMTK_WARN("Has suspended. suspend_count: %d, end", bdev->suspend_count);
+		BTMTK_WARN("has suspended. suspend_count: %d, end", bdev->suspend_count);
 		return 0;
 	}
 
@@ -2108,7 +2108,7 @@ int btmtk_cif_register(void)
 
 	retval = sdio_register();
 	if (retval)
-		BTMTK_ERR("*** SDIO registration fail(%d)! ***", retval);
+		BTMTK_ERR(" SDIO registration fail(%d)! ", retval);
 	else
 		BTMTK_INFO("%s, SDIO registration success!", __func__);
 	return retval;
@@ -2126,7 +2126,7 @@ int btmtk_cif_deregister(void)
 	}
 #endif
 	sdio_deregister();
-	BTMTK_INFO("%s: Done", __func__);
+	BTMTK_INFO("%s: done", __func__);
 	return 0;
 }
 

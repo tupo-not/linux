@@ -1331,6 +1331,8 @@ cnmStaSendRemoveCmd(struct ADAPTER *prAdapter,
 	}
 }
 
+uint8_t *cnmStaRecGetTypeString(enum ENUM_STA_TYPE eStaType);
+
 uint8_t *cnmStaRecGetTypeString(enum ENUM_STA_TYPE eStaType)
 {
 	uint8_t *pucTypeString = NULL;
@@ -1344,6 +1346,8 @@ uint8_t *cnmStaRecGetTypeString(enum ENUM_STA_TYPE eStaType)
 
 	return pucTypeString;
 }
+
+uint8_t *cnmStaRecGetRoleString(enum ENUM_STA_TYPE eStaType);
 
 uint8_t *cnmStaRecGetRoleString(enum ENUM_STA_TYPE eStaType)
 {

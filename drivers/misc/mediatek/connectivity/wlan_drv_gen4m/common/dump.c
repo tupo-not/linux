@@ -156,7 +156,7 @@ void dumpHex(IN uint8_t *pucStartAddr, uint16_t u2Length)
  * \return (none)
  */
 /*----------------------------------------------------------------------------*/
-void dumpMemory8(IN uint8_t *pucStartAddr,
+void dumpMemory8(IN uint8_t *pucStartAddr __maybe_unused,
 		 IN uint32_t u4Length)
 {
 	ASSERT(pucStartAddr);

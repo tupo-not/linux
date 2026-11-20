@@ -136,6 +136,8 @@ static const tBT_DEV_DBG_STRUCT bt_dev_dbg_struct[] = {
 
 
 
+void _bt_dbg_reset_dump_buf(void);
+
 void _bt_dbg_reset_dump_buf(void)
 {
 	memset(g_bt_dump_buf, '\0', BT_DBG_DUMP_BUF_SIZE);
@@ -446,6 +448,8 @@ int bt_dbg_met_start_stop(int par1, int par2, int par3)
 	return 0;
 }
 
+int bt_dbg_DynamicAdjustTxPower_cb(uint8_t *buf, int len);
+
 int bt_dbg_DynamicAdjustTxPower_cb(uint8_t *buf, int len)
 {
 	BTMTK_INFO("%s", __func__);
@@ -528,7 +532,7 @@ int bt_dbg_force_bt_wakeup(int par1, int par2, int par3)
 		ret = btmtk_set_wakeup(g_sbdev->hdev, TRUE);
 		break;
 	default:
-		BTMTK_ERR("Not support");
+		BTMTK_ERR("not support");
 		return -1;
 	}
 
@@ -620,6 +624,8 @@ exit:
 	return ret;
 #endif
 }
+
+int bt_osal_strtol(const char *str, unsigned int adecimal, long *res);
 
 int bt_osal_strtol(const char *str, unsigned int adecimal, long *res)
 {
@@ -816,7 +822,7 @@ int bt_dev_dbg_init(void)
 
 	g_bt_dbg_entry = proc_create(BT_DBG_PROCNAME, 0664, NULL, &bt_dbg_fops);
 	if (g_bt_dbg_entry == NULL) {
-		BTMTK_ERR("Unable to create [%s] bt proc entry", BT_DBG_PROCNAME);
+		BTMTK_ERR("unable to create [%s] bt proc entry", BT_DBG_PROCNAME);
 		i_ret = -1;
 	}
 
@@ -850,6 +856,8 @@ struct bthost_info{
 	uint32_t		value;
 };
 struct bthost_info bthost_info_table[BTHOST_INFO_MAX];
+
+void bthost_debug_init(void);
 
 void bthost_debug_init(void)
 {
@@ -902,11 +910,13 @@ void bthost_debug_print(void)
 	BTMTK_INFO("%s", dump_buffer);
 }
 
+void bthost_debug_save(uint32_t id, uint32_t value, char* desc);
+
 void bthost_debug_save(uint32_t id, uint32_t value, char* desc)
 {
 	uint32_t i = 0;
 	if (id == 0) {
-		BTMTK_WARN("%s: id (%d) must > 0\n", __func__, id);
+		BTMTK_WARN("%s: id (%d) must > 0", __func__, id);
 		return;
 	}
 	for (i = 0; i < BTHOST_INFO_MAX; i++){
@@ -923,7 +933,7 @@ void bthost_debug_save(uint32_t id, uint32_t value, char* desc)
 			return;
 		}
 	}
-	BTMTK_WARN("%s: no space for %d\n", __func__, id);
+	BTMTK_WARN("%s: no space for %d", __func__, id);
 }
 
 

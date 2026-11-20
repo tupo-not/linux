@@ -520,6 +520,8 @@ static void mtk_wifi_trigger_reset(struct work_struct *work)
 }
 #endif
 /* Weak reference for those platform doesn't support wmt functions */
+int32_t __weak mtk_wcn_stp_coredump_start_get(void);
+
 int32_t __weak mtk_wcn_stp_coredump_start_get(void)
 {
 	return FALSE;
@@ -705,6 +707,8 @@ static u_int8_t glResetMsgHandler(enum ENUM_WMTMSG_TYPE eMsgType,
 
 	return TRUE;
 }
+bool glRstCheckRstCriteria(void);
+
 bool glRstCheckRstCriteria(void)
 {
 	/*
@@ -716,12 +720,16 @@ bool glRstCheckRstCriteria(void)
 	else
 		return TRUE;
 }
+void glRstWholeChipRstParamInit(void);
+
 void glRstWholeChipRstParamInit(void)
 {
 	g_IsSubsysRstOverThreshold = FALSE;
 	g_SubsysRstCnt = 0;
 	g_WholeChipRstTotalCnt++;
 }
+void glRstSetRstEndEvent(void);
+
 void glRstSetRstEndEvent(void)
 {
 #if defined(CONFIG_ANDROID) && (CFG_ENABLE_WAKE_LOCK)
@@ -838,6 +846,8 @@ u_int8_t kalIsWholeChipResetting(void)
 	return FALSE;
 #endif
 }
+void glReset_timeinit(struct timespec64 *rNowTs, struct timespec64 *rLastTs);
+
 void glReset_timeinit(struct timespec64 *rNowTs, struct timespec64 *rLastTs)
 {
 	rNowTs->tv_sec = 0;
@@ -845,6 +855,9 @@ void glReset_timeinit(struct timespec64 *rNowTs, struct timespec64 *rLastTs)
 	rLastTs->tv_sec = 0;
 	rLastTs->tv_nsec = 0;
 }
+
+bool IsOverRstTimeThreshold(
+	struct timespec64 *rNowTs, struct timespec64 *rLastTs);
 
 bool IsOverRstTimeThreshold(
 	struct timespec64 *rNowTs, struct timespec64 *rLastTs)
@@ -892,6 +905,11 @@ void glResetWholeChipResetTrigger(char *pcReason)
 			== 0)
 		fgIsDrvTriggerWholeChipReset = TRUE;
 }
+
+void glResetSubsysRstProcedure(
+	struct ADAPTER *prAdapter,
+	struct timespec64 *rNowTs,
+	struct timespec64 *rLastTs);
 
 void glResetSubsysRstProcedure(
 	struct ADAPTER *prAdapter,

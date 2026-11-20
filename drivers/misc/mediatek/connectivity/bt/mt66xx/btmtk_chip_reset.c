@@ -31,7 +31,7 @@ void btmtk_reset_waker(struct work_struct *work)
 	/* Set Entering state */
 	btmtk_set_chip_state((void *)bdev, cif_state->ops_enter);
 
-	BTMTK_INFO("%s: Receive a byte (0xFF)", __func__);
+	BTMTK_INFO("%s: receive a byte (0xFF)", __func__);
 	/* read interrupt EP15 CR */
 
 	bdev->subsys_reset = 1;
@@ -41,7 +41,7 @@ void btmtk_reset_waker(struct work_struct *work)
 		if (bmain_info->hif_hook.subsys_reset)
 			err = bmain_info->hif_hook.subsys_reset(bdev);
 		else
-			BTMTK_INFO("%s: Not support subsys chip reset", __func__);
+			BTMTK_INFO("%s: not support subsys chip reset", __func__);
 	} else {
 		err = -1;
 		BTMTK_INFO("%s: whole_reset_flag is %d", __func__, bmain_info->whole_reset_flag);
@@ -61,7 +61,7 @@ void btmtk_reset_waker(struct work_struct *work)
 		if (bmain_info->hif_hook.whole_reset)
 			bmain_info->hif_hook.whole_reset(bdev);
 		else
-			BTMTK_INFO("%s: Not support whole chip reset", __func__);
+			BTMTK_INFO("%s: not support whole chip reset", __func__);
 		bmain_info->whole_reset_flag = 0;
 		goto Finish;
 	}

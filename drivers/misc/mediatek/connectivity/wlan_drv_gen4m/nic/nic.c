@@ -652,6 +652,8 @@ void nicMCRInit(IN struct ADAPTER *prAdapter)
 	/* 4 <0> Initial value */
 }
 
+void nicHifInit(IN struct ADAPTER *prAdapter);
+
 void nicHifInit(IN struct ADAPTER *prAdapter)
 {
 
@@ -780,6 +782,9 @@ void nicProcessAbnormalInterrupt(IN struct ADAPTER *prAdapter)
  * @return (none)
  */
 /*----------------------------------------------------------------------------*/
+void nicProcessFwOwnBackInterrupt(IN struct ADAPTER
+				  *prAdapter);
+
 void nicProcessFwOwnBackInterrupt(IN struct ADAPTER
 				  *prAdapter)
 {
@@ -3277,6 +3282,9 @@ uint32_t nicSetAutoTxPower(IN struct ADAPTER *prAdapter,
  */
 /*----------------------------------------------------------------------------*/
 uint32_t nicSetAutoTxPowerControl(IN struct ADAPTER
+	*prAdapter, IN struct CMD_TX_PWR *prTxPwrParam);
+
+uint32_t nicSetAutoTxPowerControl(IN struct ADAPTER
 	*prAdapter, IN struct CMD_TX_PWR *prTxPwrParam)
 {
 	DEBUGFUNC("nicUpdateTxPower");
@@ -5056,15 +5064,21 @@ uint32_t nicApplyNetworkAddress(IN struct ADAPTER
 }
 
 #if 1
+uint8_t nicGetChipHwVer(void);
+
 uint8_t nicGetChipHwVer(void)
 {
 	return g_eco_info.ucHwVer;
 }
 
+uint8_t nicGetChipSwVer(void);
+
 uint8_t nicGetChipSwVer(void)
 {
 	return g_eco_info.ucRomVer;
 }
+
+uint8_t nicGetChipFactoryVer(void);
 
 uint8_t nicGetChipFactoryVer(void)
 {

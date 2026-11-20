@@ -11,7 +11,7 @@
 *                                 M A C R O S
 ********************************************************************************
 */
-#define pr_fmt(fmt) "connlog_test@(%s:%d) " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S

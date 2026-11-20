@@ -482,6 +482,13 @@ assocComposeReAssocReqFrameHeaderAndFF(IN struct ADAPTER *prAdapter,
 				       IN struct STA_RECORD *prStaRec,
 				       IN uint8_t *pucBuffer,
 				       IN uint8_t aucMACAddress[],
+				       IN OUT uint16_t *pu2PayloadLen);
+
+void
+assocComposeReAssocReqFrameHeaderAndFF(IN struct ADAPTER *prAdapter,
+				       IN struct STA_RECORD *prStaRec,
+				       IN uint8_t *pucBuffer,
+				       IN uint8_t aucMACAddress[],
 				       IN OUT uint16_t *pu2PayloadLen)
 {
 	struct WLAN_ASSOC_REQ_FRAME *prAssocFrame;

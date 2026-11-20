@@ -1192,6 +1192,10 @@ void heRlmRecHeOperation(
 
 uint8_t heRlmUpdateSRParams(
 	struct BSS_INFO *prBssInfo,
+	uint8_t *pucIE);
+
+uint8_t heRlmUpdateSRParams(
+	struct BSS_INFO *prBssInfo,
 	uint8_t *pucIE)
 {
 	struct _IE_SR_PARAM_T *prSRParam = (struct _IE_SR_PARAM_T *) pucIE;
@@ -1310,6 +1314,10 @@ void heRlmInitHeHtcACtrlOMAndUPH(
 
 void heRlmReqGenerateHeHtcACtrlOM(
 	IN struct HE_A_CTRL_OM_T *prHeActrlOM,
+	OUT uint32_t *pHtc);
+
+void heRlmReqGenerateHeHtcACtrlOM(
+	IN struct HE_A_CTRL_OM_T *prHeActrlOM,
 	OUT uint32_t *pHtc)
 {
 	uint32_t u4HTC = 0;
@@ -1362,6 +1370,14 @@ void heRlmParseHeHtcACtrlOM(
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
+void
+heRlmComposeHtcNullFrame(
+	IN struct ADAPTER *prAdapter,
+	IN uint8_t *pucBuffer,
+	IN struct STA_RECORD *prStaRec,
+	IN uint8_t ucUP,
+	IN u_int8_t fgSetEOSP);
+
 void
 heRlmComposeHtcNullFrame(
 	IN struct ADAPTER *prAdapter,
@@ -1489,6 +1505,9 @@ uint32_t heRlmSendHtcNullFrame(
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of bssSendQoSNullFrame() */
+
+void heRlmInit(
+	struct ADAPTER *prAdapter);
 
 void heRlmInit(
 	struct ADAPTER *prAdapter)

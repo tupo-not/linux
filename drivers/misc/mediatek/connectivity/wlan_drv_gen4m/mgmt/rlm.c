@@ -1817,6 +1817,9 @@ void rlmGenerateVhtTPEIE(
  */
 /*----------------------------------------------------------------------------*/
 uint8_t
+rlmGetSupportRxNssInVhtCap(struct IE_VHT_CAP *prVhtCap);
+
+uint8_t
 rlmGetSupportRxNssInVhtCap(struct IE_VHT_CAP *prVhtCap)
 {
 	uint8_t ucRxNss = 1;
@@ -6228,6 +6231,10 @@ uint32_t rlmSendSmPowerSaveFrame(struct ADAPTER *prAdapter,
 /*----------------------------------------------------------------------------*/
 uint32_t rlmSendNotifyChannelWidthFrame(struct ADAPTER *prAdapter,
 				    struct STA_RECORD *prStaRec,
+				    uint8_t ucChannelWidth);
+
+uint32_t rlmSendNotifyChannelWidthFrame(struct ADAPTER *prAdapter,
+				    struct STA_RECORD *prStaRec,
 				    uint8_t ucChannelWidth)
 {
 	struct MSDU_INFO *prMsduInfo;
@@ -7742,6 +7749,10 @@ void rlmSetMaxTxPwrLimit(IN struct ADAPTER *prAdapter, int8_t cLimit,
  * \return none
  */
 /*----------------------------------------------------------------------------*/
+uint32_t rlmSendChannelSwitchTxDone(IN struct ADAPTER *prAdapter,
+	IN struct MSDU_INFO *prMsduInfo,
+	IN enum ENUM_TX_RESULT_CODE rTxDoneStatus);
+
 uint32_t rlmSendChannelSwitchTxDone(IN struct ADAPTER *prAdapter,
 	IN struct MSDU_INFO *prMsduInfo,
 	IN enum ENUM_TX_RESULT_CODE rTxDoneStatus)

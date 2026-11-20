@@ -716,6 +716,9 @@ void wlanAdapterDestroy(IN struct ADAPTER *prAdapter)
 }
 
 void wlanOnPreAllocAdapterMem(IN struct ADAPTER *prAdapter,
+			  IN const u_int8_t bAtResetFlow);
+
+void wlanOnPreAllocAdapterMem(IN struct ADAPTER *prAdapter,
 			  IN const u_int8_t bAtResetFlow)
 {
 	uint32_t i = 0, j = 0;
@@ -801,6 +804,10 @@ void wlanOnPreAllocAdapterMem(IN struct ADAPTER *prAdapter,
 	/* 4 <0.1> reset fgIsBusAccessFailed */
 	fgIsBusAccessFailed = FALSE;
 }
+
+void wlanOnPostNicInitAdapter(IN struct ADAPTER *prAdapter,
+	IN struct REG_INFO *prRegInfo,
+	IN const u_int8_t bAtResetFlow);
 
 void wlanOnPostNicInitAdapter(IN struct ADAPTER *prAdapter,
 	IN struct REG_INFO *prRegInfo,
@@ -911,6 +918,9 @@ void wlanNchoInit(IN struct ADAPTER *prAdapter, IN uint8_t fgFwSync)
 }
 
 #endif
+
+void wlanOnPostFirmwareReady(IN struct ADAPTER *prAdapter,
+		IN struct REG_INFO *prRegInfo);
 
 void wlanOnPostFirmwareReady(IN struct ADAPTER *prAdapter,
 		IN struct REG_INFO *prRegInfo)
@@ -1450,12 +1460,13 @@ uint32_t wlanAdapterStart(IN struct ADAPTER *prAdapter,
 			case RAM_CODE_DOWNLOAD_FAIL:
 			case SET_CHIP_ECO_INFO_FAIL:
 				halHifSwInfoUnInit(prAdapter->prGlueInfo);
+				fallthrough;
 			case INIT_HIFINFO_FAIL:
 				nicRxUninitialize(prAdapter);
 				nicTxRelease(prAdapter, FALSE);
 				/* System Service Uninitialization */
 				nicUninitSystemService(prAdapter);
-			/* fallthrough */
+				fallthrough;
 			case INIT_ADAPTER_FAIL:
 			/* fallthrough */
 			case DRIVER_OWN_FAIL:
@@ -2210,6 +2221,9 @@ uint32_t wlanSendCommandMthread(IN struct ADAPTER
 }				/* end of wlanSendCommandMthread() */
 
 void wlanTxCmdDoneCb(IN struct ADAPTER *prAdapter,
+		     IN struct CMD_INFO *prCmdInfo);
+
+void wlanTxCmdDoneCb(IN struct ADAPTER *prAdapter,
 		     IN struct CMD_INFO *prCmdInfo)
 {
 #if CFG_DBG_MGT_BUF
@@ -2461,6 +2475,8 @@ void wlanClearTxCommandQueue(IN struct ADAPTER *prAdapter)
  * \retval none
  */
 /*----------------------------------------------------------------------------*/
+void wlanClearTxOidCommand(IN struct ADAPTER *prAdapter);
+
 void wlanClearTxOidCommand(IN struct ADAPTER *prAdapter)
 {
 	struct QUE rTempCmdQue;
@@ -6263,6 +6279,8 @@ void wlanDumpBssStatistics(IN struct ADAPTER *prAdapter,
 	}
 }
 
+void wlanDumpAllBssStatistics(IN struct ADAPTER *prAdapter);
+
 void wlanDumpAllBssStatistics(IN struct ADAPTER *prAdapter)
 {
 	struct BSS_INFO *prBssInfo;
@@ -6919,6 +6937,9 @@ uint32_t wlanQueryNicCapabilityV2(IN struct ADAPTER *prAdapter)
 
 	return WLAN_STATUS_SUCCESS;
 }
+
+void wlanSetNicResourceParameters(IN struct ADAPTER
+				  *prAdapter);
 
 void wlanSetNicResourceParameters(IN struct ADAPTER
 				  *prAdapter)
@@ -8778,6 +8799,9 @@ uint32_t wlanCfgGet(IN struct ADAPTER *prAdapter,
 }
 
 void wlanCfgRecordValue(IN struct ADAPTER *prAdapter,
+			const int8_t *pucKey, uint32_t u4Value);
+
+void wlanCfgRecordValue(IN struct ADAPTER *prAdapter,
 			const int8_t *pucKey, uint32_t u4Value)
 {
 	struct WLAN_CFG_ENTRY *prWlanCfgEntry;
@@ -9032,6 +9056,9 @@ struct WLAN_CFG_PARSE_STATE_S {
 };
 
 int32_t wlanCfgFindNextToken(struct WLAN_CFG_PARSE_STATE_S
+			     *state);
+
+int32_t wlanCfgFindNextToken(struct WLAN_CFG_PARSE_STATE_S
 			     *state)
 {
 	int8_t *x = state->ptr;
@@ -9136,6 +9163,7 @@ textresume:
 					x++;
 					continue;
 				}
+				fallthrough;
 			case '\n':
 				/* \ <lf> -> line continuation */
 				x++;
@@ -9251,6 +9279,11 @@ exit:
 uint32_t
 wlanCfgParseAddEntry(IN struct ADAPTER *prAdapter,
 		     uint8_t *pucKeyHead, uint8_t *pucKeyTail,
+		     uint8_t *pucValueHead, uint8_t *pucValueTail);
+
+uint32_t
+wlanCfgParseAddEntry(IN struct ADAPTER *prAdapter,
+		     uint8_t *pucKeyHead, uint8_t *pucKeyTail,
 		     uint8_t *pucValueHead, uint8_t *pucValueTail)
 {
 
@@ -9303,6 +9336,9 @@ enum {
 };
 
 #if CFG_SUPPORT_EASY_DEBUG
+
+uint32_t wlanCfgParseToFW(int8_t **args, int8_t *args_size,
+			  uint8_t nargs, int8_t *buffer, uint8_t times);
 
 uint32_t wlanCfgParseToFW(int8_t **args, int8_t *args_size,
 			  uint8_t nargs, int8_t *buffer, uint8_t times)
@@ -10265,6 +10301,9 @@ void wlanChipRstPreAct(IN struct ADAPTER *prAdapter)
 
 #if CFG_ENABLE_PER_STA_STATISTICS
 void wlanTxLifetimeUpdateStaStats(IN struct ADAPTER
+				  *prAdapter, IN struct MSDU_INFO *prMsduInfo);
+
+void wlanTxLifetimeUpdateStaStats(IN struct ADAPTER
 				  *prAdapter, IN struct MSDU_INFO *prMsduInfo)
 {
 	struct STA_RECORD *prStaRec;
@@ -10325,6 +10364,9 @@ void wlanTxLifetimeUpdateStaStats(IN struct ADAPTER
 #endif
 
 u_int8_t wlanTxLifetimeIsProfilingEnabled(
+	IN struct ADAPTER *prAdapter);
+
+u_int8_t wlanTxLifetimeIsProfilingEnabled(
 	IN struct ADAPTER *prAdapter)
 {
 	u_int8_t fgEnabled = TRUE;
@@ -10341,6 +10383,9 @@ u_int8_t wlanTxLifetimeIsProfilingEnabled(
 
 	return fgEnabled;
 }
+
+u_int8_t wlanTxLifetimeIsTargetMsdu(IN struct ADAPTER
+				    *prAdapter, IN struct MSDU_INFO *prMsduInfo);
 
 u_int8_t wlanTxLifetimeIsTargetMsdu(IN struct ADAPTER
 				    *prAdapter, IN struct MSDU_INFO *prMsduInfo)
@@ -11580,6 +11625,10 @@ wlanGetAntPathType(IN struct ADAPTER *prAdapter,
 
 uint8_t
 wlanAntPathFavorSelect(IN struct ADAPTER *prAdapter,
+		       IN enum ENUM_WF_PATH_FAVOR_T eWfPathFavor);
+
+uint8_t
+wlanAntPathFavorSelect(IN struct ADAPTER *prAdapter,
 		       IN enum ENUM_WF_PATH_FAVOR_T eWfPathFavor)
 {
 	uint8_t ucRetValSpeIdx = 0x18;
@@ -12133,6 +12182,9 @@ uint32_t wlanSetLowLatencyMode(
 #if CFG_SUPPORT_EASY_DEBUG
 
 void wlanCfgFwSetParam(uint8_t *fwBuffer, char *cmdStr, char *value, int num,
+		       int type);
+
+void wlanCfgFwSetParam(uint8_t *fwBuffer, char *cmdStr, char *value, int num,
 		       int type)
 {
 	struct CMD_FORMAT_V1 *cmd = (struct CMD_FORMAT_V1 *)fwBuffer + num;
@@ -12154,6 +12206,9 @@ void wlanCfgFwSetParam(uint8_t *fwBuffer, char *cmdStr, char *value, int num,
 	/* here will not ensure the end will be '\0' */
 	kalMemCopy(cmd->itemValue, value, cmd->itemValueLength);
 }
+
+uint32_t wlanCfgSetGetFw(IN struct ADAPTER *prAdapter, const char *fwBuffer,
+			 int cmdNum, enum CMD_TYPE cmdType);
 
 uint32_t wlanCfgSetGetFw(IN struct ADAPTER *prAdapter, const char *fwBuffer,
 			 int cmdNum, enum CMD_TYPE cmdType)

@@ -16,7 +16,7 @@
 *    Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
 
-#define pr_fmt(fmt) "conninfra_test@(%s:%d) " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/fs.h>
 #include <linux/uaccess.h>

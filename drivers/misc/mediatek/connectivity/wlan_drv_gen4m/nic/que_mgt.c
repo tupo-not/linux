@@ -893,6 +893,9 @@ struct SW_RFB *qmFlushRxQueues(IN struct ADAPTER *prAdapter)
  */
 /*----------------------------------------------------------------------------*/
 struct SW_RFB *qmFlushStaRxQueue(IN struct ADAPTER *prAdapter,
+	IN uint32_t u4StaRecIdx, IN uint32_t u4Tid);
+
+struct SW_RFB *qmFlushStaRxQueue(IN struct ADAPTER *prAdapter,
 	IN uint32_t u4StaRecIdx, IN uint32_t u4Tid)
 {
 	/* UINT_32 i; */
@@ -1467,11 +1470,17 @@ void qmDetermineStaRecIndex(IN struct ADAPTER *prAdapter,
 
 struct STA_RECORD *qmDetermineStaToBeDequeued(
 	IN struct ADAPTER *prAdapter,
+	IN uint32_t u4StartStaRecIndex);
+
+struct STA_RECORD *qmDetermineStaToBeDequeued(
+	IN struct ADAPTER *prAdapter,
 	IN uint32_t u4StartStaRecIndex)
 {
 
 	return NULL;
 }
+
+struct QUE *qmDequeueStaTxPackets(IN struct ADAPTER *prAdapter);
 
 struct QUE *qmDequeueStaTxPackets(IN struct ADAPTER *prAdapter)
 {
@@ -2975,8 +2984,9 @@ uint32_t gmGetDequeueQuota(
 	}
 #if (CFG_SUPPORT_802_11AX == 1)
 	else if (fgEfuseCtrlAxOn == 1) {
-		if (prStaRec->ucDesiredPhyTypeSet & PHY_TYPE_BIT_HE)
-		;/* TBD */
+		if (prStaRec->ucDesiredPhyTypeSet & PHY_TYPE_BIT_HE) {
+			/* TBD */
+		}
 	}
 #endif
 #if (CFG_SUPPORT_802_11BE == 1)
@@ -5269,6 +5279,9 @@ u_int8_t qmIsIndependentPkt(IN struct SW_RFB *prSwRfb)
 }
 
 void mqmParseAssocReqWmmIe(IN struct ADAPTER *prAdapter,
+	IN uint8_t *pucIE, IN struct STA_RECORD *prStaRec);
+
+void mqmParseAssocReqWmmIe(IN struct ADAPTER *prAdapter,
 	IN uint8_t *pucIE, IN struct STA_RECORD *prStaRec)
 {
 	struct IE_WMM_INFO *prIeWmmInfo;
@@ -5403,6 +5416,9 @@ void mqmProcessAssocReq(IN struct ADAPTER *prAdapter,
 
 	}
 }
+
+void mqmParseAssocRspWmmIe(IN uint8_t *pucIE,
+	IN struct STA_RECORD *prStaRec);
 
 void mqmParseAssocRspWmmIe(IN uint8_t *pucIE,
 	IN struct STA_RECORD *prStaRec)
@@ -5654,6 +5670,9 @@ void mqmProcessBcn(IN struct ADAPTER *prAdapter,
 
 
 u_int8_t mqmUpdateEdcaParameters(IN struct BSS_INFO	*prBssInfo,
+	IN uint8_t *pucIE, IN u_int8_t fgForceOverride);
+
+u_int8_t mqmUpdateEdcaParameters(IN struct BSS_INFO	*prBssInfo,
 	IN uint8_t *pucIE, IN u_int8_t fgForceOverride)
 {
 	struct AC_QUE_PARMS *prAcQueParams;
@@ -5744,6 +5763,9 @@ uint8_t mqmCompareMUEdcaParameters(
 
 	return TRUE;
 }
+
+uint8_t mqmUpdateMUEdcaParams(struct BSS_INFO *prBssInfo,
+	uint8_t *pucIE, uint8_t fgForceOverride);
 
 uint8_t mqmUpdateMUEdcaParams(struct BSS_INFO *prBssInfo,
 	uint8_t *pucIE, uint8_t fgForceOverride)
@@ -6593,6 +6615,8 @@ uint32_t mqmGenerateWmmParamIEByParam(struct ADAPTER *prAdapter,
 }
 
 #endif
+
+u_int8_t isProbeResponse(IN struct MSDU_INFO *prMgmtTxMsdu);
 
 u_int8_t isProbeResponse(IN struct MSDU_INFO *prMgmtTxMsdu)
 {
@@ -8516,6 +8540,8 @@ u_int8_t qmRxPNtoU64(uint8_t *pucPN, uint8_t uPNNum,
 /* To check PN/TSC between RxStatus and local record.
  * return TRUE if PNS is not bigger than PNT
  */
+u_int8_t qmRxDetectReplay(uint8_t *pucPNS, uint8_t *pucPNT);
+
 u_int8_t qmRxDetectReplay(uint8_t *pucPNS, uint8_t *pucPNT)
 {
 	uint64_t u8RxNum = 0;
@@ -8630,6 +8656,9 @@ u_int8_t qmHandleRxReplay(struct ADAPTER *prAdapter,
 	return FALSE;
 }
 #endif
+
+u_int8_t
+qmIsIPLayerPacket(uint8_t *pucPkt);
 
 u_int8_t
 qmIsIPLayerPacket(uint8_t *pucPkt)

@@ -74,7 +74,7 @@ static struct work_struct rst_trigger_work;
  */
 static void bt_reset_work(struct work_struct *work)
 {
-	BTMTK_INFO("Trigger subsys reset");
+	BTMTK_INFO("trigger subsys reset");
 	bt_chip_reset_flow(RESET_LEVEL_0_5, CONNDRV_TYPE_BT, "BT Subsys reset");
 }
 
@@ -319,7 +319,7 @@ int32_t bt_request_irq(enum bt_irq_type irq_type)
 		pirq = &bt_conn2ap_sw_irq;
 		break;
 	default:
-		BTMTK_ERR("Invalid irq_type %d!", irq_type);
+		BTMTK_ERR("invalid irq_type %d!", irq_type);
 		return -EINVAL;
 	}
 
@@ -329,7 +329,7 @@ int32_t bt_request_irq(enum bt_irq_type irq_type)
 	ret = request_irq(irq_num, btmtk_irq_handler, irq_flags,
 			  pirq->name, pirq);
 	if (ret) {
-		BTMTK_ERR("Request %s (%u) failed! ret(%d)", pirq->name, irq_num, ret);
+		BTMTK_ERR("request %s (%u) failed! ret(%d)", pirq->name, irq_num, ret);
 		pirq->active = FALSE;
 		return ret;
 	}
@@ -352,7 +352,7 @@ int32_t bt_request_irq(enum bt_irq_type irq_type)
 		}
 	}
 
-	BTMTK_INFO("Request %s (%u) succeed, pirq = %p, flag = 0x%08x", pirq->name, irq_num, pirq, irq_flags);
+	BTMTK_INFO("request %s (%u) succeed, pirq = %p, flag = 0x%08lx", pirq->name, irq_num, pirq, irq_flags);
 	bt_irq_table[irq_type] = pirq;
 
 	return 0;
@@ -374,7 +374,7 @@ void bt_enable_irq(enum bt_irq_type irq_type)
 	struct bt_irq_ctrl *pirq;
 
 	if (irq_type >= BGF2AP_IRQ_MAX) {
-		BTMTK_ERR("Invalid irq_type %d!", irq_type);
+		BTMTK_ERR("invalid irq_type %d!", irq_type);
 		return;
 	}
 
@@ -408,7 +408,7 @@ void bt_disable_irq(enum bt_irq_type irq_type)
 	irq_timer[2] = sched_clock();
 #endif
 	if (irq_type >= BGF2AP_IRQ_MAX) {
-		BTMTK_ERR("Invalid irq_type %d!", irq_type);
+		BTMTK_ERR("invalid irq_type %d!", irq_type);
 		return;
 	}
 
@@ -452,7 +452,7 @@ void bt_free_irq(enum bt_irq_type irq_type)
 	struct bt_irq_ctrl *pirq;
 
 	if (irq_type >= BGF2AP_IRQ_MAX) {
-		BTMTK_ERR("Invalid irq_type %d!", irq_type);
+		BTMTK_ERR("invalid irq_type %d!", irq_type);
 		return;
 	}
 

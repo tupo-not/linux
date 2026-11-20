@@ -2653,6 +2653,11 @@ int mtk_cfg80211_cancel_remain_on_channel(
 int _mtk_cfg80211_mgmt_tx(struct wiphy *wiphy,
 		struct wireless_dev *wdev, struct ieee80211_channel *chan,
 		bool offchan, unsigned int wait, const u8 *buf, size_t len,
+		bool no_cck, bool dont_wait_for_ack, u64 *cookie);
+
+int _mtk_cfg80211_mgmt_tx(struct wiphy *wiphy,
+		struct wireless_dev *wdev, struct ieee80211_channel *chan,
+		bool offchan, unsigned int wait, const u8 *buf, size_t len,
 		bool no_cck, bool dont_wait_for_ack, u64 *cookie)
 {
 	struct GLUE_INFO *prGlueInfo = (struct GLUE_INFO *) NULL;
@@ -4062,6 +4067,10 @@ int mtk_cfg80211_assoc(struct wiphy *wiphy,
 }
 
 #if CFG_SUPPORT_NFC_BEAM_PLUS
+
+int mtk_cfg80211_testmode_get_scan_done(IN struct wiphy
+					*wiphy, IN void *data, IN int len,
+					IN struct GLUE_INFO *prGlueInfo);
 
 int mtk_cfg80211_testmode_get_scan_done(IN struct wiphy
 					*wiphy, IN void *data, IN int len,
@@ -5909,6 +5918,8 @@ bool is_world_regdom(const char *alpha2)
 }
 #endif
 
+enum regd_state regd_state_machine(IN struct regulatory_request *pRequest);
+
 enum regd_state regd_state_machine(IN struct regulatory_request *pRequest)
 {
 	switch (pRequest->initiator) {
@@ -5949,6 +5960,10 @@ enum regd_state regd_state_machine(IN struct regulatory_request *pRequest)
 	}
 }
 
+
+void
+mtk_apply_custom_regulatory(IN struct wiphy *pWiphy,
+			    IN const struct ieee80211_regdomain *pRegdom);
 
 void
 mtk_apply_custom_regulatory(IN struct wiphy *pWiphy,
@@ -6371,6 +6386,9 @@ int mtk_IsP2PNetDevice(struct GLUE_INFO *prGlueInfo,
  */
 /*----------------------------------------------------------------------------*/
 int mtk_init_sta_role(struct ADAPTER *prAdapter,
+		      struct net_device *ndev);
+
+int mtk_init_sta_role(struct ADAPTER *prAdapter,
 		      struct net_device *ndev)
 {
 	struct GLUE_INFO *prGlueInfo;
@@ -6412,6 +6430,9 @@ int mtk_init_sta_role(struct ADAPTER *prAdapter,
  *
  */
 /*----------------------------------------------------------------------------*/
+int mtk_uninit_sta_role(struct ADAPTER *prAdapter,
+			struct net_device *ndev);
+
 int mtk_uninit_sta_role(struct ADAPTER *prAdapter,
 			struct net_device *ndev)
 {
@@ -6494,6 +6515,9 @@ void mtk_uninit_monitor_role(struct wiphy *wiphy,
  */
 /*----------------------------------------------------------------------------*/
 int mtk_init_ap_role(struct GLUE_INFO *prGlueInfo,
+		     struct net_device *ndev);
+
+int mtk_init_ap_role(struct GLUE_INFO *prGlueInfo,
 		     struct net_device *ndev)
 {
 	uint8_t u4Idx = 0;
@@ -6556,6 +6580,10 @@ int mtk_init_ap_role(struct GLUE_INFO *prGlueInfo,
 /*----------------------------------------------------------------------------*/
 uint32_t
 mtk_oid_uninit_ap_role(struct ADAPTER *prAdapter, void *pvSetBuffer,
+	uint32_t u4SetBufferLen, uint32_t *pu4SetInfoLen);
+
+uint32_t
+mtk_oid_uninit_ap_role(struct ADAPTER *prAdapter, void *pvSetBuffer,
 	uint32_t u4SetBufferLen, uint32_t *pu4SetInfoLen)
 {
 	unsigned char u4Idx = 0;
@@ -6597,6 +6625,9 @@ mtk_oid_uninit_ap_role(struct ADAPTER *prAdapter, void *pvSetBuffer,
 	return 0;
 
 }
+
+int mtk_uninit_ap_role(struct GLUE_INFO *prGlueInfo,
+		       struct net_device *ndev);
 
 int mtk_uninit_ap_role(struct GLUE_INFO *prGlueInfo,
 		       struct net_device *ndev)

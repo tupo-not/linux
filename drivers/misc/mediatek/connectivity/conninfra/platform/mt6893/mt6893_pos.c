@@ -2003,7 +2003,7 @@ static int consys_spi_read_nolock(enum sys_spi_subsystem subsystem, unsigned int
 		CONN_REG_RFSPI_ADDR + op->busy_cr,
 		op->polling_bit, 0, 100, 50, check);
 	if (check != 0) {
-		pr_err("[%s][%d][STEP1] polling 0x%08x bit %d fail. Value=0x%08x\n",
+		pr_err("[%s][%d][STEP1] polling 0x%08lx bit %d fail. Value=0x%08x\n",
 			__func__, subsystem, CONN_REG_RFSPI_ADDR + op->busy_cr,
 			op->polling_bit,
 			CONSYS_REG_READ(CONN_REG_RFSPI_ADDR + op->busy_cr));
@@ -2021,7 +2021,7 @@ static int consys_spi_read_nolock(enum sys_spi_subsystem subsystem, unsigned int
 		CONN_REG_RFSPI_ADDR + op->busy_cr,
 		op->polling_bit, 0, 100, 50, check);
 	if (check != 0) {
-		pr_err("[%s][%d][STEP4] polling 0x%08x bit %d fail. Value=0x%08x\n",
+		pr_err("[%s][%d][STEP4] polling 0x%08lx bit %d fail. Value=0x%08x\n",
 			__func__, subsystem, CONN_REG_RFSPI_ADDR + op->busy_cr,
 			op->polling_bit,
 			CONSYS_REG_READ(CONN_REG_RFSPI_ADDR + op->busy_cr));
@@ -2066,7 +2066,7 @@ static int consys_spi_write_nolock(enum sys_spi_subsystem subsystem, unsigned in
 		CONN_REG_RFSPI_ADDR + op->busy_cr,
 		op->polling_bit, 0, 100, 50, check);
 	if (check != 0) {
-		pr_err("[%s][%d][STEP1] polling 0x%08x bit %d fail. Value=0x%08x\n",
+		pr_err("[%s][%d][STEP1] polling 0x%08lx bit %d fail. Value=0x%08x\n",
 			__func__, subsystem, CONN_REG_RFSPI_ADDR + op->busy_cr,
 			op->polling_bit,
 			CONSYS_REG_READ(CONN_REG_RFSPI_ADDR + op->busy_cr));
@@ -2082,7 +2082,7 @@ static int consys_spi_write_nolock(enum sys_spi_subsystem subsystem, unsigned in
 		CONN_REG_RFSPI_ADDR + op->busy_cr,
 		op->polling_bit, 0, 100, 50, check);
 	if (check != 0) {
-		pr_err("[%s][%d][STEP4] polling 0x%08x bit %d fail. Value=0x%08x\n",
+		pr_err("[%s][%d][STEP4] polling 0x%08lx bit %d fail. Value=0x%08x\n",
 			__func__, subsystem, CONN_REG_RFSPI_ADDR + op->busy_cr,
 			op->polling_bit,
 			CONSYS_REG_READ(CONN_REG_RFSPI_ADDR + op->busy_cr));

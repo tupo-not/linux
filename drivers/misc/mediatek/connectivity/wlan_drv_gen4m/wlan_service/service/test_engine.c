@@ -1771,6 +1771,13 @@ s_int32 mt_engine_calc_phy(
 	u_int32 apep_length,
 	u_int8 stbc,
 	u_int8 ltf_gi,
+	u_int8 max_tpe);
+
+s_int32 mt_engine_calc_phy(
+	struct test_ru_info *ru_info,
+	u_int32 apep_length,
+	u_int8 stbc,
+	u_int8 ltf_gi,
 	u_int8 max_tpe)
 {
 	u_char rate_den = 0;

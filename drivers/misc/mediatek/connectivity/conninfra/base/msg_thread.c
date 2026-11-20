@@ -16,7 +16,7 @@
 *    Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
 
-#define pr_fmt(fmt) KBUILD_MODNAME "@(%s:%d) " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 #include <linux/delay.h>
 #include "msg_thread.h"
 
@@ -188,6 +188,14 @@ static struct msg_op *msg_evt_get_op_from_q(struct msg_op_q *op_q)
 /*
  *  msg_evt_thread API
  */
+
+int msg_evt_put_op_to_free_queue(struct msg_thread_ctx *ctx, struct msg_op *op);
+struct msg_op *msg_evt_get_free_op(struct msg_thread_ctx *ctx);
+int msg_evt_put_op_to_active(struct msg_thread_ctx *ctx, struct msg_op *op);
+void msg_op_history_save(struct osal_op_history *log_history, struct msg_op *op);
+unsigned int msg_evt_wait_event_checker(P_OSAL_THREAD thread);
+int msg_evt_set_current_op(struct msg_thread_ctx *ctx, struct msg_op *op);
+int msg_evt_opid_handler(struct msg_thread_ctx *ctx, struct msg_op_data *op);
 
 int msg_evt_put_op_to_free_queue(struct msg_thread_ctx *ctx, struct msg_op *op)
 {

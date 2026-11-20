@@ -321,6 +321,9 @@ void kal_tracing_mark_write(const char *fmt, ...)
  */
 /*----------------------------------------------------------------------------*/
 uint32_t kalFirmwareOpen(IN struct GLUE_INFO *prGlueInfo,
+			 IN uint8_t **apucNameTable);
+
+uint32_t kalFirmwareOpen(IN struct GLUE_INFO *prGlueInfo,
 			 IN uint8_t **apucNameTable)
 {
 	uint8_t ucNameIdx;
@@ -387,6 +390,8 @@ error_open:
  *
  */
 /*----------------------------------------------------------------------------*/
+uint32_t kalFirmwareClose(IN struct GLUE_INFO *prGlueInfo);
+
 uint32_t kalFirmwareClose(IN struct GLUE_INFO *prGlueInfo)
 {
 	release_firmware(prGlueInfo->fw_entry);
@@ -407,6 +412,9 @@ uint32_t kalFirmwareClose(IN struct GLUE_INFO *prGlueInfo)
  *
  */
 /*----------------------------------------------------------------------------*/
+uint32_t kalFirmwareLoad(IN struct GLUE_INFO *prGlueInfo, OUT void *prBuf,
+			 IN uint32_t u4Offset, OUT uint32_t *pu4Size);
+
 uint32_t kalFirmwareLoad(IN struct GLUE_INFO *prGlueInfo, OUT void *prBuf,
 			 IN uint32_t u4Offset, OUT uint32_t *pu4Size)
 {
@@ -443,6 +451,8 @@ error_read:
  */
 /*----------------------------------------------------------------------------*/
 
+uint32_t kalFirmwareSize(IN struct GLUE_INFO *prGlueInfo, OUT uint32_t *pu4Size);
+
 uint32_t kalFirmwareSize(IN struct GLUE_INFO *prGlueInfo, OUT uint32_t *pu4Size)
 {
 	ASSERT(prGlueInfo);
@@ -455,6 +465,11 @@ uint32_t kalFirmwareSize(IN struct GLUE_INFO *prGlueInfo, OUT uint32_t *pu4Size)
 
 	return WLAN_STATUS_SUCCESS;
 }
+
+void kalConstructDefaultFirmwarePrio(struct GLUE_INFO *prGlueInfo,
+				     uint8_t **apucNameTable,
+				     uint8_t **apucName, uint8_t *pucNameIdx,
+				     uint8_t ucMaxNameIdx);
 
 void kalConstructDefaultFirmwarePrio(struct GLUE_INFO *prGlueInfo,
 				     uint8_t **apucNameTable,
@@ -1159,6 +1174,8 @@ uint32_t kal_is_skb_gro(struct ADAPTER *prAdapter, uint8_t ucBssIdx)
 	 */
 	return 0;
 }
+
+uint32_t kal_is_udp_enable_gro(struct ADAPTER *prAdapter, uint8_t ucBssIdx);
 
 uint32_t kal_is_udp_enable_gro(struct ADAPTER *prAdapter, uint8_t ucBssIdx)
 {
@@ -2733,6 +2750,9 @@ void kalSendCompleteAndAwakeQueue(IN struct GLUE_INFO *prGlueInfo,
  */
 /*----------------------------------------------------------------------------*/
 void kalQueryRegistryMacAddr(IN struct GLUE_INFO *prGlueInfo,
+			     OUT uint8_t *paucMacAddr);
+
+void kalQueryRegistryMacAddr(IN struct GLUE_INFO *prGlueInfo,
 			     OUT uint8_t *paucMacAddr)
 {
 	uint8_t aucZeroMac[MAC_ADDR_LEN] = { 0, 0, 0, 0, 0, 0 }
@@ -2772,6 +2792,10 @@ uint32_t kalReadExtCfg(IN struct GLUE_INFO *prGlueInfo)
 	return prGlueInfo->u4ExtCfgLength;
 }
 #endif
+
+u_int8_t kalIPv4FrameClassifier(IN struct GLUE_INFO *prGlueInfo,
+				IN void *prPacket, IN uint8_t *pucIpHdr,
+				OUT struct TX_PACKET_INFO *prTxPktInfo);
 
 u_int8_t kalIPv4FrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 				IN void *prPacket, IN uint8_t *pucIpHdr,
@@ -2892,6 +2916,10 @@ u_int8_t kalIPv4FrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 
 u_int8_t kalIPv6FrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 				IN void *prPacket, IN uint8_t *pucIpv6Hdr,
+				OUT struct TX_PACKET_INFO *prTxPktInfo);
+
+u_int8_t kalIPv6FrameClassifier(IN struct GLUE_INFO *prGlueInfo,
+				IN void *prPacket, IN uint8_t *pucIpv6Hdr,
 				OUT struct TX_PACKET_INFO *prTxPktInfo)
 {
 	uint8_t ucIpv6Proto;
@@ -2937,6 +2965,10 @@ u_int8_t kalIPv6FrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 
 u_int8_t kalArpFrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 			       IN void *prPacket, IN uint8_t *pucIpHdr,
+			       OUT struct TX_PACKET_INFO *prTxPktInfo);
+
+u_int8_t kalArpFrameClassifier(IN struct GLUE_INFO *prGlueInfo,
+			       IN void *prPacket, IN uint8_t *pucIpHdr,
 			       OUT struct TX_PACKET_INFO *prTxPktInfo)
 {
 	uint8_t ucSeqNo;
@@ -2945,6 +2977,10 @@ u_int8_t kalArpFrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 	prTxPktInfo->u2Flag |= BIT(ENUM_PKT_ARP);
 	return TRUE;
 }
+
+u_int8_t kalTdlsFrameClassifier(IN struct GLUE_INFO *prGlueInfo,
+				IN void *prPacket, IN uint8_t *pucIpHdr,
+				OUT struct TX_PACKET_INFO *prTxPktInfo);
 
 u_int8_t kalTdlsFrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 				IN void *prPacket, IN uint8_t *pucIpHdr,
@@ -2958,6 +2994,12 @@ u_int8_t kalTdlsFrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 
 	return TRUE;
 }
+
+u_int8_t kalSecurityFrameClassifier(IN struct GLUE_INFO *prGlueInfo,
+				    IN void *prPacket, IN uint8_t *pucIpHdr,
+				    IN uint16_t u2EthType,
+				    IN uint8_t *aucLookAheadBuf,
+				    OUT struct TX_PACKET_INFO *prTxPktInfo);
 
 u_int8_t kalSecurityFrameClassifier(IN struct GLUE_INFO *prGlueInfo,
 				    IN void *prPacket, IN uint8_t *pucIpHdr,
@@ -3266,6 +3308,8 @@ void kalOidClearance(IN struct GLUE_INFO *prGlueInfo)
 {
 }
 
+void kalGetLocalTime(unsigned long long *sec, unsigned long *nsec);
+
 void kalGetLocalTime(unsigned long long *sec, unsigned long *nsec)
 {
 	if (sec != NULL && nsec != NULL) {
@@ -3329,6 +3373,9 @@ static int32_t kalThreadSchedRetrieve(struct task_struct *pThread,
  *	-2 : pThread not yet initialized or invalid parameters
  */
 int32_t kalThreadSchedMark(struct task_struct *pThread,
+			   struct KAL_THREAD_SCHEDSTATS *pSchedstats);
+
+int32_t kalThreadSchedMark(struct task_struct *pThread,
 			   struct KAL_THREAD_SCHEDSTATS *pSchedstats)
 {
 	return kalThreadSchedRetrieve(pThread, pSchedstats);
@@ -3343,6 +3390,9 @@ int32_t kalThreadSchedMark(struct task_struct *pThread,
  *	-1 : Kernel's schedstats feature not enabled
  *	-2 : pThread not yet initialized or invalid parameters
  */
+int32_t kalThreadSchedUnmark(struct task_struct *pThread,
+			     struct KAL_THREAD_SCHEDSTATS *pSchedstats);
+
 int32_t kalThreadSchedUnmark(struct task_struct *pThread,
 			     struct KAL_THREAD_SCHEDSTATS *pSchedstats)
 {
@@ -3934,6 +3984,8 @@ void kalClearCommandQueue(IN struct GLUE_INFO *prGlueInfo,
  * \retval is TRUE (run command Data path flow) or FALSE (not use)
  */
 /*----------------------------------------------------------------------------*/
+u_int8_t kalIsCommandDataPath(IN struct ADAPTER *prAdapter, IN void *prPacket);
+
 u_int8_t kalIsCommandDataPath(IN struct ADAPTER *prAdapter, IN void *prPacket)
 {
 	struct sk_buff *skb = (struct sk_buff *)prPacket;
@@ -3994,6 +4046,8 @@ u_int8_t kalIsCommandDataPath(IN struct ADAPTER *prAdapter, IN void *prPacket)
 }
 #endif
 
+uint32_t kalProcessTxPacket(struct GLUE_INFO *prGlueInfo, struct sk_buff *prSkb);
+
 uint32_t kalProcessTxPacket(struct GLUE_INFO *prGlueInfo, struct sk_buff *prSkb)
 {
 	uint32_t u4Status = WLAN_STATUS_SUCCESS;
@@ -4043,6 +4097,8 @@ uint32_t kalProcessTxPacket(struct GLUE_INFO *prGlueInfo, struct sk_buff *prSkb)
  * \retval none
  */
 /*----------------------------------------------------------------------------*/
+void kalProcessTxReq(struct GLUE_INFO *prGlueInfo, u_int8_t *pfgNeedHwAccess);
+
 void kalProcessTxReq(struct GLUE_INFO *prGlueInfo, u_int8_t *pfgNeedHwAccess)
 {
 	struct QUE *prCmdQue = NULL;
@@ -4225,9 +4281,10 @@ int hif_thread(void *data)
 		}
 
 		/* Unlock wakelock if hif_thread going to idle */
-		if (!(prGlueInfo->ulFlag & GLUE_FLAG_HIF_PROCESS))
+		if (!(prGlueInfo->ulFlag & GLUE_FLAG_HIF_PROCESS)) {
 			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter,
 					prHifThreadWakeLock);
+		}
 
 		/*
 		 * sleep on waitqueue if no events occurred. Event contain
@@ -4389,9 +4446,10 @@ int rx_thread(void *data)
 		}
 
 		/* Unlock wakelock if rx_thread going to idle */
-		if (!(prGlueInfo->ulFlag & GLUE_FLAG_RX_PROCESS))
+		if (!(prGlueInfo->ulFlag & GLUE_FLAG_RX_PROCESS)) {
 			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter,
 					prRxThreadWakeLock);
+		}
 
 		/*
 		 * sleep on waitqueue if no events occurred.
@@ -4562,9 +4620,10 @@ int main_thread(void *data)
 		}
 
 		/* Unlock wakelock if main_thread going to idle */
-		if (!(prGlueInfo->ulFlag & GLUE_FLAG_MAIN_PROCESS))
+		if (!(prGlueInfo->ulFlag & GLUE_FLAG_MAIN_PROCESS)) {
 			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter,
 					prTxThreadWakeLock);
+		}
 
 		/*
 		 * sleep on waitqueue if no events occurred. Event contain
@@ -6580,6 +6639,10 @@ u_int8_t kalGetIPv6Address(IN struct net_device *prDev,
 
 void kalSetNetAddress(IN struct GLUE_INFO *prGlueInfo, IN uint8_t ucBssIdx,
 		      IN uint8_t *pucIPv4Addr, IN uint32_t u4NumIPv4Addr,
+		      IN uint8_t *pucIPv6Addr, IN uint32_t u4NumIPv6Addr);
+
+void kalSetNetAddress(IN struct GLUE_INFO *prGlueInfo, IN uint8_t ucBssIdx,
+		      IN uint8_t *pucIPv4Addr, IN uint32_t u4NumIPv4Addr,
 		      IN uint8_t *pucIPv6Addr, IN uint32_t u4NumIPv6Addr)
 {
 	uint32_t rStatus = WLAN_STATUS_FAILURE;
@@ -7147,6 +7210,9 @@ void kalWowInit(IN struct GLUE_INFO *prGlueInfo)
 }
 
 void kalWowCmdEventSetCb(IN struct ADAPTER *prAdapter,
+			 IN struct CMD_INFO *prCmdInfo, IN uint8_t *pucEventBuf);
+
+void kalWowCmdEventSetCb(IN struct ADAPTER *prAdapter,
 			 IN struct CMD_INFO *prCmdInfo, IN uint8_t *pucEventBuf)
 {
 	ASSERT(prAdapter);
@@ -7436,6 +7502,8 @@ void kalPerMonDump(IN struct GLUE_INFO *prGlueInfo)
 
 #define PERF_UPDATE_PERIOD 1000 /* ms */
 #if (CFG_SUPPORT_PERF_IND == 1)
+void kalPerfIndReset(IN struct ADAPTER *prAdapter);
+
 void kalPerfIndReset(IN struct ADAPTER *prAdapter)
 {
 	uint8_t i;
@@ -7450,6 +7518,8 @@ void kalPerfIndReset(IN struct ADAPTER *prAdapter)
 		prAdapter->prGlueInfo->PerfIndCache.ucCurRxNss2[i] = 0;
 	}
 } /* kalPerfIndReset */
+
+void kalSetPerfReport(IN struct ADAPTER *prAdapter);
 
 void kalSetPerfReport(IN struct ADAPTER *prAdapter)
 {
@@ -8492,6 +8562,8 @@ void kalInitDevWakeup(struct ADAPTER *prAdapter, struct device *prDev)
 		device_init_wakeup(prDev, TRUE);
 }
 
+u_int8_t kalIsOuiMask(const uint8_t pucMacAddrMask[MAC_ADDR_LEN]);
+
 u_int8_t kalIsOuiMask(const uint8_t pucMacAddrMask[MAC_ADDR_LEN])
 {
 	return (pucMacAddrMask[0] == 0xFF && pucMacAddrMask[1] == 0xFF &&
@@ -8504,6 +8576,9 @@ u_int8_t kalIsValidMacAddr(const uint8_t *addr)
 }
 
 #if (KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE)
+u_int8_t kalParseRandomMac(const struct net_device *ndev, uint8_t *pucMacAddr,
+			   uint8_t *pucMacAddrMask, uint8_t *pucRandomMac);
+
 u_int8_t kalParseRandomMac(const struct net_device *ndev, uint8_t *pucMacAddr,
 			   uint8_t *pucMacAddrMask, uint8_t *pucRandomMac)
 {

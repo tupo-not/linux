@@ -301,7 +301,7 @@ void p2pFuncRequestScan(IN struct ADAPTER *prAdapter,
 				prScanReqV2->ucChannelListNum =
 					prScanReqInfo->ucNumChannelList;
 			}
-			/* fallthrough */
+			fallthrough;
 		case SCAN_CHANNEL_FULL:
 			/* fallthrough */
 		case SCAN_CHANNEL_2G4:
@@ -699,6 +699,11 @@ p2pFuncUpdateBssInfoForJOIN(IN struct ADAPTER *prAdapter,
 uint32_t
 p2pFunMgmtFrameTxDone(IN struct ADAPTER *prAdapter,
 		IN struct MSDU_INFO *prMsduInfo,
+		IN enum ENUM_TX_RESULT_CODE rTxDoneStatus);
+
+uint32_t
+p2pFunMgmtFrameTxDone(IN struct ADAPTER *prAdapter,
+		IN struct MSDU_INFO *prMsduInfo,
 		IN enum ENUM_TX_RESULT_CODE rTxDoneStatus)
 {
 	u_int8_t fgIsSuccess = FALSE;
@@ -723,6 +728,9 @@ p2pFunMgmtFrameTxDone(IN struct ADAPTER *prAdapter,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* p2pFunMgmtFrameTxDone */
+
+const char *
+p2pActionFrameToString(enum ENUM_P2P_ACTION_FRAME_TYPE eP2pAction);
 
 const char *
 p2pActionFrameToString(enum ENUM_P2P_ACTION_FRAME_TYPE eP2pAction)
@@ -752,6 +760,9 @@ p2pActionFrameToString(enum ENUM_P2P_ACTION_FRAME_TYPE eP2pAction)
 }
 
 const char *
+paToString(int32_t u4PaAction);
+
+const char *
 paToString(int32_t u4PaAction)
 {
 	switch (u4PaAction) {
@@ -774,6 +785,9 @@ paToString(int32_t u4PaAction)
 	return "UNKNOWN Public Action";
 }
 
+
+const char *
+actionToString(int32_t u4WlanAction);
 
 const char *
 actionToString(int32_t u4WlanAction)
@@ -820,6 +834,11 @@ actionToString(int32_t u4WlanAction)
 enum ENUM_P2P_CONNECT_STATE
 p2pFuncTagActionActionP2PFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
 		IN struct WLAN_ACTION_FRAME *prActFrame,
+		IN uint8_t ucP2pAction, IN uint64_t u8Cookie);
+
+enum ENUM_P2P_CONNECT_STATE
+p2pFuncTagActionActionP2PFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
+		IN struct WLAN_ACTION_FRAME *prActFrame,
 		IN uint8_t ucP2pAction, IN uint64_t u8Cookie)
 {
 	DBGLOG(P2P, INFO,
@@ -832,6 +851,11 @@ p2pFuncTagActionActionP2PFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
 		prMgmtTxMsdu->ucTxSeqNum);
 	return ucP2pAction + 1;
 }
+
+enum ENUM_P2P_CONNECT_STATE
+p2pFuncTagActionActionFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
+		IN struct WLAN_ACTION_FRAME *prActFrame,
+		IN uint8_t ucAction, IN uint64_t u8Cookie);
 
 enum ENUM_P2P_CONNECT_STATE
 p2pFuncTagActionActionFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
@@ -882,6 +906,12 @@ enum ENUM_P2P_CONNECT_STATE
 p2pFuncTagActionCategoryFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
 		struct WLAN_ACTION_FRAME *prActFrame,
 		IN uint8_t ucCategory,
+		IN uint64_t u8Cookie);
+
+enum ENUM_P2P_CONNECT_STATE
+p2pFuncTagActionCategoryFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
+		struct WLAN_ACTION_FRAME *prActFrame,
+		IN uint8_t ucCategory,
 		IN uint64_t u8Cookie)
 {
 	uint8_t ucAction = 0;
@@ -905,6 +935,9 @@ p2pFuncTagActionCategoryFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
 	}
 	return eCNNState;
 }
+
+void p2pProcessActionResponse(IN struct ADAPTER *prAdapter,
+		enum ENUM_P2P_ACTION_FRAME_TYPE eType);
 
 void p2pProcessActionResponse(IN struct ADAPTER *prAdapter,
 		enum ENUM_P2P_ACTION_FRAME_TYPE eType)
@@ -958,6 +991,10 @@ void p2pProcessActionResponse(IN struct ADAPTER *prAdapter,
  * Provision Discovery Req
  * Provision Discovery Res
  */
+enum ENUM_P2P_CONNECT_STATE
+p2pFuncTagMgmtFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
+		IN uint64_t u8Cookie);
+
 enum ENUM_P2P_CONNECT_STATE
 p2pFuncTagMgmtFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
 		IN uint64_t u8Cookie)
@@ -1016,6 +1053,12 @@ p2pFuncTagMgmtFrame(IN struct MSDU_INFO *prMgmtTxMsdu,
 	}
 	return eCNNState;
 }
+
+struct MSDU_INFO *p2pFuncProcessP2pAssocResp(
+	IN struct ADAPTER *prAdapter,
+	IN struct STA_RECORD *prStaRec,
+	IN uint8_t ucBssIdx,
+	IN struct MSDU_INFO *prMgmtTxMsdu);
 
 struct MSDU_INFO *p2pFuncProcessP2pAssocResp(
 	IN struct ADAPTER *prAdapter,
@@ -1722,7 +1765,7 @@ p2pFuncSwitchOPMode(IN struct ADAPTER *prAdapter,
 			case OP_MODE_INFRASTRUCTURE:
 				DBGLOG(P2P, TRACE,
 					"p2pFuncSwitchOPMode: Switch to Client.\n");
-				/* fall through */
+				fallthrough;
 			case OP_MODE_ACCESS_POINT:
 				/* Change interface address. */
 				if (eOpMode == OP_MODE_ACCESS_POINT) {
@@ -2459,6 +2502,8 @@ void p2pFuncChannelListFiltering(IN struct ADAPTER *prAdapter,
 }
 
 #endif
+
+void p2pFuncParseH2E(IN struct BSS_INFO *prP2pBssInfo);
 
 void p2pFuncParseH2E(IN struct BSS_INFO *prP2pBssInfo)
 {
@@ -6313,6 +6358,12 @@ uint32_t
 p2pFuncGenerateBeaconProbeRsp(IN struct ADAPTER *prAdapter,
 		IN struct BSS_INFO *prBssInfo,
 		IN struct MSDU_INFO *prMsduInfo,
+		IN u_int8_t fgIsProbeRsp);
+
+uint32_t
+p2pFuncGenerateBeaconProbeRsp(IN struct ADAPTER *prAdapter,
+		IN struct BSS_INFO *prBssInfo,
+		IN struct MSDU_INFO *prMsduInfo,
 		IN u_int8_t fgIsProbeRsp)
 {
 	uint32_t rWlanStatus = WLAN_STATUS_SUCCESS;
@@ -6346,6 +6397,15 @@ p2pFuncGenerateBeaconProbeRsp(IN struct ADAPTER *prAdapter,
 
 	return rWlanStatus;
 }				/* p2pFuncGenerateBeaconProbeRsp */
+
+uint32_t
+p2pFuncComposeBeaconProbeRspTemplate(IN struct ADAPTER *prAdapter,
+		IN struct BSS_INFO *prP2pBssInfo,
+		IN uint8_t *pucBcnBuffer,
+		IN uint32_t u4BcnBufLen,
+		IN u_int8_t fgIsProbeRsp,
+		IN struct P2P_PROBE_RSP_UPDATE_INFO *prP2pProbeRspInfo,
+		IN u_int8_t fgSynToFW);
 
 uint32_t
 p2pFuncComposeBeaconProbeRspTemplate(IN struct ADAPTER *prAdapter,
@@ -6515,6 +6575,12 @@ void wfdFuncGenerateWfdIEForAssocRsp(IN struct ADAPTER *prAdapter,
 	return;
 #endif
 }				/* wfdFuncGenerateWfdIEForAssocRsp */
+
+void
+p2pFuncComposeNoaAttribute(IN struct ADAPTER *prAdapter,
+		IN uint8_t ucBssIndex,
+		OUT uint8_t *aucNoaAttrArray,
+		OUT uint32_t *pu4Len);
 
 void
 p2pFuncComposeNoaAttribute(IN struct ADAPTER *prAdapter,
@@ -6846,6 +6912,8 @@ void p2pFuncSwitchGcChannel(
 		prP2pRoleFsmInfo,
 		P2P_ROLE_STATE_SWITCH_CHANNEL);
 }
+
+void p2pFuncRemoveOneSap(IN struct ADAPTER *prAdapter);
 
 void p2pFuncRemoveOneSap(IN struct ADAPTER *prAdapter)
 {
@@ -7689,6 +7757,9 @@ error:
 }
 
 enum ENUM_CHNL_EXT p2pFunGetSco(IN struct ADAPTER *prAdapter,
+		enum ENUM_BAND eBand, uint8_t ucPrimaryCh);
+
+enum ENUM_CHNL_EXT p2pFunGetSco(IN struct ADAPTER *prAdapter,
 		enum ENUM_BAND eBand, uint8_t ucPrimaryCh) {
 	enum ENUM_CHNL_EXT eSCO = CHNL_EXT_SCN;
 
@@ -7732,6 +7803,11 @@ enum ENUM_CHNL_EXT p2pFunGetSco(IN struct ADAPTER *prAdapter,
 
 	return eSCO;
 }
+
+uint8_t p2pFunGetSecCh(IN struct ADAPTER *prAdapter,
+		IN enum ENUM_BAND eBand,
+		IN enum ENUM_CHNL_EXT eSCO,
+		IN uint8_t ucPrimaryCh);
 
 uint8_t p2pFunGetSecCh(IN struct ADAPTER *prAdapter,
 		IN enum ENUM_BAND eBand,

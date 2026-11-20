@@ -2236,7 +2236,7 @@ static void soc5_0_DumpPcLrLog(struct ADAPTER *prAdapter)
 	DBGLOG(HAL, LOUD,
 		"Host_CSR - dump PC log / LR log");
 
-	memset(log, 0, HANG_PC_LOG_NUM);
+	memset(log, 0, sizeof(log));
 
 	/* PC log
 	* dbg_pc_log_sel	Write	0x1806_0090 [7:2]	6'h20
@@ -2331,7 +2331,7 @@ static void soc5_0_DumpN10CoreReg(struct ADAPTER *prAdapter)
 	DBGLOG(HAL, LOUD,
 		"Host_CSR - read N10 core register");
 
-	memset(log, 0, HANG_N10_CORE_LOG_NUM);
+	memset(log, 0, sizeof(log));
 
 /*
 *	[31:26]: gpr_index_sel (set different sets of gpr) = 0

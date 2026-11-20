@@ -174,6 +174,10 @@ void wmmFillTsinfo(struct PARAM_QOS_TSINFO *prTsInfo, uint8_t *pucTsInfo)
 
 void wmmComposeTspecIE(IN struct ADAPTER *prAdapter,
 		       IN struct MSDU_INFO *prMsduInfo,
+		       struct PARAM_QOS_TSPEC *prParamQosTspec);
+
+void wmmComposeTspecIE(IN struct ADAPTER *prAdapter,
+		       IN struct MSDU_INFO *prMsduInfo,
 		       struct PARAM_QOS_TSPEC *prParamQosTspec)
 {
 	struct IE_WMM_TSPEC *prIeWmmTspec = NULL;
@@ -389,6 +393,9 @@ uint8_t wmmCalculateUapsdSetting(struct ADAPTER *prAdapter,
 	}
 	return ucFinalSetting;
 }
+
+void wmmSyncPsParamWithFw(struct ADAPTER *prAdapter, uint8_t ucAc,
+	uint8_t ucBssIndex);
 
 void wmmSyncPsParamWithFw(struct ADAPTER *prAdapter, uint8_t ucAc,
 	uint8_t ucBssIndex)
@@ -701,6 +708,8 @@ static uint32_t wmmRunEventActionTxDone(struct ADAPTER *prAdapter,
 	DBGLOG(WMM, INFO, "Status %d\n", rTxDoneStatus);
 	return WLAN_STATUS_SUCCESS;
 }
+
+void DumpData(uint8_t *prAddr, uint8_t uLen, char *tag);
 
 void DumpData(uint8_t *prAddr, uint8_t uLen, char *tag)
 {

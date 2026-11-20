@@ -190,6 +190,9 @@ const struct UMAC_PG_INFO_AND_RESERVE_CNT_CR_OFFSET_MAP
 /*----------------------------------------------------------------------------*/
 
 OUT u_int8_t halUmacWrapSourcePortSanityCheck(
+	IN u_int8_t fgPsePleFlag, IN uint8_t ucPageGroupID);
+
+OUT u_int8_t halUmacWrapSourcePortSanityCheck(
 	IN u_int8_t fgPsePleFlag, IN uint8_t ucPageGroupID)
 {
 
@@ -216,6 +219,10 @@ OUT u_int8_t halUmacWrapSourcePortSanityCheck(
  * @return UINT_16
  */
 /*----------------------------------------------------------------------------*/
+
+OUT uint16_t halUmacWrapRsvPgCnt(IN struct ADAPTER
+				 *prAdapter, IN u_int8_t fgPsePleFlag,
+				 IN uint8_t ucPageGroupID);
 
 OUT uint16_t halUmacWrapRsvPgCnt(IN struct ADAPTER
 				 *prAdapter, IN u_int8_t fgPsePleFlag,
@@ -256,6 +263,10 @@ OUT uint16_t halUmacWrapRsvPgCnt(IN struct ADAPTER
 
 OUT uint16_t halUmacWrapSrcPgCnt(IN struct ADAPTER
 				 *prAdapter, IN u_int8_t fgPsePleFlag,
+				 IN uint8_t ucPageGroupID);
+
+OUT uint16_t halUmacWrapSrcPgCnt(IN struct ADAPTER
+				 *prAdapter, IN u_int8_t fgPsePleFlag,
 				 IN uint8_t ucPageGroupID)
 {
 	uint32_t u4RegAddr = 0;
@@ -291,6 +302,9 @@ OUT uint16_t halUmacWrapSrcPgCnt(IN struct ADAPTER
 /*----------------------------------------------------------------------------*/
 
 OUT uint16_t halUmacPbufCtrlTotalPageNum(IN struct ADAPTER
+		*prAdapter, IN uint16_t fgPsePleFlag);
+
+OUT uint16_t halUmacPbufCtrlTotalPageNum(IN struct ADAPTER
 		*prAdapter, IN uint16_t fgPsePleFlag)
 {
 	uint32_t u4Value = 0;
@@ -314,6 +328,9 @@ OUT uint16_t halUmacPbufCtrlTotalPageNum(IN struct ADAPTER
 /*----------------------------------------------------------------------------*/
 
 OUT uint16_t halUmacWrapFrePageCnt(IN struct ADAPTER
+				   *prAdapter, IN u_int8_t fgPsePleFlag);
+
+OUT uint16_t halUmacWrapFrePageCnt(IN struct ADAPTER
 				   *prAdapter, IN u_int8_t fgPsePleFlag)
 {
 	uint32_t u4Value = 0;
@@ -334,6 +351,9 @@ OUT uint16_t halUmacWrapFrePageCnt(IN struct ADAPTER
  * @return UINT_16
  */
 /*----------------------------------------------------------------------------*/
+
+OUT uint16_t halUmacWrapFfaCnt(IN struct ADAPTER *prAdapter,
+			       IN u_int8_t fgPsePleFlag);
 
 OUT uint16_t halUmacWrapFfaCnt(IN struct ADAPTER *prAdapter,
 			       IN u_int8_t fgPsePleFlag)

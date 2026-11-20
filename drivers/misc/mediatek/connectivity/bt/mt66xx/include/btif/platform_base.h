@@ -128,27 +128,18 @@ extern struct bt_base_addr bt_reg;
 
 /*********************************************************************
 *
-* Global variable
-*
-**********************************************************************
-*/
-
-static uint32_t g_sw_irq_status = 0;
-
-/*********************************************************************
-*
 * Utility APIs
 *
 **********************************************************************
 */
 
-static uint32_t inline bt_read_cr(uint32_t addr)
+static inline uint32_t bt_read_cr(uint32_t addr)
 {
 	uint32_t value = 0;
 	uint8_t *base = ioremap(addr, 0x10);
 
 	if (base == NULL) {
-		BTMTK_ERR("%s: remapping 0x%08x fail", addr);
+		BTMTK_ERR("remapping 0x%08x fail", addr);
 	} else {
 		value = REG_READL(base);
 		iounmap(base);
@@ -156,12 +147,12 @@ static uint32_t inline bt_read_cr(uint32_t addr)
 	return value;
 }
 
-static void inline bt_write_cr(uint32_t addr, uint32_t value, bool is_set_bit)
+static inline void bt_write_cr(uint32_t addr, uint32_t value, bool is_set_bit)
 {
 	uint32_t *base = ioremap(addr, 0x10);
 
 	if (base == NULL) {
-		BTMTK_ERR("%s: remapping 0x%08x fail", addr);
+		BTMTK_ERR("remapping 0x%08x fail", addr);
 	} else {
 		if (is_set_bit)
 			*base |= value; // set bit to CR
@@ -171,7 +162,7 @@ static void inline bt_write_cr(uint32_t addr, uint32_t value, bool is_set_bit)
 	}
 }
 
-static void inline bt_dump_memory8(uint8_t *buf, uint32_t len)
+static inline void bt_dump_memory8(uint8_t *buf, uint32_t len)
 {
 	uint32_t i = 0;
 	uint8_t *pos = NULL, *end = NULL;

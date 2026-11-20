@@ -1105,11 +1105,19 @@ static void dump_wfdma_dbg_value(
 
 void show_wfdma_dbg_flag_log(
 	IN struct ADAPTER *prAdapter,
+	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type);
+
+void show_wfdma_dbg_flag_log(
+	IN struct ADAPTER *prAdapter,
 	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type)
 {
 	dump_wfdma_dbg_value(prAdapter, enum_wfdma_type, 0);
 	dump_wfdma_dbg_value(prAdapter, enum_wfdma_type, 1);
 }
+
+void show_wfdma_dbg_log(
+	IN struct ADAPTER *prAdapter,
+	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type);
 
 void show_wfdma_dbg_log(
 	IN struct ADAPTER *prAdapter,
@@ -1371,6 +1379,9 @@ void soc3_0_dump_mac_info(IN struct ADAPTER *prAdapter)
 
 #if WFSYS_SUPPORT_BUS_HANG_READ_FROM_DRIVER_BASE
 void show_wfdma_interrupt_info_without_adapter(
+	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type);
+
+void show_wfdma_interrupt_info_without_adapter(
 	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type)
 {
 	uint32_t idx;
@@ -1452,6 +1463,9 @@ void show_wfdma_interrupt_info_without_adapter(
 }
 
 void show_wfdma_glo_info_without_adapter(
+	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type);
+
+void show_wfdma_glo_info_without_adapter(
 	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type)
 {
 	uint32_t idx;
@@ -1484,6 +1498,9 @@ void show_wfdma_glo_info_without_adapter(
 	}
 
 }
+
+void show_wfdma_ring_info_without_adapter(
+	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type);
 
 void show_wfdma_ring_info_without_adapter(
 	IN enum _ENUM_WFDMA_TYPE_T enum_wfdma_type)

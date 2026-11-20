@@ -958,6 +958,8 @@ static int mtk_axi_suspend(IN struct platform_device *pdev,
 	return 0;
 }
 
+int mtk_axi_resume(IN struct platform_device *pdev);
+
 int mtk_axi_resume(IN struct platform_device *pdev)
 {
 	return 0;
@@ -1262,6 +1264,8 @@ void glBusFreeIrq(void *pvData, void *pvCookie)
 	free_irq(prHifInfo->u4IrqId_1, prGlueInfo->prAdapter);
 #endif
 }
+
+u_int8_t glIsReadClearReg(uint32_t u4Address);
 
 u_int8_t glIsReadClearReg(uint32_t u4Address)
 {

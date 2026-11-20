@@ -218,6 +218,9 @@ void aaaFsmRunEventStart(IN struct MSG_HDR *prMsgHdr)
 #if CFG_SUPPORT_AAA
 
 void aaaFsmRunEventTxReqTimeOut(IN struct ADAPTER *prAdapter,
+		IN unsigned long plParamPtr);
+
+void aaaFsmRunEventTxReqTimeOut(IN struct ADAPTER *prAdapter,
 		IN unsigned long plParamPtr)
 {
 	struct STA_RECORD *prStaRec = (struct STA_RECORD *) plParamPtr;

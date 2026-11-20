@@ -7,6 +7,8 @@
 u_char *agnt_rstrtok;
 int8_t g_hqa_frame_ctrl;
 
+u_char *agent_trtok(u_char *s, const u_char *ct);
+
 u_char *agent_trtok(u_char *s, const u_char *ct)
 {
 	u_char *sbegin, *send;
@@ -141,6 +143,7 @@ textresume:
 					x++;
 					continue;
 				}
+				fallthrough;
 			case '\n':
 				/* \ <lf> -> line continuation */
 				x++;
@@ -5499,6 +5502,9 @@ static struct priv_hqa_cmd_id_mapping priv_hqa_cmd_mapping[] = {
 };
 
 s_int32 mt_agent_hqa_cmd_string_parser(
+	s_int8 *hqa_frame_string, struct hqa_frame *hqa_frame);
+
+s_int32 mt_agent_hqa_cmd_string_parser(
 	s_int8 *hqa_frame_string, struct hqa_frame *hqa_frame)
 {
 	s_int8 i = 0, j = 0, pattern_found = 0;
@@ -5787,6 +5793,8 @@ s_int32 mt_agent_cli_set_dw(u_char *name, struct service *serv, u_char *param)
 	return ret;
 }
 
+s_int32 mt_agent_set_bw(struct service_test *serv_test, u_char *arg);
+
 s_int32 mt_agent_set_bw(struct service_test *serv_test, u_char *arg)
 {
 	u_int32 ret = 0;
@@ -5821,6 +5829,9 @@ s_int32 mt_agent_set_bw(struct service_test *serv_test, u_char *arg)
 }
 
 s_int32 mt_agent_set_ctrl_band(
+	struct service_test *serv_test, u_char *arg);
+
+s_int32 mt_agent_set_ctrl_band(
 	struct service_test *serv_test, u_char *arg)
 {
 	s_int32 ret = SERV_STATUS_SUCCESS;
@@ -5835,6 +5846,9 @@ s_int32 mt_agent_set_ctrl_band(
 
 	return ret;
 }
+
+s_int32 mt_agent_set_pwr(
+	struct service_test *serv_test, u_char *arg);
 
 s_int32 mt_agent_set_pwr(
 	struct service_test *serv_test, u_char *arg)
@@ -5876,6 +5890,9 @@ s_int32 mt_agent_set_pwr(
 
 	return ret;
 }
+
+s_int32 mt_agent_set_channel(
+	struct service_test *serv_test, u_char *arg);
 
 s_int32 mt_agent_set_channel(
 	struct service_test *serv_test, u_char *arg)
@@ -5963,6 +5980,8 @@ s_int32 mt_agent_set_channel(
 	return ret;
 }
 
+s_int32 mt_agent_set_ru_cli(struct service_test *serv_test, u_char *arg);
+
 s_int32 mt_agent_set_ru_cli(struct service_test *serv_test, u_char *arg)
 {
 	s_int32 ret = SERV_STATUS_AGENT_INVALID_PARAM;
@@ -6038,6 +6057,8 @@ err_out:
 	return ret;
 }
 
+s_int32 mt_agent_set_txant(struct service_test *serv_test, u_char *arg);
+
 s_int32 mt_agent_set_txant(struct service_test *serv_test, u_char *arg)
 {
 	s_int32 ret = SERV_STATUS_SUCCESS;
@@ -6066,6 +6087,8 @@ s_int32 mt_agent_set_txant(struct service_test *serv_test, u_char *arg)
 
 	return ret;
 }
+
+s_int32 mt_agent_set_rxant(struct service_test *serv_test, u_char *arg);
 
 s_int32 mt_agent_set_rxant(struct service_test *serv_test, u_char *arg)
 {

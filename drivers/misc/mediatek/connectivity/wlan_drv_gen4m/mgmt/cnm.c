@@ -1162,6 +1162,8 @@ void cnmCsaDoneEvent(IN struct ADAPTER *prAdapter,
 #define CFG_SUPPORT_IDC_CROSS_BAND_SWITCH   1
 
 #if CFG_SUPPORT_IDC_CH_SWITCH
+uint8_t cnmIsSafeCh(IN struct BSS_INFO *prBssInfo);
+
 uint8_t cnmIsSafeCh(IN struct BSS_INFO *prBssInfo)
 {
 	enum ENUM_BAND eBand;
@@ -1209,6 +1211,10 @@ uint8_t cnmIsSafeCh(IN struct BSS_INFO *prBssInfo)
 
 	return FALSE;
 }
+
+uint8_t cnmDecideSapNewChannel(
+	IN struct GLUE_INFO *prGlueInfo,
+	IN struct BSS_INFO *prBssInfo);
 
 uint8_t cnmDecideSapNewChannel(
 	IN struct GLUE_INFO *prGlueInfo,
@@ -1370,10 +1376,14 @@ uint8_t cnmIdcCsaReq(IN struct ADAPTER *prAdapter,
 	}
 }
 
+void cnmSetIdcBssIdx(IN struct ADAPTER *prAdapter, IN uint8_t hwBssIdx);
+
 void cnmSetIdcBssIdx(IN struct ADAPTER *prAdapter, IN uint8_t hwBssIdx)
 {
 	g_rLteSafeChInfo.aucReserved[0] = hwBssIdx;
 }
+
+uint8_t cnmGetIdcBssIdx(IN struct ADAPTER *prAdapter);
 
 uint8_t cnmGetIdcBssIdx(IN struct ADAPTER *prAdapter)
 {
@@ -3998,6 +4008,11 @@ void cnmFreeWmmIndex(
 enum ENUM_CNM_OPMODE_REQ_T
 cnmOpModeMapEvtReason(
 	enum ENUM_EVENT_OPMODE_CHANGE_REASON eEvt
+);
+
+enum ENUM_CNM_OPMODE_REQ_T
+cnmOpModeMapEvtReason(
+	enum ENUM_EVENT_OPMODE_CHANGE_REASON eEvt
 )
 {
 	enum ENUM_CNM_OPMODE_REQ_T eReqIdx;
@@ -4037,6 +4052,11 @@ cnmOpModeMapEvtReason(
 void cnmOpModeDump(
 	IN struct ADAPTER *prAdapter,
 	IN uint8_t ucBssIndex
+);
+
+void cnmOpModeDump(
+	IN struct ADAPTER *prAdapter,
+	IN uint8_t ucBssIndex
 )
 {
 	struct BSS_INFO *prBssInfo;
@@ -4052,6 +4072,11 @@ void cnmOpModeDump(
 		prBssInfo->fgIsOpChangeRxNss ?
 			prBssInfo->ucOpChangeRxNss : 0xFF);
 }
+
+void cnmOpModeCallbackDispatcher(
+	IN struct ADAPTER *prAdapter,
+	IN uint8_t ucBssIndex,
+	IN bool fgSuccess);
 
 void cnmOpModeCallbackDispatcher(
 	IN struct ADAPTER *prAdapter,
@@ -4585,6 +4610,11 @@ void cnmOpmodeEventHandler(
 	}
 #endif
 }
+
+enum ENUM_CNM_WMM_QUOTA_REQ_T
+cnmWmmQuotaReqDispatcher(
+	struct CNM_WMM_QUOTA_CONTROL_T *prWmmQuotaCtrl
+);
 
 enum ENUM_CNM_WMM_QUOTA_REQ_T
 cnmWmmQuotaReqDispatcher(

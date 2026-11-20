@@ -16,7 +16,7 @@
 *    Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
 
-#define pr_fmt(fmt) KBUILD_MODNAME "@(%s:%d) " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <connectivity_build_in_adapter.h>
 #include <asm/atomic.h>

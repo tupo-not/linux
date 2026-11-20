@@ -80,6 +80,9 @@ static struct cdev gConnDbgdev;
 static struct wmt_platform_bridge bridge;
 
 ssize_t conn_dbg_dev_write(struct file *filp, const char __user *buffer,
+				size_t count, loff_t *f_pos);
+
+ssize_t conn_dbg_dev_write(struct file *filp, const char __user *buffer,
 				size_t count, loff_t *f_pos)
 {
 	if (bridge.debug_write_cb)
@@ -87,6 +90,9 @@ ssize_t conn_dbg_dev_write(struct file *filp, const char __user *buffer,
 
 	return 0;
 }
+
+ssize_t conn_dbg_dev_read(struct file *filp, char __user *buffer,
+				size_t count, loff_t *f_pos);
 
 ssize_t conn_dbg_dev_read(struct file *filp, char __user *buffer,
 				size_t count, loff_t *f_pos)
@@ -232,6 +238,8 @@ void mtk_wcn_cmb_stub_clock_fail_dump(void)
 		bridge.clock_fail_dump_cb();
 }
 
+int mtk_wcn_conninfra_reg_readable(void);
+
 int mtk_wcn_conninfra_reg_readable(void)
 {
 	static DEFINE_RATELIMIT_STATE(_rs, 5*HZ, 1);
@@ -243,6 +251,8 @@ int mtk_wcn_conninfra_reg_readable(void)
 	} else
 		return bridge.conninfra_reg_readable_cb();
 }
+
+int mtk_wcn_conninfra_is_bus_hang(void);
 
 int mtk_wcn_conninfra_is_bus_hang(void)
 {

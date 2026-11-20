@@ -546,6 +546,12 @@ uint32_t
 wlanoidSetP2pNetworkAddress(IN struct ADAPTER *prAdapter,
 		IN void *pvSetBuffer,
 		IN uint32_t u4SetBufferLen,
+		OUT uint32_t *pu4SetInfoLen);
+
+uint32_t
+wlanoidSetP2pNetworkAddress(IN struct ADAPTER *prAdapter,
+		IN void *pvSetBuffer,
+		IN uint32_t u4SetBufferLen,
 		OUT uint32_t *pu4SetInfoLen)
 {
 	uint32_t rStatus = WLAN_STATUS_SUCCESS;

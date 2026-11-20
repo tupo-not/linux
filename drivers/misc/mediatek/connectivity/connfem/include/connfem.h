@@ -21,7 +21,7 @@
 #ifdef pr_fmt
 #undef pr_fmt
 #endif
-#define pr_fmt(fmt) "["KBUILD_MODNAME"]" fmt
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #define CFM_IOC_MAGIC		0xCF
 

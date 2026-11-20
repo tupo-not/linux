@@ -54,12 +54,22 @@
 void
 p2pRoleStateInit_IDLE(IN struct ADAPTER *prAdapter,
 		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN struct BSS_INFO *prP2pBssInfo);
+
+void
+p2pRoleStateInit_IDLE(IN struct ADAPTER *prAdapter,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
 		IN struct BSS_INFO *prP2pBssInfo)
 {
 	cnmTimerStartTimer(prAdapter,
 		&(prP2pRoleFsmInfo->rP2pRoleFsmTimeoutTimer),
 		prAdapter->rWifiVar.u4ApChnlHoldTime);
 }				/* p2pRoleStateInit_IDLE */
+
+void
+p2pRoleStateAbort_IDLE(IN struct ADAPTER *prAdapter,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN struct P2P_CHNL_REQ_INFO *prP2pChnlReqInfo);
 
 void
 p2pRoleStateAbort_IDLE(IN struct ADAPTER *prAdapter,
@@ -77,6 +87,10 @@ p2pRoleStateAbort_IDLE(IN struct ADAPTER *prAdapter,
 	cnmTimerStopTimer(prAdapter,
 		&(prP2pRoleFsmInfo->rP2pRoleFsmTimeoutTimer));
 }				/* p2pRoleStateAbort_IDLE */
+
+void p2pRoleStateInit_SCAN(IN struct ADAPTER *prAdapter,
+		IN uint8_t ucBssIndex,
+		IN struct P2P_SCAN_REQ_INFO *prScanReqInfo);
 
 void p2pRoleStateInit_SCAN(IN struct ADAPTER *prAdapter,
 		IN uint8_t ucBssIndex,
@@ -119,6 +133,9 @@ void p2pRoleStateInit_SCAN(IN struct ADAPTER *prAdapter,
 }				/* p2pRoleStateInit_SCAN */
 
 void p2pRoleStateAbort_SCAN(IN struct ADAPTER *prAdapter,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo);
+
+void p2pRoleStateAbort_SCAN(IN struct ADAPTER *prAdapter,
 		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo)
 {
 	struct P2P_SCAN_REQ_INFO *prScanInfo =
@@ -142,6 +159,11 @@ void p2pRoleStateAbort_SCAN(IN struct ADAPTER *prAdapter,
 void
 p2pRoleStateInit_REQING_CHANNEL(IN struct ADAPTER *prAdapter,
 		IN uint8_t ucBssIdx,
+		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo);
+
+void
+p2pRoleStateInit_REQING_CHANNEL(IN struct ADAPTER *prAdapter,
+		IN uint8_t ucBssIdx,
 		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo)
 {
 
@@ -152,6 +174,12 @@ p2pRoleStateInit_REQING_CHANNEL(IN struct ADAPTER *prAdapter,
 
 	} while (FALSE);
 }				/* p2pRoleStateInit_REQING_CHANNEL */
+
+void
+p2pRoleStateAbort_REQING_CHANNEL(IN struct ADAPTER *prAdapter,
+		IN struct BSS_INFO *prP2pRoleBssInfo,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN enum ENUM_P2P_ROLE_STATE eNextState);
 
 void
 p2pRoleStateAbort_REQING_CHANNEL(IN struct ADAPTER *prAdapter,
@@ -219,6 +247,12 @@ p2pRoleStateAbort_REQING_CHANNEL(IN struct ADAPTER *prAdapter,
 	}
 #endif
 }				/* p2pRoleStateAbort_REQING_CHANNEL */
+
+void
+p2pRoleStateInit_AP_CHNL_DETECTION(IN struct ADAPTER *prAdapter,
+		IN uint8_t ucBssIndex,
+		IN struct P2P_SCAN_REQ_INFO *prScanReqInfo,
+		IN struct P2P_CONNECTION_REQ_INFO *prConnReqInfo);
 
 void
 p2pRoleStateInit_AP_CHNL_DETECTION(IN struct ADAPTER *prAdapter,
@@ -300,6 +334,14 @@ p2pRoleStateAbort_AP_CHNL_DETECTION(IN struct ADAPTER *prAdapter,
 		IN struct P2P_CONNECTION_REQ_INFO *prP2pConnReqInfo,
 		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo,
 		IN struct P2P_SCAN_REQ_INFO *prP2pScanReqInfo,
+		IN enum ENUM_P2P_ROLE_STATE eNextState);
+
+void
+p2pRoleStateAbort_AP_CHNL_DETECTION(IN struct ADAPTER *prAdapter,
+		IN uint8_t ucBssIndex,
+		IN struct P2P_CONNECTION_REQ_INFO *prP2pConnReqInfo,
+		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo,
+		IN struct P2P_SCAN_REQ_INFO *prP2pScanReqInfo,
 		IN enum ENUM_P2P_ROLE_STATE eNextState)
 {
 	struct P2P_SPECIFIC_BSS_INFO *prP2pSpecificBssInfo =
@@ -358,6 +400,11 @@ p2pRoleStateAbort_AP_CHNL_DETECTION(IN struct ADAPTER *prAdapter,
 void
 p2pRoleStateInit_GC_JOIN(IN struct ADAPTER *prAdapter,
 		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo);
+
+void
+p2pRoleStateInit_GC_JOIN(IN struct ADAPTER *prAdapter,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
 		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo)
 {
 	/* P_MSG_JOIN_REQ_T prJoinReqMsg = (P_MSG_JOIN_REQ_T)NULL; */
@@ -385,6 +432,12 @@ p2pRoleStateInit_GC_JOIN(IN struct ADAPTER *prAdapter,
 
 	} while (FALSE);
 }				/* p2pRoleStateInit_GC_JOIN */
+
+void
+p2pRoleStateAbort_GC_JOIN(IN struct ADAPTER *prAdapter,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN struct P2P_JOIN_INFO *prJoinInfo,
+		IN enum ENUM_P2P_ROLE_STATE eNextState);
 
 void
 p2pRoleStateAbort_GC_JOIN(IN struct ADAPTER *prAdapter,
@@ -448,6 +501,11 @@ p2pRoleStateAbort_GC_JOIN(IN struct ADAPTER *prAdapter,
 void
 p2pRoleStateInit_DFS_CAC(IN struct ADAPTER *prAdapter,
 		IN uint8_t ucBssIdx,
+		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo);
+
+void
+p2pRoleStateInit_DFS_CAC(IN struct ADAPTER *prAdapter,
+		IN uint8_t ucBssIdx,
 		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo)
 {
 
@@ -457,6 +515,12 @@ p2pRoleStateInit_DFS_CAC(IN struct ADAPTER *prAdapter,
 		p2pFuncAcquireCh(prAdapter, ucBssIdx, prChnlReqInfo);
 	} while (FALSE);
 }				/* p2pRoleStateInit_DFS_CAC */
+
+void
+p2pRoleStateAbort_DFS_CAC(IN struct ADAPTER *prAdapter,
+		IN struct BSS_INFO *prP2pRoleBssInfo,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN enum ENUM_P2P_ROLE_STATE eNextState);
 
 void
 p2pRoleStateAbort_DFS_CAC(IN struct ADAPTER *prAdapter,
@@ -474,6 +538,11 @@ p2pRoleStateAbort_DFS_CAC(IN struct ADAPTER *prAdapter,
 
 	} while (FALSE);
 }				/* p2pRoleStateAbort_DFS_CAC */
+
+void
+p2pRoleStateInit_SWITCH_CHANNEL(IN struct ADAPTER *prAdapter,
+		IN uint8_t ucBssIdx,
+		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo);
 
 void
 p2pRoleStateInit_SWITCH_CHANNEL(IN struct ADAPTER *prAdapter,
@@ -496,6 +565,12 @@ void
 p2pRoleStateAbort_SWITCH_CHANNEL(IN struct ADAPTER *prAdapter,
 		IN struct BSS_INFO *prP2pRoleBssInfo,
 		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN enum ENUM_P2P_ROLE_STATE eNextState);
+
+void
+p2pRoleStateAbort_SWITCH_CHANNEL(IN struct ADAPTER *prAdapter,
+		IN struct BSS_INFO *prP2pRoleBssInfo,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
 		IN enum ENUM_P2P_ROLE_STATE eNextState)
 {
 	do {
@@ -505,6 +580,12 @@ p2pRoleStateAbort_SWITCH_CHANNEL(IN struct ADAPTER *prAdapter,
 	} while (FALSE);
 }				/* p2pRoleStateAbort_SWITCH_CHANNEL */
 #endif
+
+void
+p2pRoleStatePrepare_To_REQING_CHANNEL_STATE(IN struct ADAPTER *prAdapter,
+		IN struct BSS_INFO *prBssInfo,
+		IN struct P2P_CONNECTION_REQ_INFO *prConnReqInfo,
+		OUT struct P2P_CHNL_REQ_INFO *prChnlReqInfo);
 
 void
 p2pRoleStatePrepare_To_REQING_CHANNEL_STATE(IN struct ADAPTER *prAdapter,
@@ -599,6 +680,13 @@ p2pRoleStatePrepare_To_DFS_CAC_STATE(IN struct ADAPTER *prAdapter,
 		IN struct BSS_INFO *prBssInfo,
 		IN enum ENUM_CHANNEL_WIDTH rChannelWidth,
 		IN struct P2P_CONNECTION_REQ_INFO *prConnReqInfo,
+		OUT struct P2P_CHNL_REQ_INFO *prChnlReqInfo);
+
+void
+p2pRoleStatePrepare_To_DFS_CAC_STATE(IN struct ADAPTER *prAdapter,
+		IN struct BSS_INFO *prBssInfo,
+		IN enum ENUM_CHANNEL_WIDTH rChannelWidth,
+		IN struct P2P_CONNECTION_REQ_INFO *prConnReqInfo,
 		OUT struct P2P_CHNL_REQ_INFO *prChnlReqInfo)
 {
 	enum ENUM_BAND eBandBackup;
@@ -685,6 +773,13 @@ p2pRoleStateInit_OFF_CHNL_TX(IN struct ADAPTER *prAdapter,
 		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
 		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo,
 		IN struct P2P_MGMT_TX_REQ_INFO *prP2pMgmtTxInfo,
+		OUT enum ENUM_P2P_ROLE_STATE *peNextState);
+
+u_int8_t
+p2pRoleStateInit_OFF_CHNL_TX(IN struct ADAPTER *prAdapter,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo,
+		IN struct P2P_MGMT_TX_REQ_INFO *prP2pMgmtTxInfo,
 		OUT enum ENUM_P2P_ROLE_STATE *peNextState)
 {
 	struct P2P_OFF_CHNL_TX_REQ_INFO *prOffChnlTxPkt =
@@ -755,6 +850,13 @@ p2pRoleStateInit_OFF_CHNL_TX(IN struct ADAPTER *prAdapter,
 
 	return FALSE;
 }
+
+void
+p2pRoleStateAbort_OFF_CHNL_TX(IN struct ADAPTER *prAdapter,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN struct P2P_MGMT_TX_REQ_INFO *prP2pMgmtTxInfo,
+		IN struct P2P_CHNL_REQ_INFO *prChnlReqInfo,
+		IN enum ENUM_P2P_ROLE_STATE eNextState);
 
 void
 p2pRoleStateAbort_OFF_CHNL_TX(IN struct ADAPTER *prAdapter,

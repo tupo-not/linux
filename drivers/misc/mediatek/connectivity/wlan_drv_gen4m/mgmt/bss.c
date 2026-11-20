@@ -269,6 +269,10 @@ struct APPEND_VAR_IE_ENTRY txProbRspIETable[] = {
 /*---------------------------------------------------------------------------*/
 void bssDetermineStaRecPhyTypeSet(IN struct ADAPTER *prAdapter,
 				  IN struct BSS_DESC *prBssDesc,
+				  OUT struct STA_RECORD *prStaRec);
+
+void bssDetermineStaRecPhyTypeSet(IN struct ADAPTER *prAdapter,
+				  IN struct BSS_DESC *prBssDesc,
 				  OUT struct STA_RECORD *prStaRec)
 {
 	struct WIFI_VAR *prWifiVar = &prAdapter->rWifiVar;
@@ -2374,10 +2378,14 @@ void bssInitForAP(IN struct ADAPTER *prAdapter, IN struct BSS_INFO *prBssInfo,
 
 #endif /* CFG_SUPPORT_AAA */
 
+void bssCreateStaRecFromAuth(IN struct ADAPTER *prAdapter);
+
 void bssCreateStaRecFromAuth(IN struct ADAPTER *prAdapter)
 {
 
 }
+
+void bssUpdateStaRecFromAssocReq(IN struct ADAPTER *prAdapter);
 
 void bssUpdateStaRecFromAssocReq(IN struct ADAPTER *prAdapter)
 {

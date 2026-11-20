@@ -20,7 +20,7 @@
 *                         C O M P I L E R   F L A G S
 ********************************************************************************
 */
-#define pr_fmt(fmt) KBUILD_MODNAME "@(%s:%d) " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 /*******************************************************************************
 *                                 M A C R O S
 ********************************************************************************
@@ -789,6 +789,17 @@ int osal_timer_modify(P_OSAL_TIMER pTimer, unsigned int ms)
 	mod_timer(&pTimer->timer, jiffies + (ms) / (1000 / HZ));
 	return 0;
 }
+
+int _osal_fifo_init(OSAL_FIFO *pFifo, unsigned char *buf, unsigned int size);
+int _osal_fifo_deinit(OSAL_FIFO *pFifo);
+int _osal_fifo_size(OSAL_FIFO *pFifo);
+int _osal_fifo_avail_size(OSAL_FIFO *pFifo);
+int _osal_fifo_len(OSAL_FIFO *pFifo);
+int _osal_fifo_is_empty(OSAL_FIFO *pFifo);
+int _osal_fifo_is_full(OSAL_FIFO *pFifo);
+int _osal_fifo_data_in(OSAL_FIFO *pFifo, const void *buf, unsigned int len);
+int _osal_fifo_data_out(OSAL_FIFO *pFifo, void *buf, unsigned int len);
+int _osal_fifo_reset(OSAL_FIFO *pFifo);
 
 int _osal_fifo_init(OSAL_FIFO *pFifo, unsigned char *buf, unsigned int size)
 {

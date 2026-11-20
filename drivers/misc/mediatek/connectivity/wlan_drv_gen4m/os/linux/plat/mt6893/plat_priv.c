@@ -88,6 +88,8 @@ int32_t kalCheckTputLoad(IN struct ADAPTER *prAdapter,
 	       TRUE : FALSE;
 }
 
+void kalSetTaskUtilMinPct(IN int pid, IN unsigned int min);
+
 void kalSetTaskUtilMinPct(IN int pid, IN unsigned int min)
 {
 #if KERNEL_VERSION(5, 4, 0) <= CFG80211_VERSION_CODE
@@ -142,6 +144,8 @@ struct wlan_policy {
 	struct list_head	list;
 };
 #endif
+
+void kalSetCpuFreq(IN int32_t freq);
 
 void kalSetCpuFreq(IN int32_t freq)
 {
@@ -198,6 +202,8 @@ void kalSetCpuFreq(IN int32_t freq)
 	kfree(freq_to_set);
 #endif
 }
+
+void kalSetDramBoost(IN struct ADAPTER *prAdapter, IN u_int8_t onoff);
 
 void kalSetDramBoost(IN struct ADAPTER *prAdapter, IN u_int8_t onoff)
 {

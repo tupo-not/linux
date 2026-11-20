@@ -277,6 +277,10 @@ void nic_txd_v1_fill_by_pkt_option(
 
 void nic_txd_v1_fill_by_pkt_ctrl(
 	struct MSDU_INFO *prMsduInfo,
+	void *prTxD);
+
+void nic_txd_v1_fill_by_pkt_ctrl(
+	struct MSDU_INFO *prMsduInfo,
 	void *prTxD)
 {
 	struct HW_MAC_TX_DESC *prTxDesc = (struct HW_MAC_TX_DESC *)prTxD;

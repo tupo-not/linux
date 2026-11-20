@@ -8,15 +8,23 @@
 static struct test_thread_cb g_test_thread[SERV_THREAD_NUM];
 #endif
 
+struct service_test *net_ad_wrap_service(void *adapter);
+
 struct service_test *net_ad_wrap_service(void *adapter)
 {
 	return (struct service_test *)adapter;
 }
 
 void net_ad_thread_proceed_tx(
+	struct test_wlan_info *winfos, u_char band_idx);
+
+void net_ad_thread_proceed_tx(
 	struct test_wlan_info *winfos, u_char band_idx)
 {
 }
+
+void net_ad_thread_stop_tx(
+	struct test_wlan_info *winfos);
 
 void net_ad_thread_stop_tx(
 	struct test_wlan_info *winfos)

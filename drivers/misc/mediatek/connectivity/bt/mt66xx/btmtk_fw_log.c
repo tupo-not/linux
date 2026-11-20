@@ -76,11 +76,15 @@ const struct file_operations BT_fopsfwlog = {
 	.compat_ioctl = btmtk_fops_compat_ioctlfwlog
 };
 
+__weak int32_t btmtk_intcmd_wmt_utc_sync(void);
+
 __weak int32_t btmtk_intcmd_wmt_utc_sync(void)
 {
 	BTMTK_ERR("weak function %s not implement", __func__);
 	return -1;
 }
+
+__weak int32_t btmtk_intcmd_set_fw_log(uint8_t flag);
 
 __weak int32_t btmtk_intcmd_set_fw_log(uint8_t flag)
 {
@@ -124,7 +128,7 @@ int btmtk_fops_initfwlog(void)
 	int cdevErr = 0;
 	struct btmtk_main_info *bmain_info = btmtk_get_main_info();
 
-	BTMTK_INFO("%s: Start", __func__);
+	BTMTK_INFO("%s: start", __func__);
 
 	if (g_fwlog == NULL) {
 		g_fwlog = kzalloc(sizeof(*g_fwlog), GFP_KERNEL);
@@ -166,7 +170,7 @@ int btmtk_fops_initfwlog(void)
 
 	g_fwlog->pBTClass = class_create(BT_FWLOG_DEV_NODE);
 	if (IS_ERR(g_fwlog->pBTClass)) {
-		BTMTK_ERR("%s: class create fail, error code(%ld)\n", __func__, PTR_ERR(g_fwlog->pBTClass));
+		BTMTK_ERR("%s: class create fail, error code(%ld)", __func__, PTR_ERR(g_fwlog->pBTClass));
 		goto create_node_error;
 	}
 
@@ -181,7 +185,7 @@ int btmtk_fops_initfwlog(void)
 
 	g_fwlog->g_devIDfwlog = devIDfwlog;
 
-	BTMTK_INFO("%s: End", __func__);
+	BTMTK_INFO("%s: end", __func__);
 	return 0;
 
 create_node_error:
@@ -209,7 +213,7 @@ int btmtk_fops_exitfwlog(void)
 	dev_t devIDfwlog = g_fwlog->g_devIDfwlog;
 	struct btmtk_main_info *bmain_info = btmtk_get_main_info();
 
-	BTMTK_INFO("%s: Start\n", __func__);
+	BTMTK_INFO("%s: start", __func__);
 
 	//if (is_mt66xx(g_sbdev->chip_id))
 	if (bmain_info->hif_hook.log_deinit)
@@ -224,11 +228,11 @@ int btmtk_fops_exitfwlog(void)
 		class_destroy(g_fwlog->pBTClass);
 		g_fwlog->pBTClass = NULL;
 	}
-	BTMTK_INFO("%s: pBTDevfwlog, pBTClass done\n", __func__);
+	BTMTK_INFO("%s: pBTDevfwlog, pBTClass done", __func__);
 
 	cdev_del(&g_fwlog->BT_cdevfwlog);
 	unregister_chrdev_region(devIDfwlog, 1);
-	BTMTK_INFO("%s: BT_chrdevfwlog driver removed.\n", __func__);
+	BTMTK_INFO("%s: BT_chrdevfwlog driver removed.", __func__);
 
 	kfree(g_fwlog);
 	return 0;
@@ -316,7 +320,7 @@ ssize_t btmtk_fops_writefwlog(struct file *filp, const char __user *buf, size_t 
 	memset(i_fwlog_buf, 0, HCI_MAX_COMMAND_BUF_SIZE);
 	memset(o_fwlog_buf, 0, HCI_MAX_COMMAND_SIZE);
 	if (copy_from_user(i_fwlog_buf, buf, count) != 0) {
-		BTMTK_ERR("%s: Failed to copy data", __func__);
+		BTMTK_ERR("%s: failed to copy data", __func__);
 		ret = -ENODATA;
 		goto exit;
 	}
@@ -326,7 +330,7 @@ ssize_t btmtk_fops_writefwlog(struct file *filp, const char __user *buf, size_t 
 		u8 val = *(i_fwlog_buf + strlen("log_lvl=")) - '0';
 
 		if (val > BTMTK_LOG_LVL_MAX || val <= 0) {
-			BTMTK_ERR("Got incorrect value for log level(%d)", val);
+			BTMTK_ERR("got incorrect value for log level(%d)", val);
 			count =  -EINVAL;
 			goto exit;
 		}
@@ -374,7 +378,7 @@ ssize_t btmtk_fops_writefwlog(struct file *filp, const char __user *buf, size_t 
 			continue;
 		} else if (!(*pos >= '0' && *pos <= '9') && !(*pos >= 'A' && *pos <= 'F')
 			&& !(*pos >= 'a' && *pos <= 'f')) {
-			BTMTK_ERR("%s: There is an invalid input(%c)", __func__, *pos);
+			BTMTK_ERR("%s: there is an invalid input(%c)", __func__, *pos);
 			ret = -EINVAL;
 			goto exit;
 		}
@@ -385,11 +389,11 @@ ssize_t btmtk_fops_writefwlog(struct file *filp, const char __user *buf, size_t 
 		if (ret == 0)
 			o_fwlog_buf[len++] = (u8)res;
 		else
-			BTMTK_ERR("%s: Convert %s failed(%d)", __func__, temp_str, ret);
+			BTMTK_ERR("%s: convert %s failed(%d)", __func__, temp_str, ret);
 	}
 
 	if (o_fwlog_buf[0] != HCI_COMMAND_PKT && o_fwlog_buf[0] != FWLOG_TYPE) {
-		BTMTK_ERR("%s: Not support 0x%02X yet", __func__, o_fwlog_buf[0]);
+		BTMTK_ERR("%s: not support 0x%02X yet", __func__, o_fwlog_buf[0]);
 		ret = -EPROTONOSUPPORT;
 		goto exit;
 	}
@@ -434,7 +438,7 @@ ssize_t btmtk_fops_writefwlog(struct file *filp, const char __user *buf, size_t 
 				index = index + FWLOG_ATTR_TL_SIZE + vlen;
 				break;
 			default:
-				BTMTK_WARN("Invalid opcode");
+				BTMTK_WARN("invalid opcode");
 				ret = -1;
 				goto free_skb;
 			}
@@ -490,7 +494,7 @@ ssize_t btmtk_fops_writefwlog(struct file *filp, const char __user *buf, size_t 
 	} else
 		BTMTK_INFO("%s: OK", __func__);
 
-	BTMTK_INFO("%s: Write end(len: %d)", __func__, len);
+	BTMTK_INFO("%s: write end(len: %d)", __func__, len);
 	ret = count;
 	goto exit;
 
@@ -507,14 +511,14 @@ exit:
 
 int btmtk_fops_openfwlog(struct inode *inode, struct file *file)
 {
-	BTMTK_INFO("%s: Start.", __func__);
+	BTMTK_INFO("%s: start.", __func__);
 
 	return 0;
 }
 
 int btmtk_fops_closefwlog(struct inode *inode, struct file *file)
 {
-	BTMTK_INFO("%s: Start.", __func__);
+	BTMTK_INFO("%s: start.", __func__);
 
 	return 0;
 }
@@ -539,7 +543,7 @@ long btmtk_fops_unlocked_ioctlfwlog(struct file *filp, unsigned int cmd, unsigne
 	switch (cmd) {
 	case BT_FWLOG_IOC_ON_OFF:
 		/* Connsyslogger daemon dynamically enable/disable Picus log */
-		BTMTK_INFO("[ON_OFF]arg(%lu) bt_on(0x%x) log_on(0x%x) level(0x%x) log_cur(0x%x)",
+		BTMTK_INFO("arg(%lu) bt_on(0x%x) log_on(0x%x) level(0x%x) log_cur(0x%x)",
 			       arg, g_bt_on, g_log_on, g_log_level, g_log_current);
 
 		log_tmp = (arg == 0) ? BT_FWLOG_OFF : BT_FWLOG_ON;
@@ -554,7 +558,7 @@ long btmtk_fops_unlocked_ioctlfwlog(struct file *filp, unsigned int cmd, unsigne
 		break;
 	case BT_FWLOG_IOC_SET_LEVEL:
 		/* Connsyslogger daemon dynamically set Picus log level */
-		BTMTK_INFO("[SET_LEVEL]arg(%lu) bt_on(0x%x) log_on(0x%x) level(0x%x) log_cur(0x%x)",
+		BTMTK_INFO("arg(%lu) bt_on(0x%x) log_on(0x%x) level(0x%x) log_cur(0x%x)",
 			       arg, g_bt_on, g_log_on, g_log_level, g_log_current);
 
 		log_tmp = (uint8_t)arg;
@@ -570,10 +574,10 @@ long btmtk_fops_unlocked_ioctlfwlog(struct file *filp, unsigned int cmd, unsigne
 		break;
 	case BT_FWLOG_IOC_GET_LEVEL:
 		retval = g_log_level;
-		BTMTK_INFO("[GET_LEVEL]return %ld", retval);
+		BTMTK_INFO("return %ld", retval);
 		break;
 	default:
-		BTMTK_ERR("Unknown cmd: 0x%08x", cmd);
+		BTMTK_ERR("unknown cmd: 0x%08x", cmd);
 		retval = -EOPNOTSUPP;
 		break;
 	}
@@ -787,7 +791,7 @@ int btmtk_dispatch_fwlog(struct btmtk_dev *bdev, struct sk_buff *skb)
 			skb->data[0] == 0x0E &&
 			bdev->opcode_usr[0] == skb->data[3] &&
 			bdev->opcode_usr[1] == skb->data[4]) {
-		BTMTK_INFO_RAW(skb->data, skb->len, "%s: Discard event from user hci command - ", __func__);
+		BTMTK_INFO_RAW(skb->data, skb->len, "%s: discard event from user hci command - ", __func__);
 		bdev->opcode_usr[0] = 0;
 		bdev->opcode_usr[1] = 0;
 		return 1;

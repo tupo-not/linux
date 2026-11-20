@@ -41,11 +41,16 @@ bool lock;
 unsigned int *apc;
 };
 
+int mtk_emimpu_init_region(struct emimpu_region_t *rg_info, unsigned int rg_num);
+
 int mtk_emimpu_init_region(struct emimpu_region_t *rg_info, unsigned int rg_num)
 {
 return 0;
 }
 EXPORT_SYMBOL(mtk_emimpu_init_region);
+
+int mtk_emimpu_set_addr(struct emimpu_region_t *rg_info,
+unsigned long long start, unsigned long long end);
 
 int mtk_emimpu_set_addr(struct emimpu_region_t *rg_info,
 unsigned long long start, unsigned long long end)
@@ -55,11 +60,16 @@ return 0;
 EXPORT_SYMBOL(mtk_emimpu_set_addr);
 
 int mtk_emimpu_set_apc(struct emimpu_region_t *rg_info,
+       unsigned int d_num, unsigned int apc);
+
+int mtk_emimpu_set_apc(struct emimpu_region_t *rg_info,
        unsigned int d_num, unsigned int apc)
 {
 return 0;
 }
 EXPORT_SYMBOL(mtk_emimpu_set_apc);
+
+int mtk_emimpu_lock_region(struct emimpu_region_t *rg_info, bool lock);
 
 int mtk_emimpu_lock_region(struct emimpu_region_t *rg_info, bool lock)
 {
@@ -67,11 +77,15 @@ return 0;
 }
 EXPORT_SYMBOL(mtk_emimpu_lock_region);
 
+int mtk_emimpu_set_protection(struct emimpu_region_t *rg_info);
+
 int mtk_emimpu_set_protection(struct emimpu_region_t *rg_info)
 {
 return 0;
 }
 EXPORT_SYMBOL(mtk_emimpu_set_protection);
+
+int mtk_emimpu_free_region(struct emimpu_region_t *rg_info);
 
 int mtk_emimpu_free_region(struct emimpu_region_t *rg_info)
 {

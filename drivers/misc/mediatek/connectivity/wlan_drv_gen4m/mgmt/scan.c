@@ -167,6 +167,8 @@ void scnInit(IN struct ADAPTER *prAdapter)
 #endif
 }	/* end of scnInit() */
 
+void scnFreeAllPendingScanRquests(IN struct ADAPTER *prAdapter);
+
 void scnFreeAllPendingScanRquests(IN struct ADAPTER *prAdapter)
 {
 	struct SCAN_INFO *prScanInfo;
@@ -280,6 +282,9 @@ struct BSS_DESC *scanSearchBssDescByBssid(IN struct ADAPTER *prAdapter,
  */
 /*----------------------------------------------------------------------------*/
 u_int8_t scanIsBitSet(IN uint32_t bit, IN uint32_t bitMap[],
+		IN uint32_t bitMapSize);
+
+u_int8_t scanIsBitSet(IN uint32_t bit, IN uint32_t bitMap[],
 		IN uint32_t bitMapSize)
 {
 	if (bit >= bitMapSize * BITS_OF_BYTE) {
@@ -335,6 +340,8 @@ u_int8_t scan6gPscIsBitSet(IN uint32_t bit, IN uint32_t bitMap[],
  * @return   void
  */
 /*----------------------------------------------------------------------------*/
+void scanSetBit(IN uint32_t bit, OUT uint32_t bitMap[], IN uint32_t bitMapSize);
+
 void scanSetBit(IN uint32_t bit, OUT uint32_t bitMap[], IN uint32_t bitMapSize)
 {
 	if (bit >= bitMapSize * BITS_OF_BYTE) {
@@ -780,7 +787,7 @@ scanSearchExistingBssDescWithSsid(IN struct ADAPTER *prAdapter,
 	switch (eBSSType) {
 	case BSS_TYPE_P2P_DEVICE:
 		fgCheckSsid = FALSE;
-		/* fall through */
+		fallthrough;
 	case BSS_TYPE_INFRASTRUCTURE:
 		/* fall through */
 	case BSS_TYPE_BOW_DEVICE:
@@ -1292,6 +1299,9 @@ void scanRemoveConnFlagOfBssDescByBssid(IN struct ADAPTER *prAdapter,
  */
 /*----------------------------------------------------------------------------*/
 void scanParsingMBSSIDSubelement(IN struct ADAPTER *prAdapter,
+	IN struct BSS_DESC *prTransBSS, IN struct IE_MBSSID *prMbssidIe);
+
+void scanParsingMBSSIDSubelement(IN struct ADAPTER *prAdapter,
 	IN struct BSS_DESC *prTransBSS, IN struct IE_MBSSID *prMbssidIe)
 {
 	uint8_t *pucIE;
@@ -1355,6 +1365,9 @@ void scanParsingMBSSIDSubelement(IN struct ADAPTER *prAdapter,
 #endif
 #if (CFG_SUPPORT_WIFI_RNR == 1)
 void scanHandleRnrSsid(IN struct PARAM_SCAN_REQUEST_ADV *prScanRequest,
+	IN struct BSS_DESC *prBssDesc, IN uint8_t ucBssidNum);
+
+void scanHandleRnrSsid(IN struct PARAM_SCAN_REQUEST_ADV *prScanRequest,
 	IN struct BSS_DESC *prBssDesc, IN uint8_t ucBssidNum)
 {
 	uint8_t i, fgHasEqualSsid = FALSE;
@@ -1392,6 +1405,9 @@ void scanHandleRnrSsid(IN struct PARAM_SCAN_REQUEST_ADV *prScanRequest,
 }
 
 uint8_t scanGetRnrChannel(IN struct ADAPTER *prAdapter,
+	IN struct NEIGHBOR_AP_INFO_FIELD *prNeighborAPInfoField);
+
+uint8_t scanGetRnrChannel(IN struct ADAPTER *prAdapter,
 	IN struct NEIGHBOR_AP_INFO_FIELD *prNeighborAPInfoField)
 {
 	uint8_t ucRnrChNum;
@@ -1426,6 +1442,10 @@ uint8_t scanGetRnrChannel(IN struct ADAPTER *prAdapter,
 
 	return ucRnrChNum;
 }
+
+void scanProcessRnrChannel(IN uint8_t ucRnrChNum,
+	IN uint16_t u2OpClass,
+	IN struct PARAM_SCAN_REQUEST_ADV *prScanRequest);
 
 void scanProcessRnrChannel(IN uint8_t ucRnrChNum,
 	IN uint16_t u2OpClass,
@@ -1477,6 +1497,8 @@ void scanProcessRnrChannel(IN uint8_t ucRnrChNum,
 	log_dbg(SCN, LOUD, "RnrCh=%d\n", ucRnrChNum);
 }
 
+uint8_t scanValidRnrTbttInfo(IN uint16_t u2TbttInfoLength);
+
 uint8_t scanValidRnrTbttInfo(IN uint16_t u2TbttInfoLength)
 {
 	uint8_t ucValidInfo;
@@ -1503,6 +1525,11 @@ uint8_t scanValidRnrTbttInfo(IN uint16_t u2TbttInfoLength)
 uint8_t scanSearchBssidInCurrentList(
 	IN struct PARAM_SCAN_REQUEST_ADV *prScanRequest,
 	IN uint8_t aucBSSID[],
+	IN uint8_t ucBssidNum);
+
+uint8_t scanSearchBssidInCurrentList(
+	IN struct PARAM_SCAN_REQUEST_ADV *prScanRequest,
+	IN uint8_t aucBSSID[],
 	IN uint8_t ucBssidNum)
 {
 	uint8_t i;
@@ -1526,6 +1553,9 @@ uint8_t scanSearchBssidInCurrentList(
  * @return   NULL, if has no space.
  */
 /*----------------------------------------------------------------------------*/
+void scanParsingRnrElement(IN struct ADAPTER *prAdapter,
+	IN struct BSS_DESC *prBssDesc, IN uint8_t *pucIE);
+
 void scanParsingRnrElement(IN struct ADAPTER *prAdapter,
 	IN struct BSS_DESC *prBssDesc, IN uint8_t *pucIE)
 {
@@ -3350,6 +3380,9 @@ uint32_t scanAddScanResult(IN struct ADAPTER *prAdapter,
 	return WLAN_STATUS_SUCCESS;
 
 }	/* end of scanAddScanResult() */
+
+u_int8_t scanCheckBssIsLegal(IN struct ADAPTER *prAdapter,
+			     struct BSS_DESC *prBssDesc);
 
 u_int8_t scanCheckBssIsLegal(IN struct ADAPTER *prAdapter,
 			     struct BSS_DESC *prBssDesc)

@@ -1837,6 +1837,9 @@ void nicCmdEventBatchScanResult(IN struct ADAPTER
 #endif
 
 void nicEventHifCtrlv2(IN struct ADAPTER *prAdapter,
+		     IN struct WIFI_EVENT *prEvent);
+
+void nicEventHifCtrlv2(IN struct ADAPTER *prAdapter,
 		     IN struct WIFI_EVENT *prEvent)
 {
 #if defined(_HIF_USB)
@@ -3285,6 +3288,8 @@ void nicEventLinkQuality(IN struct ADAPTER *prAdapter,
 #endif
 }
 
+void nicExtEventReCalData(IN struct ADAPTER *prAdapter, IN uint8_t *pucEventBuf);
+
 void nicExtEventReCalData(IN struct ADAPTER *prAdapter, IN uint8_t *pucEventBuf)
 {
 	struct EXT_EVENT_RECAL_DATA_T *prReCalData = NULL;
@@ -3447,6 +3452,9 @@ void nicExtEventICapIQData(IN struct ADAPTER *prAdapter,
 		prAdapter->rIcapInfo.eIcapState = ICAP_STATE_FW_DUMPING;
 
 }
+
+uint32_t nicRfTestEventHandler(IN struct ADAPTER *prAdapter,
+			       IN struct WIFI_EVENT *prEvent);
 
 uint32_t nicRfTestEventHandler(IN struct ADAPTER *prAdapter,
 			       IN struct WIFI_EVENT *prEvent)
@@ -3958,6 +3966,10 @@ void nicEventMibInfo(IN struct ADAPTER *prAdapter,
 *         false	if the beacon timeout event needs to be ignored
 */
 /*----------------------------------------------------------------------------*/
+bool nicBeaconTimeoutFilterPolicy(IN struct ADAPTER *prAdapter,
+	uint8_t ucBcnTimeoutReason, uint8_t *ucDisconnectReason,
+	uint8_t ucBssIdx);
+
 bool nicBeaconTimeoutFilterPolicy(IN struct ADAPTER *prAdapter,
 	uint8_t ucBcnTimeoutReason, uint8_t *ucDisconnectReason,
 	uint8_t ucBssIdx)

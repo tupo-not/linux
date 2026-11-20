@@ -69,6 +69,10 @@ static uint8_t *apucDebugP2pRoleState[P2P_ROLE_STATE_NUM] = {
 };
 
 uint8_t *
+p2pRoleFsmGetFsmState(
+	IN enum ENUM_P2P_ROLE_STATE eCurrentState);
+
+uint8_t *
 	p2pRoleFsmGetFsmState(
 	IN enum ENUM_P2P_ROLE_STATE eCurrentState) {
 	if (eCurrentState < P2P_ROLE_STATE_NUM)
@@ -2198,6 +2202,13 @@ void p2pRoleFsmRunEventDfsShutDownTimeout(IN struct ADAPTER *prAdapter,
 }				/* p2pRoleFsmRunEventDfsShutDownTimeout */
 
 #endif
+
+void
+p2pRoleFsmScanTargetBss(IN struct ADAPTER *prAdapter,
+		IN struct P2P_ROLE_FSM_INFO *prP2pRoleFsmInfo,
+		IN uint8_t ucChannelNum,
+		IN enum ENUM_BAND eBand,
+		IN struct P2P_SSID_STRUCT *prSsid);
 
 void
 p2pRoleFsmScanTargetBss(IN struct ADAPTER *prAdapter,
@@ -4520,6 +4531,11 @@ static void initAcsChnlMask(IN struct ADAPTER *prAdapter,
 			prAcsReqInfo->u4LteSafeChnMask_5G_2,
 			prAcsReqInfo->u4LteSafeChnMask_6G);
 }
+
+u_int8_t indicateApAcsOverwrite(
+	IN struct ADAPTER *prAdapter,
+	IN struct MSG_P2P_ACS_REQUEST *prMsgAcsRequest,
+	IN struct P2P_ACS_REQ_INFO *prAcsReqInfo);
 
 u_int8_t indicateApAcsOverwrite(
 	IN struct ADAPTER *prAdapter,

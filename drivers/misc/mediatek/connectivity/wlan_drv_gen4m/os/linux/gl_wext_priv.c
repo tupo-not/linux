@@ -930,6 +930,11 @@ short_buf:
 int
 __priv_set_int(IN struct net_device *prNetDev,
 	     IN struct iw_request_info *prIwReqInfo,
+	     IN union iwreq_data *prIwReqData, IN char *pcExtra);
+
+int
+__priv_set_int(IN struct net_device *prNetDev,
+	     IN struct iw_request_info *prIwReqInfo,
 	     IN union iwreq_data *prIwReqData, IN char *pcExtra)
 {
 	uint32_t u4SubCmd;
@@ -1244,6 +1249,11 @@ priv_set_int(IN struct net_device *prNetDev,
 int
 __priv_get_int(IN struct net_device *prNetDev,
 	     IN struct iw_request_info *prIwReqInfo,
+	     IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
+
+int
+__priv_get_int(IN struct net_device *prNetDev,
+	     IN struct iw_request_info *prIwReqInfo,
 	     IN union iwreq_data *prIwReqData, IN OUT char *pcExtra)
 {
 	uint32_t u4SubCmd;
@@ -1505,6 +1515,11 @@ priv_get_int(IN struct net_device *prNetDev,
 int
 __priv_set_ints(IN struct net_device *prNetDev,
 	      IN struct iw_request_info *prIwReqInfo,
+	      IN union iwreq_data *prIwReqData, IN char *pcExtra);
+
+int
+__priv_set_ints(IN struct net_device *prNetDev,
+	      IN struct iw_request_info *prIwReqInfo,
 	      IN union iwreq_data *prIwReqData, IN char *pcExtra)
 {
 	DBGLOG(REQ, LOUD, "not support now");
@@ -1540,6 +1555,11 @@ priv_set_ints(IN struct net_device *prNetDev,
  *
  */
 /*----------------------------------------------------------------------------*/
+int
+__priv_get_ints(IN struct net_device *prNetDev,
+	      IN struct iw_request_info *prIwReqInfo,
+	      IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
+
 int
 __priv_get_ints(IN struct net_device *prNetDev,
 	      IN struct iw_request_info *prIwReqInfo,
@@ -1630,6 +1650,11 @@ priv_get_ints(IN struct net_device *prNetDev,
  *
  */
 /*----------------------------------------------------------------------------*/
+int
+__priv_set_struct(IN struct net_device *prNetDev,
+		IN struct iw_request_info *prIwReqInfo,
+		IN union iwreq_data *prIwReqData, IN char *pcExtra);
+
 int
 __priv_set_struct(IN struct net_device *prNetDev,
 		IN struct iw_request_info *prIwReqInfo,
@@ -1917,6 +1942,11 @@ priv_set_struct(IN struct net_device *prNetDev,
  *
  */
 /*----------------------------------------------------------------------------*/
+int
+__priv_get_struct(IN struct net_device *prNetDev,
+		IN struct iw_request_info *prIwReqInfo,
+		IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
+
 int
 __priv_get_struct(IN struct net_device *prNetDev,
 		IN struct iw_request_info *prIwReqInfo,
@@ -2849,6 +2879,12 @@ priv_get_ndis(IN struct net_device *prNetDev,
  *
  */
 /*----------------------------------------------------------------------------*/
+int
+__priv_ate_set(IN struct net_device *prNetDev,
+	     IN struct iw_request_info *prIwReqInfo,
+	     IN union iwreq_data *prIwReqData,
+	     IN char *pcExtra);
+
 int
 __priv_ate_set(IN struct net_device *prNetDev,
 	     IN struct iw_request_info *prIwReqInfo,
@@ -4036,6 +4072,9 @@ struct android_wifi_priv_cmd {
 #endif /* CFG_ANDROID_AOSP_PRIV_CMD */
 
 int priv_driver_get_dbg_level(IN struct net_device
+			      *prNetDev, IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_get_dbg_level(IN struct net_device
 			      *prNetDev, IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -4587,6 +4626,10 @@ static u_int8_t priv_driver_get_ldpc_info(
 	else
 		return prWtblTxConfig->fgLDPC;
 }
+
+int32_t priv_driver_rate_to_string(IN char *pcCommand,
+				   IN int i4TotalLen, uint8_t TxRx,
+				   struct PARAM_HW_WLAN_INFO *prHwWlanInfo);
 
 int32_t priv_driver_rate_to_string(IN char *pcCommand,
 				   IN int i4TotalLen, uint8_t TxRx,
@@ -5555,6 +5598,9 @@ static int priv_driver_get_mcr(IN struct net_device *prNetDev,
 }				/* priv_driver_get_mcr */
 
 int priv_driver_set_mcr(IN struct net_device *prNetDev, IN char *pcCommand,
+			IN int i4TotalLen);
+
+int priv_driver_set_mcr(IN struct net_device *prNetDev, IN char *pcCommand,
 			IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -5839,6 +5885,9 @@ static int32_t priv_driver_set_ra_debug_proc(IN struct net_device *prNetDev,
 
 	return i4BytesWritten;
 }
+
+int priv_driver_set_fixed_fallback(IN struct net_device *prNetDev,
+				   IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_set_fixed_fallback(IN struct net_device *prNetDev,
 				   IN char *pcCommand, IN int i4TotalLen)
@@ -8011,6 +8060,9 @@ static int priv_driver_get_drv_mcr(IN struct net_device *prNetDev,
 }				/* priv_driver_get_drv_mcr */
 
 int priv_driver_set_drv_mcr(IN struct net_device *prNetDev, IN char *pcCommand,
+			    IN int i4TotalLen);
+
+int priv_driver_set_drv_mcr(IN struct net_device *prNetDev, IN char *pcCommand,
 			    IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -8113,6 +8165,9 @@ static int priv_driver_get_sw_ctrl(IN struct net_device *prNetDev,
 
 }				/* priv_driver_get_sw_ctrl */
 
+
+int priv_driver_set_sw_ctrl(IN struct net_device *prNetDev, IN char *pcCommand,
+			    IN int i4TotalLen);
 
 int priv_driver_set_sw_ctrl(IN struct net_device *prNetDev, IN char *pcCommand,
 			    IN int i4TotalLen)
@@ -8311,6 +8366,9 @@ int priv_driver_set_monitor(IN struct net_device *prNetDev,
 #endif
 
 int priv_driver_set_fixed_rate(IN struct net_device *prNetDev,
+			       IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_fixed_rate(IN struct net_device *prNetDev,
 			       IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -8471,6 +8529,9 @@ int priv_driver_set_fixed_rate(IN struct net_device *prNetDev,
 }	/* priv_driver_set_fixed_rate */
 
 int priv_driver_set_em_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
+			IN int i4TotalLen);
+
+int priv_driver_set_em_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
 			IN int i4TotalLen)
 {
 	uint32_t rStatus = WLAN_STATUS_SUCCESS;
@@ -8559,6 +8620,9 @@ int priv_driver_set_em_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
 	return i4BytesWritten;
 
 }				/* priv_driver_set_cfg_em  */
+
+int priv_driver_get_em_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
+			IN int i4TotalLen);
 
 int priv_driver_get_em_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
 			IN int i4TotalLen)
@@ -8729,6 +8793,9 @@ int priv_driver_set_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
 }				/* priv_driver_set_cfg  */
 
 int priv_driver_get_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
+			IN int i4TotalLen);
+
+int priv_driver_get_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
 			IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -8762,6 +8829,9 @@ int priv_driver_get_cfg(IN struct net_device *prNetDev, IN char *pcCommand,
 	return i4BytesWritten;
 
 }				/* priv_driver_get_cfg  */
+
+int priv_driver_set_chip_config(IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_set_chip_config(IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
@@ -8903,6 +8973,11 @@ int priv_driver_set_chip_config(IN struct net_device *prNetDev,
 void
 priv_driver_get_chip_config_16(uint8_t *pucStartAddr, uint32_t u4Length,
 			       uint32_t u4Line, int i4TotalLen,
+			       int32_t i4BytesWritten, char *pcCommand);
+
+void
+priv_driver_get_chip_config_16(uint8_t *pucStartAddr, uint32_t u4Length,
+			       uint32_t u4Line, int i4TotalLen,
 			       int32_t i4BytesWritten, char *pcCommand)
 {
 
@@ -8933,6 +9008,11 @@ priv_driver_get_chip_config_16(uint8_t *pucStartAddr, uint32_t u4Length,
 void
 priv_driver_get_chip_config_4(uint32_t *pu4StartAddr, uint32_t u4Length,
 			      uint32_t u4Line, int i4TotalLen,
+			      int32_t i4BytesWritten, char *pcCommand);
+
+void
+priv_driver_get_chip_config_4(uint32_t *pu4StartAddr, uint32_t u4Length,
+			      uint32_t u4Line, int i4TotalLen,
 			      int32_t i4BytesWritten, char *pcCommand)
 {
 	while (u4Length >= 16) {
@@ -8950,6 +9030,9 @@ priv_driver_get_chip_config_4(uint32_t *pu4StartAddr, uint32_t u4Length,
 		u4Line += 4;
 	}			/* u4Length */
 }
+
+int priv_driver_get_chip_config(IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_get_chip_config(IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
@@ -9083,6 +9166,9 @@ int priv_driver_get_chip_config(IN struct net_device *prNetDev,
 }				/* priv_driver_get_chip_config  */
 
 
+
+int priv_driver_set_ap_start(IN struct net_device *prNetDev, IN char *pcCommand,
+			     IN int i4TotalLen);
 
 int priv_driver_set_ap_start(IN struct net_device *prNetDev, IN char *pcCommand,
 			     IN int i4TotalLen)
@@ -9346,6 +9432,9 @@ priv_driver_set_faw_apply(IN struct net_device *prNetDev, IN char *pcCommand,
 #endif
 
 int priv_driver_get_linkspeed(IN struct net_device *prNetDev,
+			      IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_get_linkspeed(IN struct net_device *prNetDev,
 			      IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -9387,6 +9476,9 @@ int priv_driver_get_linkspeed(IN struct net_device *prNetDev,
 	return i4BytesWritten;
 
 }				/* priv_driver_get_linkspeed */
+
+int priv_driver_set_band(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
 
 int priv_driver_set_band(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
@@ -9432,6 +9524,9 @@ int priv_driver_set_band(IN struct net_device *prNetDev, IN char *pcCommand,
 	return 0;
 }
 
+
+int priv_driver_set_country(IN struct net_device *prNetDev,
+			    IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_set_country(IN struct net_device *prNetDev,
 			    IN char *pcCommand, IN int i4TotalLen)
@@ -9496,6 +9591,9 @@ int priv_driver_set_country(IN struct net_device *prNetDev,
 }
 
 int priv_driver_set_csa(IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_csa(IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -9528,6 +9626,9 @@ int priv_driver_set_csa(IN struct net_device *prNetDev,
 }
 
 int priv_driver_get_country(IN struct net_device *prNetDev,
+			    IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_get_country(IN struct net_device *prNetDev,
 			    IN char *pcCommand, IN int i4TotalLen)
 {
 
@@ -9558,6 +9659,9 @@ int priv_driver_get_country(IN struct net_device *prNetDev,
 
 	return	i4BytesWritten;
 }
+
+int priv_driver_get_channels(IN struct net_device *prNetDev,
+			     IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_get_channels(IN struct net_device *prNetDev,
 			     IN char *pcCommand, IN int i4TotalLen)
@@ -9670,6 +9774,10 @@ int priv_driver_get_channels(IN struct net_device *prNetDev,
 #if (CFG_SUPPORT_DFS_MASTER == 1)
 int priv_driver_set_dfs_channel_available(
 				IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_dfs_channel_available(
+				IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -9714,6 +9822,9 @@ int priv_driver_set_dfs_channel_available(
 }
 
 int priv_driver_show_dfs_state(IN struct net_device *prNetDev,
+			       IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_show_dfs_state(IN struct net_device *prNetDev,
 			       IN char *pcCommand, IN int i4TotalLen)
 {
 	int32_t i4Argc = 0;
@@ -9733,6 +9844,9 @@ int priv_driver_show_dfs_state(IN struct net_device *prNetDev,
 
 	return	i4BytesWritten;
 }
+
+int priv_driver_show_dfs_help(IN struct net_device *prNetDev,
+			      IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_show_dfs_help(IN struct net_device *prNetDev,
 			      IN char *pcCommand, IN int i4TotalLen)
@@ -9793,6 +9907,9 @@ int priv_driver_show_dfs_help(IN struct net_device *prNetDev,
 }
 
 int priv_driver_show_dfs_cac_time(IN struct net_device *prNetDev,
+				  IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_show_dfs_cac_time(IN struct net_device *prNetDev,
 				  IN char *pcCommand, IN int i4TotalLen)
 {
 	int32_t i4Argc = 0;
@@ -9818,6 +9935,9 @@ int priv_driver_show_dfs_cac_time(IN struct net_device *prNetDev,
 
 	return	i4BytesWritten;
 }
+
+int32_t _SetRddReport(struct net_device *prNetDev,
+	uint8_t ucDbdcIdx);
 
 int32_t _SetRddReport(struct net_device *prNetDev,
 	uint8_t ucDbdcIdx)
@@ -9847,6 +9967,9 @@ int32_t _SetRddReport(struct net_device *prNetDev,
 
 	return i4Status;
 }
+
+int priv_driver_rddreport(IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_rddreport(IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
@@ -9889,6 +10012,10 @@ int priv_driver_rddreport(IN struct net_device *prNetDev,
 
 int32_t _SetRadarDetectMode(
 	struct net_device *prNetDev,
+	uint8_t ucRadarDetectMode);
+
+int32_t _SetRadarDetectMode(
+	struct net_device *prNetDev,
 	uint8_t ucRadarDetectMode)
 {
 	uint32_t u4BufLen = 0;
@@ -9917,6 +10044,9 @@ int32_t _SetRadarDetectMode(
 
 	return i4Status;
 }
+
+int priv_driver_radarmode(IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_radarmode(IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
@@ -9958,6 +10088,9 @@ int priv_driver_radarmode(IN struct net_device *prNetDev,
 
 	return 0;
 }
+
+int priv_driver_radarevent(IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_radarevent(IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
@@ -10012,6 +10145,9 @@ error:
 #endif
 
 #if CFG_SUPPORT_IDC_CH_SWITCH
+int priv_driver_set_idc_bmp(IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
+
 int priv_driver_set_idc_bmp(IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
 {
@@ -10097,6 +10233,9 @@ error:
 }
 
 #endif
+int priv_driver_set_miracast(IN struct net_device *prNetDev,
+			     IN char *pcCommand, IN int i4TotalLen);
+
 int priv_driver_set_miracast(IN struct net_device *prNetDev,
 			     IN char *pcCommand, IN int i4TotalLen)
 {
@@ -10202,6 +10341,12 @@ int parseValueInString(
 	IN char **pcCommand,
 	IN const char *acDelim,
 	IN void *aucValue,
+	IN int u4MaxLen);
+
+int parseValueInString(
+	IN char **pcCommand,
+	IN const char *acDelim,
+	IN void *aucValue,
 	IN int u4MaxLen)
 {
 	uint8_t *pcPtr;
@@ -10244,6 +10389,9 @@ int parseValueInString(
 
 	return -1;
 }
+
+int priv_driver_set_ap_set_mac_acl(IN struct net_device *prNetDev,
+		IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_set_ap_set_mac_acl(IN struct net_device *prNetDev,
 		IN char *pcCommand, IN int i4TotalLen)
@@ -10355,6 +10503,9 @@ error:
 }
 
 int priv_driver_set_ap_set_cfg(IN struct net_device *prNetDev,
+	IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_ap_set_cfg(IN struct net_device *prNetDev,
 	IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -10442,6 +10593,9 @@ error:
 }
 
 int priv_driver_set_ap_get_sta_list(IN struct net_device *prNetDev,
+		IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_ap_get_sta_list(IN struct net_device *prNetDev,
 		IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -10497,6 +10651,9 @@ int priv_driver_set_ap_get_sta_list(IN struct net_device *prNetDev,
 error:
 	return -1;
 }
+
+int priv_driver_set_ap_sta_disassoc(IN struct net_device *prNetDev,
+				  IN char *pcCommand, IN int i4TotalLen);
 
 int priv_driver_set_ap_sta_disassoc(IN struct net_device *prNetDev,
 				  IN char *pcCommand, IN int i4TotalLen)
@@ -10557,6 +10714,9 @@ error:
 }
 
 int priv_driver_set_ap_nss(IN struct net_device *prNetDev,
+				  IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_ap_nss(IN struct net_device *prNetDev,
 				  IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -10607,6 +10767,9 @@ error:
 }
 
 int priv_driver_set_ap_bw(IN struct net_device *prNetDev,
+				IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_ap_bw(IN struct net_device *prNetDev,
 				IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -10653,6 +10816,11 @@ int priv_driver_set_ap_bw(IN struct net_device *prNetDev,
 error:
 	return -1;
 }
+
+int
+__priv_set_ap(IN struct net_device *prNetDev,
+	IN struct iw_request_info *prIwReqInfo,
+	IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
 
 int
 __priv_set_ap(IN struct net_device *prNetDev,
@@ -11557,6 +11725,9 @@ static int priv_driver_set_mdtim(IN struct net_device *prNetDev,
 }
 
 int priv_driver_set_suspend_mode(IN struct net_device *prNetDev,
+				 IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_suspend_mode(IN struct net_device *prNetDev,
 				 IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -11608,6 +11779,9 @@ int priv_driver_set_suspend_mode(IN struct net_device *prNetDev,
 }
 
 int priv_driver_set_bf(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_bf(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -11656,6 +11830,9 @@ int priv_driver_set_bf(IN struct net_device *prNetDev, IN char *pcCommand,
 }
 
 int priv_driver_set_nss(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_nss(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -11691,6 +11868,9 @@ int priv_driver_set_nss(IN struct net_device *prNetDev, IN char *pcCommand,
 	return i4BytesWritten;
 }
 
+
+int priv_driver_set_amsdu_tx(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
 
 int priv_driver_set_amsdu_tx(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
@@ -11738,6 +11918,9 @@ int priv_driver_set_amsdu_tx(IN struct net_device *prNetDev, IN char *pcCommand,
 
 
 int priv_driver_set_amsdu_rx(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_amsdu_rx(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -11780,6 +11963,9 @@ int priv_driver_set_amsdu_rx(IN struct net_device *prNetDev, IN char *pcCommand,
 
 	return i4BytesWritten;
 }
+
+int priv_driver_set_ampdu_tx(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
 
 int priv_driver_set_ampdu_tx(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
@@ -11825,6 +12011,9 @@ int priv_driver_set_ampdu_tx(IN struct net_device *prNetDev, IN char *pcCommand,
 }
 
 int priv_driver_set_ampdu_rx(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_ampdu_rx(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -11867,6 +12056,9 @@ int priv_driver_set_ampdu_rx(IN struct net_device *prNetDev, IN char *pcCommand,
 
 	return i4BytesWritten;
 }
+
+int priv_driver_set_qos(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
 
 int priv_driver_set_qos(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
@@ -11916,6 +12108,11 @@ int priv_driver_set_qos(IN struct net_device *prNetDev, IN char *pcCommand,
 int priv_driver_muedca_override(
 	IN struct net_device *prNetDev,
 	IN char *pcCommand,
+	IN int i4TotalLen);
+
+int priv_driver_muedca_override(
+	IN struct net_device *prNetDev,
+	IN char *pcCommand,
 	IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -11953,6 +12150,9 @@ int priv_driver_muedca_override(
 
 	return i4BytesWritten;
 }
+
+int priv_driver_set_mcsmap(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
 
 int priv_driver_set_mcsmap(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
@@ -12010,6 +12210,9 @@ int priv_driver_set_mcsmap(IN struct net_device *prNetDev, IN char *pcCommand,
 }
 
 int priv_driver_set_ba_size(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_ba_size(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -12062,6 +12265,9 @@ int priv_driver_set_ba_size(IN struct net_device *prNetDev, IN char *pcCommand,
  * \retval WLAN_STATUS_SUCCESS
  */
 /*----------------------------------------------------------------------------*/
+int priv_driver_set_trx_ba_size(IN struct net_device *prNetDev,
+		IN char *pcCommand, IN int i4TotalLen, IN u_int8_t fgIsTx);
+
 int priv_driver_set_trx_ba_size(IN struct net_device *prNetDev,
 		IN char *pcCommand, IN int i4TotalLen, IN u_int8_t fgIsTx)
 {
@@ -12134,6 +12340,9 @@ int priv_driver_set_trx_ba_size(IN struct net_device *prNetDev,
 
 /* This command is for sigma to disable TpTestMode. */
 int priv_driver_set_tp_test_mode(IN struct net_device *prNetDev,
+				 IN char *pcCommand, IN int i4TotalLen);
+
+int priv_driver_set_tp_test_mode(IN struct net_device *prNetDev,
 				 IN char *pcCommand, IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -12177,6 +12386,9 @@ int priv_driver_set_tp_test_mode(IN struct net_device *prNetDev,
 }
 
 /* This command is for sigma to disable TxPPDU. */
+int priv_driver_set_tx_ppdu(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
 int priv_driver_set_tx_ppdu(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
@@ -12244,6 +12456,9 @@ int priv_driver_set_tx_ppdu(IN struct net_device *prNetDev, IN char *pcCommand,
 
 /* This command is for sigma to disable LDPC capability. */
 int priv_driver_set_ldpc(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_ldpc(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -12293,6 +12508,10 @@ int priv_driver_set_ldpc(IN struct net_device *prNetDev, IN char *pcCommand,
 }
 
 /* This command is for sigma to force tx amsdu. */
+int priv_driver_set_tx_force_amsdu(IN struct net_device *prNetDev,
+	IN char *pcCommand,
+	IN int i4TotalLen);
+
 int priv_driver_set_tx_force_amsdu(IN struct net_device *prNetDev,
 	IN char *pcCommand,
 	IN int i4TotalLen)
@@ -12345,6 +12564,9 @@ int priv_driver_set_tx_force_amsdu(IN struct net_device *prNetDev,
 
 /* This command is for sigma to change OM CH BW. */
 int priv_driver_set_om_ch_bw(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_om_ch_bw(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -12391,6 +12613,11 @@ int priv_driver_set_om_ch_bw(IN struct net_device *prNetDev, IN char *pcCommand,
 int priv_driver_set_om_rx_nss(
 	IN struct net_device *prNetDev,
 	IN char *pcCommand,
+	IN int i4TotalLen);
+
+int priv_driver_set_om_rx_nss(
+	IN struct net_device *prNetDev,
+	IN char *pcCommand,
 	IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -12429,6 +12656,11 @@ int priv_driver_set_om_rx_nss(
 
 	return i4BytesWritten;
 }
+
+int priv_driver_set_om_tx_nss(
+	IN struct net_device *prNetDev,
+	IN char *pcCommand,
+	IN int i4TotalLen);
 
 int priv_driver_set_om_tx_nss(
 	IN struct net_device *prNetDev,
@@ -12475,6 +12707,11 @@ int priv_driver_set_om_tx_nss(
 int priv_driver_set_om_mu_dis(
 	IN struct net_device *prNetDev,
 	IN char *pcCommand,
+	IN int i4TotalLen);
+
+int priv_driver_set_om_mu_dis(
+	IN struct net_device *prNetDev,
+	IN char *pcCommand,
 	IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -12513,6 +12750,11 @@ int priv_driver_set_om_mu_dis(
 
 	return i4BytesWritten;
 }
+
+int priv_driver_set_tx_om_packet(
+	IN struct net_device *prNetDev,
+	IN char *pcCommand,
+	IN int i4TotalLen);
 
 int priv_driver_set_tx_om_packet(
 	IN struct net_device *prNetDev,
@@ -12566,6 +12808,11 @@ int priv_driver_set_tx_om_packet(
 
 	return i4BytesWritten;
 }
+
+int priv_driver_set_tx_cck_1m_pwr(
+	IN struct net_device *prNetDev,
+	IN char *pcCommand,
+	IN int i4TotalLen);
 
 int priv_driver_set_tx_cck_1m_pwr(
 	IN struct net_device *prNetDev,
@@ -12752,6 +12999,9 @@ static int priv_driver_set_rst_hang(IN struct net_device *prNetDev,
 
 #if CFG_SUPPORT_DBDC
 int priv_driver_set_dbdc(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_dbdc(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -12825,6 +13075,9 @@ int priv_driver_set_dbdc(IN struct net_device *prNetDev, IN char *pcCommand,
 
 	return i4BytesWritten;
 }
+
+int priv_driver_set_sta1ss(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
 
 int priv_driver_set_sta1ss(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
@@ -13974,6 +14227,9 @@ static int priv_driver_set_twtparams(
 
 #if (CFG_SUPPORT_802_11AX == 1)
 int priv_driver_set_pad_dur(IN struct net_device *prNetDev, IN char *pcCommand,
+			 IN int i4TotalLen);
+
+int priv_driver_set_pad_dur(IN struct net_device *prNetDev, IN char *pcCommand,
 			 IN int i4TotalLen)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -14624,6 +14880,12 @@ int32_t priv_driver_rx_stat_parser(
 	IN uint8_t *dataptr,
 	IN int i4TotalLen,
 	OUT char *pcCommand
+);
+
+int32_t priv_driver_rx_stat_parser(
+	IN uint8_t *dataptr,
+	IN int i4TotalLen,
+	OUT char *pcCommand
 )
 {
 	int32_t i4BytesWritten = 0;
@@ -15018,6 +15280,9 @@ static int priv_driver_get_nvram(IN struct net_device *prNetDev,
 	return (int32_t)u4Offset;
 
 }				/* priv_driver_get_nvram */
+
+int priv_driver_set_nvram(IN struct net_device *prNetDev, IN char *pcCommand,
+			IN int i4TotalLen);
 
 int priv_driver_set_nvram(IN struct net_device *prNetDev, IN char *pcCommand,
 			IN int i4TotalLen)

@@ -451,6 +451,9 @@ uint32_t nicTxResourceGetPleFreeCount(IN struct ADAPTER
 /*----------------------------------------------------------------------------*/
 
 uint32_t nicTxAcquireResourcePLE(IN struct ADAPTER
+				 *prAdapter, IN uint8_t ucTC);
+
+uint32_t nicTxAcquireResourcePLE(IN struct ADAPTER
 				 *prAdapter, IN uint8_t ucTC)
 {
 	struct TX_CTRL *prTxCtrl;
@@ -1787,6 +1790,10 @@ uint32_t nicTxGetMsduPendingCnt(IN struct ADAPTER
 
 void nicTxComposeDescAppend(IN struct ADAPTER *prAdapter,
 			    IN struct MSDU_INFO *prMsduInfo,
+			    OUT uint8_t *prTxDescBuffer);
+
+void nicTxComposeDescAppend(IN struct ADAPTER *prAdapter,
+			    IN struct MSDU_INFO *prMsduInfo,
 			    OUT uint8_t *prTxDescBuffer)
 {
 	struct mt66xx_chip_info *prChipInfo = prAdapter->chip_info;
@@ -1807,6 +1814,14 @@ void nicTxComposeDescAppend(IN struct ADAPTER *prAdapter,
  * @retval VOID
  */
 /*----------------------------------------------------------------------------*/
+void
+nicTxComposeDesc(
+	IN struct ADAPTER *prAdapter,
+	IN struct MSDU_INFO *prMsduInfo,
+	IN uint32_t u4TxDescLength,
+	IN u_int8_t fgIsTemplate,
+	OUT uint8_t *prTxDescBuffer);
+
 void
 nicTxComposeDesc(
 	IN struct ADAPTER *prAdapter,
@@ -1851,6 +1866,11 @@ nicTxComposeSecurityFrameDesc(
 void
 nicTxForceAmsduForCert(
 	struct ADAPTER *prAdapter,
+	u_int8_t *prTxDescBuffer);
+
+void
+nicTxForceAmsduForCert(
+	struct ADAPTER *prAdapter,
 	u_int8_t *prTxDescBuffer)
 {
 #if (CFG_SUPPORT_802_11AX == 1) && (CFG_SUPPORT_CONNAC2X == 1)
@@ -1867,6 +1887,10 @@ nicTxForceAmsduForCert(
 	/* TODO */
 #endif
 }
+
+u_int8_t nicTxIsTXDTemplateAllowed(IN struct ADAPTER
+				   *prAdapter, IN struct MSDU_INFO *prMsduInfo,
+				   IN struct STA_RECORD *prStaRec);
 
 u_int8_t nicTxIsTXDTemplateAllowed(IN struct ADAPTER
 				   *prAdapter, IN struct MSDU_INFO *prMsduInfo,
@@ -2061,6 +2085,11 @@ nicTxFillDataDesc(IN struct ADAPTER *prAdapter,
 			(uint8_t *)pucOutputBuf);
 	}
 }
+
+void
+nicTxCopyDesc(IN struct ADAPTER *prAdapter,
+	      IN uint8_t *pucTarTxDesc, IN uint8_t *pucSrcTxDesc,
+	      OUT uint8_t *pucTxDescLength);
 
 void
 nicTxCopyDesc(IN struct ADAPTER *prAdapter,
@@ -3443,6 +3472,9 @@ u_int8_t nicTxProcessCmdDataPacket(IN struct ADAPTER *prAdapter,
 
 	return TRUE;
 }
+
+u_int8_t nicTxProcessMngPacket(IN struct ADAPTER *prAdapter,
+			       IN struct MSDU_INFO *prMsduInfo);
 
 u_int8_t nicTxProcessMngPacket(IN struct ADAPTER *prAdapter,
 			       IN struct MSDU_INFO *prMsduInfo)

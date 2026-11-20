@@ -84,6 +84,8 @@ const struct file_operations gConnPwrDevFops = {
 #endif
 };
 
+void conn_pwr_get_local_time(unsigned long long *sec, unsigned long *usec);
+
 void conn_pwr_get_local_time(unsigned long long *sec, unsigned long *usec)
 {
 	if (sec != NULL && usec != NULL) {
@@ -359,7 +361,7 @@ int conn_pwr_notify_event(enum conn_pwr_drv_type drv, enum conn_pwr_event_type e
 	}
 
 	if (g_event_cb_tbl[drv] == NULL) {
-		pr_info("event cb is not registered.\n", drv);
+		pr_info("event cb for drv %d is not registered.\n", drv);
 		return -2;
 	}
 
@@ -371,7 +373,7 @@ int conn_pwr_notify_event(enum conn_pwr_drv_type drv, enum conn_pwr_event_type e
 		pr_info("%s, drv = %d, max_t = %d, rcv_t = %d, ret = %d\n", __func__,
 			drv, d->max_temp, d->recovery_temp, ret);
 	} else {
-		pr_info("invalid. event = %d, data = %x\n", event, data);
+		pr_info("invalid. event = %d, data = %p\n", event, data);
 		return -3;
 	}
 	return ret;

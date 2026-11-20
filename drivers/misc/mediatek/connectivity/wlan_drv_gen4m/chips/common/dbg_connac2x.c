@@ -1270,7 +1270,7 @@ static void connac2x_print_wtbl_info(
 				pwtbl->trx_cap.wtbl_d3.field.tebf,
 				pwtbl->trx_cap.wtbl_d3.field.tebf_vht,
 				pwtbl->trx_cap.wtbl_d3.field.tebf_he);
-			else
+			else {
 				LOG_FUNC(
 				"\n\tLWTBL DW 3\n"
 				"\tWMM_Q:%d\n"
@@ -1291,6 +1291,7 @@ static void connac2x_print_wtbl_info(
 				pwtbl->trx_cap.wtbl_d3.field.tebf,
 				pwtbl->trx_cap.wtbl_d3.field.tebf_vht,
 				pwtbl->trx_cap.wtbl_d3.field.tebf_he);
+			}
 		}
 
 		LOG_FUNC(
@@ -1369,7 +1370,7 @@ static void connac2x_print_wtbl_info(
 			pwtbl->trx_cap.wtbl_d5.field.i_psm,
 			pwtbl->trx_cap.wtbl_d5.field.psm,
 			pwtbl->trx_cap.wtbl_d5.field.skip_tx);
-		else
+		else {
 			LOG_FUNC(
 			"\n\tLWTBL DW 5\n"
 			"\tAF:%d\n"
@@ -1408,6 +1409,7 @@ static void connac2x_print_wtbl_info(
 			pwtbl->trx_cap.wtbl_d5.field.i_psm,
 			pwtbl->trx_cap.wtbl_d5.field.psm,
 			pwtbl->trx_cap.wtbl_d5.field.skip_tx);
+		}
 
 		LOG_FUNC(
 		       "\n\tLWTBL DW 6\n"
@@ -1502,12 +1504,13 @@ static void connac2x_print_wtbl_info(
 			stbc = (((txrate[rate_idx]) &
 				(0x1 << 13)) >> 13);
 
-			if (!(rate_idx%2))
+			if (!(rate_idx%2)) {
 				LOG_FUNC("LWTBL DW %d\n",
 					(rate_idx/2)+10);
+			}
 
-				if (txmode == TX_RATE_MODE_CCK)
-					LOG_FUNC(
+			if (txmode == TX_RATE_MODE_CCK)
+				LOG_FUNC(
 	"\tRate%d(0x%x):TxMode=%d(%s) TxRate=%d(%s) Nsts=%d STBC=%d\n",
 					rate_idx + 1,
 					txrate[rate_idx],
@@ -1517,8 +1520,8 @@ static void connac2x_print_wtbl_info(
 					mcs < 4 ? HW_TX_RATE_CCK_STR[mcs] :
 					   HW_TX_RATE_CCK_STR[4],
 					nss, stbc);
-				else if (txmode == TX_RATE_MODE_OFDM)
-					LOG_FUNC(
+			else if (txmode == TX_RATE_MODE_OFDM)
+				LOG_FUNC(
 	"\tRate%d(0x%x):TxMode=%d(%s) TxRate=%d(%s) Nsts=%d STBC=%d\n",
 					rate_idx + 1,
 					txrate[rate_idx],
@@ -1527,8 +1530,8 @@ static void connac2x_print_wtbl_info(
 					mcs,
 					nicHwRateOfdmStr(mcs),
 					nss, stbc);
-				else
-					LOG_FUNC(
+			else {
+				LOG_FUNC(
 	"\tRate%d(0x%x):TxMode=%d(%s) TxRate=%d(MCS%d) Nsts=%d STBC=%d\n",
 					rate_idx + 1,
 					txrate[rate_idx],
@@ -1538,6 +1541,7 @@ static void connac2x_print_wtbl_info(
 					mcs,
 					mcs,
 					nss, stbc);
+			}
 		}
 		LOG_FUNC("\n");
 

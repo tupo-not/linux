@@ -214,6 +214,8 @@ const uint16_t tkipSBOX2[256] = {
  * \return (none)
  */
 /*----------------------------------------------------------------------------*/
+void tkipMicB(IN OUT uint32_t *pu4L, IN OUT uint32_t *pu4R);
+
 void tkipMicB(IN OUT uint32_t *pu4L, IN OUT uint32_t *pu4R)
 {
 	*pu4R = *pu4R ^ ROTL32(*pu4L, 17);	/* r <- r ^ (l<<<17)    */
@@ -241,6 +243,12 @@ void tkipMicB(IN OUT uint32_t *pu4L, IN OUT uint32_t *pu4R)
  * \return (none)
  */
 /*----------------------------------------------------------------------------*/
+void
+tkipMicGen(IN uint8_t *pucMickey,
+	   IN uint8_t *pucData,
+	   IN uint32_t u4DataLen, IN uint8_t *pucSa, IN uint8_t *pucDa,
+	   IN uint8_t ucPriority, OUT uint8_t *pucMic);
+
 void
 tkipMicGen(IN uint8_t *pucMickey,
 	   IN uint8_t *pucData,
@@ -333,6 +341,13 @@ tkipMicGen(IN uint8_t *pucMickey,
  * \retval NONE
  */
 /*----------------------------------------------------------------------------*/
+void
+tkipMicEncapsulate(IN uint8_t *pucDa,
+		   IN uint8_t *pucSa,
+		   IN uint8_t ucPriority,
+		   IN uint16_t u2PayloadLen, IN uint8_t *pucPayload,
+		   IN uint8_t *pucMic, IN uint8_t *pucMicKey);
+
 void
 tkipMicEncapsulate(IN uint8_t *pucDa,
 		   IN uint8_t *pucSa,

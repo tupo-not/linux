@@ -2441,6 +2441,10 @@ s_int32 mt_op_get_tx_tone_pwr(
 
 s_int32 mt_op_reset_recal_cnt(
 	struct test_wlan_info *winfos
+);
+
+s_int32 mt_op_reset_recal_cnt(
+	struct test_wlan_info *winfos
 )
 {
 	s_int32 ret = SERV_STATUS_SUCCESS;

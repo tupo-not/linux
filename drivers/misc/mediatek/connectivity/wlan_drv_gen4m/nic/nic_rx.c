@@ -4273,6 +4273,8 @@ uint32_t nicRxFlush(IN struct ADAPTER *prAdapter)
 	return WLAN_STATUS_SUCCESS;
 }
 
+uint8_t nicIsActionFrameValid(IN struct SW_RFB *prSwRfb);
+
 uint8_t nicIsActionFrameValid(IN struct SW_RFB *prSwRfb)
 {
 	struct WLAN_ACTION_FRAME *prActFrame;

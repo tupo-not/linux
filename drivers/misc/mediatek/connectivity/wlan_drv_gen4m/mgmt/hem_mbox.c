@@ -409,6 +409,8 @@ static struct MSG_HNDL_ENTRY arMsgMapTable[] = {
  * \return none
  */
 /*----------------------------------------------------------------------------*/
+void mboxInitMsgMap(void);
+
 void mboxInitMsgMap(void)
 {
 	uint32_t i, idx;

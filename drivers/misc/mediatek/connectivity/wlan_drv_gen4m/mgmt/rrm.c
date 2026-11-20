@@ -228,6 +228,9 @@ static u_int8_t rrmAllMeasurementIssued(
 }
 
 void rrmComposeIncapableRmRep(struct RADIO_MEASUREMENT_REPORT_PARAMS *prRep,
+			      uint8_t ucToken, uint8_t ucMeasType);
+
+void rrmComposeIncapableRmRep(struct RADIO_MEASUREMENT_REPORT_PARAMS *prRep,
 			      uint8_t ucToken, uint8_t ucMeasType)
 {
 	struct IE_MEASUREMENT_REPORT *prRepIE =
@@ -241,6 +244,9 @@ void rrmComposeIncapableRmRep(struct RADIO_MEASUREMENT_REPORT_PARAMS *prRep,
 	prRepIE->ucReportMode = RM_REP_MODE_INCAPABLE;
 	prRep->u2ReportFrameLen += 5;
 }
+
+int rrmBeaconRepUpdateLastFrame(struct ADAPTER *prAdapter,
+	uint8_t ucBssIndex);
 
 int rrmBeaconRepUpdateLastFrame(struct ADAPTER *prAdapter,
 	uint8_t ucBssIndex)
@@ -1350,6 +1356,8 @@ static void rrmHandleBeaconReqSubelem(
 	}
 }
 
+uint8_t rrmCheckReportId(uint8_t id, uint8_t *ie, uint8_t len);
+
 uint8_t rrmCheckReportId(uint8_t id, uint8_t *ie, uint8_t len)
 {
 	uint8_t i;
@@ -1362,6 +1370,11 @@ uint8_t rrmCheckReportId(uint8_t id, uint8_t *ie, uint8_t len)
 	}
 	return FALSE;
 }
+
+int rrmBeaconRepAddFrameBody(struct BCN_RM_PARAMS *data,
+				  struct BSS_DESC *bss, uint8_t *buf,
+				  uint32_t buf_len, uint8_t **ies_buf,
+				  uint32_t *ie_len, int add_fixed);
 
 int rrmBeaconRepAddFrameBody(struct BCN_RM_PARAMS *data,
 				  struct BSS_DESC *bss, uint8_t *buf,
@@ -1448,6 +1461,10 @@ int rrmBeaconRepAddFrameBody(struct BCN_RM_PARAMS *data,
 
 int rrmReportElem(struct RM_MEASURE_REPORT_ENTRY *reportEntry,
 	uint8_t token, uint8_t mode, uint8_t type,
+	const uint8_t *data, uint32_t data_len);
+
+int rrmReportElem(struct RM_MEASURE_REPORT_ENTRY *reportEntry,
+	uint8_t token, uint8_t mode, uint8_t type,
 	const uint8_t *data, uint32_t data_len)
 {
 	uint8_t *report = reportEntry->pucMeasReport;
@@ -1482,6 +1499,13 @@ int rrmReportElem(struct RM_MEASURE_REPORT_ENTRY *reportEntry,
 
 	return 0;
 }
+
+int rrmAddBeaconRepElem(IN struct ADAPTER *prAdapter,
+			struct BCN_RM_PARAMS *data,
+			struct BSS_DESC *bss,
+			struct RM_MEASURE_REPORT_ENTRY *reportEntry,
+			struct RM_BCN_REPORT *rep,
+			uint8_t **ie, uint32_t *ie_len, uint8_t idx);
 
 int rrmAddBeaconRepElem(IN struct ADAPTER *prAdapter,
 			struct BCN_RM_PARAMS *data,

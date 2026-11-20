@@ -11,7 +11,7 @@
  * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
  */
 
-#define pr_fmt(fmt) KBUILD_MODNAME "@(%s:%d) " fmt, __func__, __LINE__
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/firmware.h>
 #include "conninfra_conf.h"

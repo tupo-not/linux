@@ -82,7 +82,7 @@ static int btmtk_uart_send_query_uart_cmd(struct hci_dev *hdev)
  */
 static int btmtk_uart_tty_open(struct tty_struct *tty)
 {
-	BTMTK_INFO("%s: tty %p\n", __func__, tty);
+	BTMTK_INFO("%s: tty %p", __func__, tty);
 
 	/* Init tty-related operation */
 	tty->receive_room = 65536;
@@ -109,7 +109,7 @@ static int btmtk_uart_tty_open(struct tty_struct *tty)
 
 	tty_driver_flush_buffer(tty);
 
-	BTMTK_INFO("%s: tty done %p\n", __func__, tty);
+	BTMTK_INFO("%s: tty done %p", __func__, tty);
 
 	return 0;
 }
@@ -214,7 +214,7 @@ static void btmtk_uart_tty_receive(struct tty_struct *tty, const u8 *data, char 
 	int ret = -1;
 	struct btmtk_dev *bdev = tty->disc_data;
 
-	BTMTK_DBG_RAW(data, count, "Receive");
+	BTMTK_DBG_RAW(data, count, "receive");
 
 	/* add hci device part */
 	ret = btmtk_recv(bdev->hdev, data, count);
@@ -289,10 +289,10 @@ int btmtk_cif_register(void)
 	BTMTK_INFO("%s", __func__);
 	ret = uart_register();
 	if (ret < 0) {
-		BTMTK_ERR("*** UART registration fail(%d)! ***", ret);
+		BTMTK_ERR(" UART registration fail(%d)! ", ret);
 		return ret;
 	}
-	BTMTK_INFO("%s: Done", __func__);
+	BTMTK_INFO("%s: done", __func__);
 	return 0;
 }
 
@@ -303,9 +303,9 @@ int btmtk_cif_deregister(void)
 	BTMTK_INFO("%s", __func__);
 	ret = uart_deregister();
 	if (ret < 0) {
-		BTMTK_ERR("*** UART deregistration fail(%d)! ***", ret);
+		BTMTK_ERR(" UART deregistration fail(%d)! ", ret);
 		return ret;
 	}
-	BTMTK_INFO("%s: Done", __func__);
+	BTMTK_INFO("%s: done", __func__);
 	return 0;
 }

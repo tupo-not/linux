@@ -376,6 +376,9 @@ int conndump_netlink_init(int conn_type, void* dump_ctx, struct netlink_event_cb
 	return ret;
 }
 
+int conndump_netlink_msg_send(struct dump_netlink_ctx* ctx, char* tag, char* buf, unsigned int length, pid_t pid, unsigned int seq);
+int conndump_netlink_send_to_native_internal(struct dump_netlink_ctx* ctx, char* tag, char* buf, unsigned int length);
+
 int conndump_netlink_msg_send(struct dump_netlink_ctx* ctx, char* tag, char* buf, unsigned int length, pid_t pid, unsigned int seq)
 {
 	struct sk_buff *skb;

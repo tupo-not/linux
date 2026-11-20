@@ -908,6 +908,10 @@ void halShowDmaschInfo(IN struct ADAPTER *prAdapter)
 /* return: new pos */
 int32_t halDumpRegToBuffer(struct ADAPTER *prAdapter,
 	char *buf, uint32_t bufSize, int32_t pos,
+	uint32_t reg);
+
+int32_t halDumpRegToBuffer(struct ADAPTER *prAdapter,
+	char *buf, uint32_t bufSize, int32_t pos,
 	uint32_t reg)
 {
 #define __DUMP_STR__ "0x%08x:0x%08x "
@@ -931,6 +935,10 @@ int32_t halDumpRegToBuffer(struct ADAPTER *prAdapter,
 #undef __DUMP_STR__
 #undef DUMP_STR_LEN
 }
+
+void halDumpRegInRange(struct ADAPTER *prAdapter,
+	char *buf, uint32_t bufSize, uint32_t maxInLine,
+	uint32_t start, uint32_t end, uint32_t offset);
 
 void halDumpRegInRange(struct ADAPTER *prAdapter,
 	char *buf, uint32_t bufSize, uint32_t maxInLine,
@@ -965,6 +973,10 @@ void halDumpRegInRange(struct ADAPTER *prAdapter,
 		pos = 0;
 	}
 }
+
+uint32_t halDumpRegInArray(struct ADAPTER *prAdapter,
+	char *buf, uint32_t bufSize, int32_t pos,
+	uint32_t pArr[], uint32_t elemSize, uint32_t maxSize);
 
 uint32_t halDumpRegInArray(struct ADAPTER *prAdapter,
 	char *buf, uint32_t bufSize, int32_t pos,

@@ -414,6 +414,11 @@ static uint32_t wnmBTMResponseTxDone(IN struct ADAPTER *prAdapter,
 void wnmSendBTMResponseFrame(IN struct ADAPTER *adapter,
 	IN struct STA_RECORD *staRec, IN uint8_t dialogToken,
 	IN uint8_t status, IN uint8_t reason, IN uint8_t delay,
+	IN const uint8_t *bssid);
+
+void wnmSendBTMResponseFrame(IN struct ADAPTER *adapter,
+	IN struct STA_RECORD *staRec, IN uint8_t dialogToken,
+	IN uint8_t status, IN uint8_t reason, IN uint8_t delay,
 	IN const uint8_t *bssid)
 {
 	struct MSDU_INFO *prMsduInfo = NULL;
@@ -564,6 +569,9 @@ void wnmSendBTMQueryFrame(IN struct ADAPTER *prAdapter,
 }				/* end of wnmComposeBTMQueryFrame() */
 
 #if CFG_SUPPORT_MBO
+void wnmMboIeTransReq(IN struct ADAPTER *adapter, IN uint8_t wnmMode,
+		IN const uint8_t *ie, IN uint16_t len, IN uint8_t bssIndex);
+
 void wnmMboIeTransReq(IN struct ADAPTER *adapter, IN uint8_t wnmMode,
 		IN const uint8_t *ie, IN uint16_t len, IN uint8_t bssIndex)
 {

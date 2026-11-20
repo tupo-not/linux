@@ -438,6 +438,9 @@ static uint16_t scanCalculateScoreByClientCnt(struct BSS_DESC *prBssDesc,
 
 #if CFG_SUPPORT_802_11K
 struct NEIGHBOR_AP *scanGetNeighborAPEntry(
+	struct ADAPTER *prAdapter, uint8_t *pucBssid, uint8_t ucBssIndex);
+
+struct NEIGHBOR_AP *scanGetNeighborAPEntry(
 	struct ADAPTER *prAdapter, uint8_t *pucBssid, uint8_t ucBssIndex)
 {
 	struct LINK *prNeighborAPLink =
@@ -1058,6 +1061,9 @@ u_int8_t scanApOverload(uint16_t status, uint16_t reason)
 }
 
 uint16_t scanCalculateScoreByBlackList(struct ADAPTER *prAdapter,
+	    struct BSS_DESC *prBssDesc, enum ROAM_TYPE eRoamType);
+
+uint16_t scanCalculateScoreByBlackList(struct ADAPTER *prAdapter,
 	    struct BSS_DESC *prBssDesc, enum ROAM_TYPE eRoamType)
 {
 	uint16_t u2Score = 0;
@@ -1075,6 +1081,9 @@ uint16_t scanCalculateScoreByBlackList(struct ADAPTER *prAdapter,
 }
 
 uint16_t scanCalculateScoreByTput(struct ADAPTER *prAdapter,
+	    struct BSS_DESC *prBssDesc, enum ROAM_TYPE eRoamType);
+
+uint16_t scanCalculateScoreByTput(struct ADAPTER *prAdapter,
 	    struct BSS_DESC *prBssDesc, enum ROAM_TYPE eRoamType)
 {
 	uint16_t u2Score = 0;
@@ -1085,6 +1094,9 @@ uint16_t scanCalculateScoreByTput(struct ADAPTER *prAdapter,
 #endif
 	return u2Score * gasMtkWeightConfig[eRoamType].ucTputWeight;
 }
+
+uint16_t scanCalculateScoreByPreference(struct ADAPTER *prAdapter,
+	    struct BSS_DESC *prBssDesc, enum ENUM_ROAMING_REASON eRoamReason);
 
 uint16_t scanCalculateScoreByPreference(struct ADAPTER *prAdapter,
 	    struct BSS_DESC *prBssDesc, enum ENUM_ROAMING_REASON eRoamReason)
@@ -1103,6 +1115,10 @@ uint16_t scanCalculateScoreByPreference(struct ADAPTER *prAdapter,
 #endif
 	return 0;
 }
+
+uint16_t scanCalculateTotalScore(struct ADAPTER *prAdapter,
+	struct BSS_DESC *prBssDesc, enum ENUM_ROAMING_REASON eRoamReason,
+	uint8_t ucBssIndex);
 
 uint16_t scanCalculateTotalScore(struct ADAPTER *prAdapter,
 	struct BSS_DESC *prBssDesc, enum ENUM_ROAMING_REASON eRoamReason,
@@ -1459,6 +1475,9 @@ try_again:
 		prEssLink->u4NumElem, ucChannel);
 	return NULL;
 }
+
+uint8_t scanUpdateChannelList(uint8_t channel, enum ENUM_BAND eBand,
+	uint8_t *bitmap, uint8_t *count, struct ESS_CHNL_INFO *info);
 
 uint8_t scanUpdateChannelList(uint8_t channel, enum ENUM_BAND eBand,
 	uint8_t *bitmap, uint8_t *count, struct ESS_CHNL_INFO *info)
