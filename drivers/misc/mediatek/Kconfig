@@ -6,6 +6,16 @@ config MTK_CMDQ_MBOX_EXT
 	depends on ARCH_MEDIATEK
 	default DRM_MEDIATEK_V2
 
+config MTK_NVRAM_STAGE
+	bool "Stage connsys NVRAM blobs in kernel memory"
+	depends on SYSFS
+	default y
+	help
+	  Expose /sys/kernel/mtk_nvram/{wifi,bt_addr} so an early userspace
+	  helper can hand per-device calibration blobs to built-in connsys
+	  drivers.  Needed because kernel threads cannot open nvdata after
+	  switch_root.
+
 endmenu
 
 # chopin: the downstream connectivity stack (conninfra + CONNAC2X2 SOC3_0

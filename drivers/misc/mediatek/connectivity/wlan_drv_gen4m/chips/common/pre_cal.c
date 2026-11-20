@@ -48,6 +48,10 @@ struct wireless_dev *grWdev;
 
 uint32_t wlanAccessCalibrationEMI(
 	struct INIT_EVENT_PHY_ACTION_RSP *pCalEvent,
+	uint8_t backupEMI);
+
+uint32_t wlanAccessCalibrationEMI(
+	struct INIT_EVENT_PHY_ACTION_RSP *pCalEvent,
 	uint8_t backupEMI)
 {
 	uint32_t u4Status = WLAN_STATUS_FAILURE;
@@ -152,6 +156,9 @@ int wlanGetCalResultCb(uint32_t *pEmiCalOffset, uint32_t *pEmiCalSize)
 	u4Status = WLAN_STATUS_SUCCESS;
 	return u4Status;
 }
+
+uint32_t wlanRcvPhyActionRsp(struct ADAPTER *prAdapter,
+	uint8_t ucCmdSeqNum);
 
 uint32_t wlanRcvPhyActionRsp(struct ADAPTER *prAdapter,
 	uint8_t ucCmdSeqNum)
@@ -279,9 +286,13 @@ uint32_t wlanRcvPhyActionRsp(struct ADAPTER *prAdapter,
 
 void wlanGetEpaElnaFromNvram(
 	uint8_t **pu1DataPointer,
+	uint32_t *pu4DataLen);
+
+void wlanGetEpaElnaFromNvram(
+	uint8_t **pu1DataPointer,
 	uint32_t *pu4DataLen)
 {
-#define MAX_NVRAM_READY_COUNT 10
+#define MAX_NVRAM_READY_COUNT_EPA 10
 #define MAX_NVRAM_FEM_MAX 512
 
 	/* ePA /eLNA */
@@ -331,7 +342,7 @@ void wlanGetEpaElnaFromNvram(
 		kalMsleep(100);
 		retryCount++;
 
-		if (retryCount > MAX_NVRAM_READY_COUNT) {
+		if (retryCount > MAX_NVRAM_READY_COUNT_EPA) {
 			DBGLOG(INIT, WARN, "g_NvramFsm != NVRAM_STATE_READY\n");
 			return;
 		}
@@ -461,6 +472,10 @@ struct COM_FEM_TAG_FORMAT {
 struct LAA_TAG_FORMAT {
 	struct connfem_epaelna_laa_pin_info tag_laa_pin_info;
 };
+
+uint32_t wlanSendPhyAction(struct ADAPTER *prAdapter,
+	uint16_t u2Tag,
+	uint8_t ucCalCmd);
 
 uint32_t wlanSendPhyAction(struct ADAPTER *prAdapter,
 	uint16_t u2Tag,
@@ -811,7 +826,7 @@ int wlanPreCalPwrOn(void)
  * never calibrated - the firmware scans but hears nothing.  Wait long
  * enough for the shell, and say so periodically instead of looking hung.
  */
-#define MAX_NVRAM_READY_COUNT 1200 /* 120 s */
+#define MAX_NVRAM_READY_COUNT_PREON 10 /* ~10s at 1s */
 
 	int retryCount = 0;
 	void *pvData = NULL;
@@ -836,13 +851,13 @@ int wlanPreCalPwrOn(void)
 
 	retryCount = 0;
 	while (g_NvramFsm != NVRAM_STATE_READY) {
-		kalMsleep(100);
+		kalMsleep(1000);
 		retryCount++;
 		if ((retryCount % 50) == 0)
 			pr_info("MT6893-CAL: waiting for NVRAM (%d/%d)\n",
-				retryCount, MAX_NVRAM_READY_COUNT);
+				retryCount, MAX_NVRAM_READY_COUNT_PREON);
 
-		if (retryCount > MAX_NVRAM_READY_COUNT) {
+		if (retryCount > MAX_NVRAM_READY_COUNT_PREON) {
 			pr_info("MT6893-CAL: NVRAM never appeared, skip pre-cal\n");
 			return CONNINFRA_CB_RET_CAL_FAIL_POWER_OFF;
 		}

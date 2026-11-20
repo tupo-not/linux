@@ -70,6 +70,8 @@
  *                    E X T E R N A L   R E F E R E N C E S
  *******************************************************************************
  */
+#include <linux/mediatek/mtk_nvram_file.h>
+#include <linux/mediatek/mtk_nvram_stage.h>
 #include "gl_os.h"
 #include "debug.h"
 #include "wlan_lib.h"
@@ -198,12 +200,16 @@ phys_addr_t gConEmiPhyBaseFinal;
 unsigned long long gConEmiSizeFinal;
 #endif
 
+int CFG80211_Suspend(struct wiphy *wiphy, struct cfg80211_wowlan *wow);
+
 int CFG80211_Suspend(struct wiphy *wiphy, struct cfg80211_wowlan *wow)
 {
 	DBGLOG(INIT, INFO, "CFG80211 suspend CB\n");
 
 	return 0;
 }
+
+int CFG80211_Resume(struct wiphy *wiphy);
 
 int CFG80211_Resume(struct wiphy *wiphy)
 {
@@ -1436,6 +1442,8 @@ static int wlanGetDevIdx(struct net_device *prDev)
  * \retval OTHER The execution of IOCTL command is failed.
  */
 /*----------------------------------------------------------------------------*/
+int wlanDoIOCTL(struct net_device *prDev, struct ifreq *prIfReq, int i4Cmd);
+
 int wlanDoIOCTL(struct net_device *prDev, struct ifreq *prIfReq, int i4Cmd)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -1665,6 +1673,8 @@ static void wlanSetMulticastListWorkQueue(struct work_struct *work)
  *           None
  */
 /*----------------------------------------------------------------------------*/
+void wlanSchedScanStoppedWorkQueue(struct work_struct *work);
+
 void wlanSchedScanStoppedWorkQueue(struct work_struct *work)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
@@ -1794,6 +1804,8 @@ netdev_tx_t wlanHardStartXmit(struct sk_buff *prSkb, struct net_device *prDev)
  * \return net_device_stats buffer pointer.
  */
 /*----------------------------------------------------------------------------*/
+struct net_device_stats *wlanGetStats(IN struct net_device *prDev);
+
 struct net_device_stats *wlanGetStats(IN struct net_device *prDev)
 {
 	struct NETDEV_PRIVATE_GLUE_INFO *prNetDevPrivate;
@@ -2066,6 +2078,9 @@ static int wlanStop(struct net_device *prDev)
 
 	return 0; /* success */
 } /* end of wlanStop() */
+
+void wlanUpdateChannelFlagByBand(struct GLUE_INFO *prGlueInfo,
+				 enum ENUM_BAND eBand);
 
 void wlanUpdateChannelFlagByBand(struct GLUE_INFO *prGlueInfo,
 				 enum ENUM_BAND eBand)
@@ -2465,48 +2480,65 @@ enum ENUM_NVRAM_STATE wlanNvramGetState(void)
 	return g_NvramFsm;
 }
 
-#define CHOPIN_WIFI_NVRAM_FW "mediatek/mt6893/WIFI"
+#define CHOPIN_WIFI_NVRAM_PATH "/data/nvram/APCFG/APRDEB/WIFI"
+/* Kernel threads keep the initramfs root after switch_root; its nvdata mount
+ * point remains available there even if the bind into the final root is late.
+ */
+#define CHOPIN_WIFI_NVRAM_ALT "/nvdata/APCFG/APRDEB/WIFI"
+
+static const char *const wlan_nvram_paths[] = {
+	CHOPIN_WIFI_NVRAM_PATH,
+	CHOPIN_WIFI_NVRAM_ALT,
+};
 
 static int wlanLoadNvramFirmware(struct device *dev)
 {
-	const struct firmware *fw;
-	int ret;
+	ssize_t size;
 
+	const u8 *staged;
+	size_t staged_len;
+
+	(void)dev;
 	if (g_NvramFsm == NVRAM_STATE_READY)
 		return 0;
 
-	ret = request_firmware(&fw, CHOPIN_WIFI_NVRAM_FW, dev);
-	if (ret) {
-		/* Quiet on the defer/retry path; the caller logs progress. */
-		pr_debug("MT6893-NVRAM: request '%s' failed: %d\n",
-			 CHOPIN_WIFI_NVRAM_FW, ret);
-		return ret;
+	/* Preferred: blob staged in memory by the initramfs before switch_root.
+	 * Kernel threads cannot open nvdata paths after switch_root.
+	 */
+	if (!mtk_nvram_staged_get("wifi", &staged, &staged_len)) {
+		size = min_t(size_t, staged_len, sizeof(g_aucNvram));
+		memcpy(g_aucNvram, staged, size);
+		goto ready;
 	}
 
-	if (fw->size > sizeof(g_aucNvram)) {
-		pr_err("MT6893-NVRAM: blob too large: %zu > %zu\n", fw->size,
-		       sizeof(g_aucNvram));
-		release_firmware(fw);
-		return -EFBIG;
+	/* Fallback for environments where the kernel thread root still has
+	 * the nvdata mount.
+	 */
+	size = mtk_nvram_read_any(wlan_nvram_paths,
+				  ARRAY_SIZE(wlan_nvram_paths),
+				  g_aucNvram, sizeof(g_aucNvram));
+	if (size < 0) {
+		pr_debug("MT6893-NVRAM: nvdata read failed: %zd\n", size);
+		return size;
+	}
+	if (size == 0) {
+		pr_err("MT6893-NVRAM: WIFI nvdata is empty\n");
+		return -ENODATA;
 	}
 
-	kalMemZero(g_aucNvram, sizeof(g_aucNvram));
+ready:
 	kalMemZero(g_aucNvram_OnlyPreCal, sizeof(g_aucNvram_OnlyPreCal));
-	kalMemCopy(g_aucNvram, fw->data, fw->size);
 	g_NvramFsm = NVRAM_STATE_READY;
-	pr_info("MT6893-NVRAM: loaded '%s', size=%zu, state=READY\n",
-		CHOPIN_WIFI_NVRAM_FW, fw->size);
-	release_firmware(fw);
+	pr_info("MT6893-NVRAM: loaded WIFI nvdata, size=%zd, state=READY\n",
+		size);
 	return 0;
 }
 
 /*
- * On mainline the WiFi NVRAM blob is not bundled into the initramfs; the
- * initramfs /init copies it from the nvdata partition into
- * /lib/firmware/mediatek/mt6893/WIFI after the initcalls have run (and after
- * switch_root).  The built-in driver therefore probes before the blob exists,
- * so we defer the NVRAM load + AXI power-on to a workqueue that retries until
- * init has populated the firmware directory.
+ * The WiFi NVRAM blob lives on the mounted nvdata partition, which is not
+ * available when the built-in driver probes.  We defer the NVRAM load and
+ * AXI power-on to a workqueue that retries until /data is mounted and the
+ * blob can be read directly from nvdata (no /lib/firmware copy needed).
  */
 
 /*
@@ -2522,8 +2554,11 @@ extern int mtk_wcn_wlan_func_ctrl(enum xaga_wlan_opid opId);
 
 static struct delayed_work wlan_nvram_defer_work;
 static struct device *wlan_nvram_dev;
-#define CHOPIN_NVRAM_RETRY_MS 250
-#define CHOPIN_NVRAM_MAX_RETRIES 480 /* ~120s */
+/* nvdata can be mounted late on a systemd rootfs; keep 10 retries but give
+ * each one a full second so the total window covers a slow UFS scan.
+ */
+#define CHOPIN_NVRAM_RETRY_MS 1000
+#define CHOPIN_NVRAM_MAX_RETRIES 10 /* ~10s at 1s */
 #define CHOPIN_PWRON_RETRY_MS 3000
 #define CHOPIN_PWRON_MAX_RETRIES 3
 
@@ -3504,6 +3539,8 @@ static void wlan_late_resume(struct early_suspend *h)
 
 #if (CFG_MTK_ANDROID_WMT || WLAN_INCLUDE_PROC)
 
+void reset_p2p_mode(struct GLUE_INFO *prGlueInfo);
+
 void reset_p2p_mode(struct GLUE_INFO *prGlueInfo)
 {
 	struct PARAM_CUSTOM_P2P_SET_STRUCT rSetP2P;
@@ -3616,6 +3653,8 @@ int set_p2p_mode_handler(struct net_device *netdev,
  * \retval VOID
  */
 /*----------------------------------------------------------------------------*/
+void wlanGetParseConfig(struct ADAPTER *prAdapter);
+
 void wlanGetParseConfig(struct ADAPTER *prAdapter)
 {
 	uint8_t *pucConfigBuf;
@@ -3961,6 +4000,8 @@ label_exit:
 	return retWlanStat;
 }
 #if (CONFIG_WLAN_SERVICE == 1)
+uint32_t wlanServiceInit(struct GLUE_INFO *prGlueInfo);
+
 uint32_t wlanServiceInit(struct GLUE_INFO *prGlueInfo)
 {
 	struct service_test *prServiceTest;
@@ -4075,6 +4116,8 @@ label_exit:
 
 	return WLAN_STATUS_FAILURE;
 }
+uint32_t wlanServiceExit(struct GLUE_INFO *prGlueInfo);
+
 uint32_t wlanServiceExit(struct GLUE_INFO *prGlueInfo)
 {
 	uint32_t rStatus = WLAN_STATUS_SUCCESS;
@@ -4994,6 +5037,9 @@ int set_nan_handler(struct net_device *netdev, uint32_t ucEnable)
 #endif
 
 void wlanOffWaitWlanThreads(IN struct completion *prComp,
+			    IN struct task_struct *prThread);
+
+void wlanOffWaitWlanThreads(IN struct completion *prComp,
 			    IN struct task_struct *prThread)
 {
 	uint32_t waitRet = 0;
@@ -5007,6 +5053,8 @@ void wlanOffWaitWlanThreads(IN struct completion *prComp,
 		kal_show_stack(NULL, prThread, NULL);
 	}
 }
+
+void wlanOffStopWlanThreads(IN struct GLUE_INFO *prGlueInfo);
 
 void wlanOffStopWlanThreads(IN struct GLUE_INFO *prGlueInfo)
 {
@@ -5592,11 +5640,12 @@ static int32_t wlanProbe(void *pvData, void *pvDriverData)
 		pr_err("wlanProbe: probe failed, reason:%d\n", eFailReason);
 		switch (eFailReason) {
 		case FAIL_BY_RESET:
-			/* fallthrough */
+			fallthrough;
 		case PROC_INIT_FAIL:
 			wlanNetUnregister(prWdev);
 			/* Unregister notifier callback */
 			wlanUnregisterInetAddrNotifier();
+			fallthrough;
 		case NET_REGISTER_FAIL:
 			set_bit(GLUE_FLAG_HALT_BIT, &prGlueInfo->ulFlag);
 #if CFG_SUPPORT_MULTITHREAD
@@ -5613,7 +5662,7 @@ static int32_t wlanProbe(void *pvData, void *pvDriverData)
 			wait_for_completion_interruptible(
 				&prGlueInfo->rHaltComp);
 			wlanAdapterStop(prAdapter, FALSE);
-		/* fallthrough */
+			fallthrough;
 		case ADAPTER_START_FAIL:
 			/*reset NVRAM State to ready for the next wifi-no*/
 			if (g_NvramFsm == NVRAM_STATE_SEND_TO_FW)
@@ -5621,7 +5670,7 @@ static int32_t wlanProbe(void *pvData, void *pvDriverData)
 			glBusFreeIrq(prWdev->netdev,
 				     *((struct GLUE_INFO **)netdev_priv(
 					     prWdev->netdev)));
-		/* fallthrough */
+			fallthrough;
 		case BUS_SET_IRQ_FAIL:
 			wlanWakeLockUninit(prGlueInfo);
 			wlanNetDestroy(prWdev);
@@ -5641,6 +5690,8 @@ static int32_t wlanProbe(void *pvData, void *pvDriverData)
 	}
 	return i4Status;
 } /* end of wlanProbe() */
+
+void wlanOffNotifyCfg80211Disconnect(IN struct GLUE_INFO *prGlueInfo);
 
 void wlanOffNotifyCfg80211Disconnect(IN struct GLUE_INFO *prGlueInfo)
 {
@@ -6015,15 +6066,14 @@ static int initWlan(void)
 	 * registers the conninfra WiFi callbacks and can immediately trigger
 	 * pre-calibration.
 	 *
-	 * On mainline the blob is not in the initramfs; it is copied from the
-	 * nvdata partition by /init after this initcall.  If it is missing
-	 * here, don't fail the driver: register the AXI driver anyway and
-	 * defer the NVRAM load + power-on to a workqueue.
+	 * The blob lives on nvdata, which is not mounted yet at this initcall.
+	 * If it is missing here, don't fail the driver: register the AXI driver
+	 * anyway and defer the NVRAM load + power-on to a workqueue.
 	 */
 	ret = wlanLoadNvramFirmware(prGlueInfo->prDev);
 	if (ret)
 		pr_warn("MT6893-NVRAM: '%s' not available yet (%d), deferring\n",
-			CHOPIN_WIFI_NVRAM_FW, ret);
+			CHOPIN_WIFI_NVRAM_PATH, ret);
 
 	gPrDev = NULL;
 
@@ -6175,11 +6225,15 @@ static void exitWlan(void)
 #if ((MTK_WCN_HIF_SDIO == 1) && (CFG_BUILT_IN_DRIVER == 1)) || \
 	((MTK_WCN_HIF_AXI == 1) && (CFG_BUILT_IN_DRIVER == 1))
 
+int mtk_wcn_wlan_gen4_init(void);
+
 int mtk_wcn_wlan_gen4_init(void)
 {
 	return initWlan();
 }
 EXPORT_SYMBOL(mtk_wcn_wlan_gen4_init);
+
+void mtk_wcn_wlan_gen4_exit(void);
 
 void mtk_wcn_wlan_gen4_exit(void)
 {
