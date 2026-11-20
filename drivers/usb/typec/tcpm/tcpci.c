@@ -719,13 +719,24 @@ irqreturn_t tcpci_irq(struct tcpci *tcpci)
 {
 	u16 status;
 	int ret;
-	int irq_ret;
+	int irq_ret = 0;
 	unsigned int raw;
+	int pass = 0;
 
-	tcpci_read16(tcpci, TCPC_ALERT, &status);
-	irq_ret = status & tcpci->alert_mask;
+	/* X6710: bound the alert-processing loop and check every I2C access.
+	 * A transient I2C hiccup (e.g. the MT6360 charger going busy when OTG
+	 * boost is enabled) must not leave a stale ALERT bit set: with a
+	 * level-low PD_IRQB that becomes an endless IRQ thread which starves
+	 * all I2C completions system-wide. */
+	ret = tcpci_read16(tcpci, TCPC_ALERT, &status);
+	if (ret)
+		return IRQ_NONE;
 
 process_status:
+	if (++pass > 16) {
+		dev_warn(tcpci->dev, "alert loop did not converge\n");
+		return IRQ_RETVAL(irq_ret);
+	}
 	/*
 	 * Clear alert status for everything except RX_STATUS, which shouldn't
 	 * be cleared until we have successfully retrieved message.
@@ -738,7 +749,9 @@ process_status:
 		tcpm_cc_change(tcpci->port);
 
 	if (status & TCPC_ALERT_POWER_STATUS) {
-		regmap_read(tcpci->regmap, TCPC_POWER_STATUS_MASK, &raw);
+		ret = regmap_read(tcpci->regmap, TCPC_POWER_STATUS_MASK, &raw);
+		if (ret)
+			return IRQ_RETVAL(irq_ret);
 		/*
 		 * If power status mask has been reset, then the TCPC
 		 * has reset.
@@ -805,7 +818,11 @@ process_status:
 	else if (status & TCPC_ALERT_TX_FAILED)
 		tcpm_pd_transmit_complete(tcpci->port, TCPC_TX_FAILED);
 
-	tcpci_read16(tcpci, TCPC_ALERT, &status);
+	ret = tcpci_read16(tcpci, TCPC_ALERT, &status);
+	if (ret)
+		/* I2C failed while re-reading ALERT: don't loop on a stale
+		 * value.  The level-low IRQ will re-trigger if genuinely pending. */
+		return IRQ_RETVAL(irq_ret);
 
 	if (status & tcpci->alert_mask)
 		goto process_status;

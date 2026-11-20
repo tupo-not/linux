@@ -478,6 +478,28 @@ static int mt6360_charger_get_property(struct power_supply *psy,
 	struct mt6360_chg_info *mci = power_supply_get_drvdata(psy);
 	int ret = 0;
 
+	/* X6710: while the OPA (OTG boost) is on, the charger block is busy
+	 * and reads from it can block for seconds (see mt6360_chg_write_ctrl1).
+	 * Those blocked reads occupy i2c5 and starve the TCPC alert handling
+	 * and every other I2C user until they time out.  We are sourcing VBUS,
+	 * so we are not charging: answer from cache without touching the PMIC.
+	 */
+	if (mci->chg_ctrl1 & MT6360_OPA_MODE_MASK) {
+		switch (psp) {
+		case POWER_SUPPLY_PROP_ONLINE:
+			val->intval = 0;
+			return 0;
+		case POWER_SUPPLY_PROP_STATUS:
+			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+			return 0;
+		case POWER_SUPPLY_PROP_CHARGE_TYPE:
+			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
+			return 0;
+		default:
+			break;
+		}
+	}
+
 	switch (psp) {
 	case POWER_SUPPLY_PROP_ONLINE:
 		ret = mt6360_charger_get_online(mci, val);

@@ -287,6 +287,7 @@ struct mtk_i2c_ac_timing {
 
 struct mtk_i2c {
 	struct i2c_adapter adap;	/* i2c host adapter */
+	struct i2c_bus_recovery_info bri; /* GPIO SCL/SDA bus recovery */
 	struct device *dev;
 	struct completion msg_complete;
 	struct i2c_timings timing_info;
@@ -1226,6 +1227,8 @@ static int mtk_i2c_do_transfer(struct mtk_i2c *i2c, struct i2c_msg *msgs,
 	if (ret == 0) {
 		dev_dbg(i2c->dev, "addr: %x, transfer timeout\n", msgs->addr);
 		i2c_dump_register(i2c);
+		/* Try to unwedge the bus before resetting the controller. */
+		i2c_recover_bus(&i2c->adap);
 		mtk_i2c_init_hw(i2c);
 		return -ETIMEDOUT;
 	}
@@ -1417,6 +1420,12 @@ static int mtk_i2c_probe(struct platform_device *pdev)
 	i2c->adap.quirks = i2c->dev_comp->quirks;
 	i2c->adap.timeout = 2 * HZ;
 	i2c->adap.retries = 1;
+	/* X6710: GPIO-based bus recovery.  The MT6360 PMIC can hold SCL/SDA
+	 * low during an OTG role switch; a controller SW reset cannot free
+	 * the bus, so let the I2C core bit-bang the pins via scl/sda-gpios
+	 * from DT.  The core binds the GPIOs and pinctrl "recovery" state. */
+	i2c->bri.recover_bus = i2c_generic_scl_recovery;
+	i2c->adap.bus_recovery_info = &i2c->bri;
 	i2c->adap.bus_regulator = devm_regulator_get_optional(&pdev->dev, "vbus");
 	if (IS_ERR(i2c->adap.bus_regulator)) {
 		/*
