@@ -13,6 +13,7 @@
 #include <dt-bindings/clock/mediatek,mt6893-clk.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/leds/common.h>
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/thermal/mediatek,lvts-thermal.h>
 #include <dt-bindings/thermal/thermal.h>
@@ -28,6 +29,22 @@
 	interrupt-parent = <&gic>;
 	#address-cells = <0x02>;
 	#size-cells = <0x02>;
+
+	/* Speaker card: AFE DL1 -> I2S3 -> stereo Awinic AW87390 smart PAs.
+	 * The two AW87390 components (no DAI) attach as aux-devs.  The MTK AFE
+	 * GPIO driver tolerates missing audio pinctrl states; I2S3 pins are
+	 * muxed by the bootloader handoff, as with the display. */
+	sound: sound {
+		compatible = "mediatek,mt6893-mt6359";
+		model = "mt6893_mt6359";
+		mediatek,platform = <&afe>;
+		status = "okay";
+
+		/* Only one AW87390 is populated (i2c6 @0x58); the old second
+		 * entry at 0x59 does not respond and blocked card binding.
+		 */
+		aux-devs = <&aw_pa_l>;
+	};
 
 	aliases {
 		serial0 = &apuart0;
@@ -944,6 +961,35 @@
 			#io-channel-cells = <0x01>;
 		};
 
+		/* Camera flash: the two MT6360 FLED channels (reg 4/5 = FLASH1/2).
+		 * Values match the stock device.dts (400 mA torch, 1.5 A flash,
+		 * 1.248 s timeout); properties use the mainline binding names. */
+		led-controller {
+			compatible = "mediatek,mt6360-led";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			led@4 {
+				reg = <4>;
+				function = LED_FUNCTION_FLASH;
+				color = <LED_COLOR_ID_WHITE>;
+				function-enumerator = <1>;
+				led-max-microamp = <400000>;
+				flash-max-microamp = <1500000>;
+				flash-max-timeout-us = <1248000>;
+			};
+
+			led@5 {
+				reg = <5>;
+				function = LED_FUNCTION_FLASH;
+				color = <LED_COLOR_ID_WHITE>;
+				function-enumerator = <2>;
+				led-max-microamp = <400000>;
+				flash-max-microamp = <1500000>;
+				flash-max-timeout-us = <1248000>;
+			};
+		};
+
 		tcpc {
 			compatible = "mediatek,mt6360-tcpc";
 			interrupt-parent = <&pio>;
@@ -1037,25 +1083,31 @@
 &i2c6 {
 	status = "okay";
 
+	/* Awinic AW36515 flashlight (stock "strobe_main" @ 0x63). */
+	strobe_main: strobe_main@63 {
+		compatible = "mediatek,strobe_main";
+		reg = <0x63>;
+		hwen-gpios = <&pio 12 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
 	i2c_lcd_bias@3e {
 		compatible = "mediatek,i2c_lcd_bias";
 		reg = <0x3e>;
 		status = "okay";
 	};
 
-	aw87xxx_pa@58 {
-		compatible = "awinic,aw87xxx_pa";
+	/* Stereo Awinic AW87390 smart PAs (chip ID 0x76).  Mainline driver
+	 * sound/soc/codecs/aw87390.c; firmware /lib/firmware/aw87390_acf.bin.
+	 * The stock "dev_index" is replaced by awinic,audio-channel. */
+	aw_pa_l: aw87390_pa@58 {
+		compatible = "awinic,aw87390";
 		reg = <0x58>;
-		dev_index = <0x00>;
+		#sound-dai-cells = <0>;
+		awinic,audio-channel = <0>;
 		status = "okay";
 	};
 
-	aw87xxx_pa@59 {
-		compatible = "awinic,aw87xxx_pa";
-		reg = <0x59>;
-		dev_index = <0x01>;
-		status = "okay";
-	};
 };
 
 /* i2c7: AW8622X haptics */
@@ -1090,4 +1142,16 @@
 		spi-max-frequency = <0x989680>;
 		status = "okay";
 	};
+};
+
+/* ------------------------------------------------------------------ */
+/* Audio                                                               */
+/* ------------------------------------------------------------------ */
+
+/* Speaker card: AFE DL1 -> I2S3 -> stereo Awinic AW87390 smart PAs.
+ * The two AW87390 components (no DAI) attach as aux-devs.  The MTK AFE GPIO
+ * driver tolerates missing audio pinctrl states; I2S3 pins are muxed by the
+ * bootloader handoff, as with the display. */
+&afe {
+	status = "okay";
 };

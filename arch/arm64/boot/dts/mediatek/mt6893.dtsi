@@ -6137,7 +6137,7 @@
 		#clock-cells = <0x01>;
 		phandle = <0x1c8>;
 
-		audio-controller {
+		afe: audio-controller {
 			compatible = "mediatek,mt6893-audio";
 			interrupts = <0x00 0xca 0x04 0x00>;
 			power-domains = <&spm 0x11>;
