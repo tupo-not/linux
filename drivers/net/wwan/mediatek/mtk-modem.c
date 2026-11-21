@@ -14,7 +14,9 @@
  * path; it does not yet start the modem or load firmware.
  */
 
+#include <linux/arm-smccc.h>
 #include <linux/clk.h>
+#include <linux/soc/mediatek/mtk_sip_svc.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
 #include <linux/mod_devicetable.h>
@@ -25,10 +27,91 @@
 #include <linux/of_reserved_mem.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
+#include <linux/vmalloc.h>
 
 #include "ccif.h"
 #include "port_proxy.h"
 #include "mtk_modem.h"
+
+/* TF-A SMC sub-commands for MTK_SIP_KERNEL_CCCI_CONTROL.
+ * Values from the vendor's modem_secure_base.h. */
+enum {
+	MD_KERNEL_BOOT_UP = 0,
+	MD_CHECK_FLAG = 2,
+	MD_CHECK_DONE = 3,
+	MD_BOOT_STATUS = 4,
+};
+
+/* Map reserved DRAM into vmalloc space with write-combine attributes.
+ * Mirrors the vendor's vmap_reserved_mem(); ioremap_wc() on this region
+ * produces an asynchronous SError on MT6893. */
+static void __iomem *mtk_map_reserved_wc(phys_addr_t start, size_t size)
+{
+	unsigned long n = DIV_ROUND_UP(size, PAGE_SIZE);
+	struct page **pages;
+	void *vaddr;
+	unsigned long i;
+
+	pages = kvmalloc_array(n, sizeof(*pages), GFP_KERNEL);
+	if (!pages)
+		return NULL;
+
+	for (i = 0; i < n; i++)
+		pages[i] = pfn_to_page(PHYS_PFN(start + i * PAGE_SIZE));
+
+	vaddr = vmap(pages, n, VM_MAP, pgprot_writecombine(PAGE_KERNEL));
+	kvfree(pages);
+	return vaddr;
+}
+
+static unsigned long md_smc(u32 subcmd, u32 arg1, u32 arg2)
+{
+	struct arm_smccc_res res;
+
+	/* arg0 = MD_POWER_CONFIG (6) from CCCI_SECURE_REQ_ID */
+	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, 6, subcmd, arg1, arg2,
+		      0, 0, 0, &res);
+	return res.a0;
+}
+
+/* Bring the modem out of BROM using the TF-A power-control calls.
+ * The bootloader has already loaded md1img; these calls check that the
+ * modem's boot ROM is ready and then release its boot vector. */
+static int md_power_on(struct device *dev)
+{
+	unsigned long ret;
+	int timeout = 100; /* 100 * 20ms = 2s */
+
+	while (timeout > 0) {
+		ret = md_smc(MD_CHECK_DONE, 0, 0);
+		if (!ret)
+			break;
+		timeout--;
+		msleep(20);
+	}
+
+	if (ret) {
+		dev_warn(dev, "MD BROM check failed (%lu), modem may not boot\n",
+			 ret);
+		return -ETIMEDOUT;
+	}
+
+	dev_info(dev, "MD BROM ready, releasing boot vector\n");
+
+	/* Issue the boot-up release. */
+	md_smc(MD_KERNEL_BOOT_UP, 0, 0);
+
+	/* Give the modem a moment to boot, then read status again. */
+	msleep(500);
+	{
+		struct arm_smccc_res res;
+		arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, 6, MD_BOOT_STATUS,
+			      0, 0, 0, 0, 0, &res);
+		dev_info(dev, "MD boot status: ret=%lu status0=%#lx status1=%#lx\n",
+			 res.a0, res.a1, res.a2);
+	}
+	return 0;
+}
 
 /* Default CCIF queue geometry for MD1 generation (>= 6295).
  * Values are from the vendor driver (rx_queue_buffer_size /
@@ -68,7 +151,7 @@ static const struct mtk_modem_soc_data md1_data = {
 	.ports = md1_ports,
 	.n_ports = ARRAY_SIZE(md1_ports),
 	.nr_queues = 16,
-	.sram_size = 0x5560000, /* ap_md_c_smem reserved region */
+	.sram_size = 0x910000, /* ap_md_nc_smem reserved region */
 };
 
 /* Only the CCIF clocks we need; DPMAIF clocks are intentionally skipped. */
@@ -141,16 +224,21 @@ static int mtk_modem_probe(struct platform_device *pdev)
 	if (IS_ERR(modem->ccif_md))
 		return PTR_ERR(modem->ccif_md);
 
-	/* Shared memory region "ap_md_c_smem" from /reserved-memory. */
+	/* CCIF ring buffers live in the non-cacheable AP/MD shared memory.
+	 * Map it with vmap()+writecombine like the vendor driver does;
+	 * ioremap_wc() on this DRAM region causes an asynchronous SError. */
 	error = of_reserved_mem_region_to_resource_byname(dev->of_node,
-					"ap_md_c_smem", &sram_res);
+					"ap_md_nc_smem", &sram_res);
 	if (error) {
-		dev_err(dev, "no ap_md_c_smem reserved region: %d\n", error);
+		dev_err(dev, "no ap_md_nc_smem reserved region: %d\n", error);
 		return error;
 	}
-	modem->sram = devm_ioremap_resource_wc(dev, &sram_res);
-	if (IS_ERR(modem->sram))
-		return PTR_ERR(modem->sram);
+	modem->sram = mtk_map_reserved_wc(sram_res.start,
+					  resource_size(&sram_res));
+	if (!modem->sram)
+		return -ENOMEM;
+	dev_info(dev, "mapped MD shared memory: %pap .. %pap\n",
+		 &sram_res.start, &sram_res.end);
 
 	/* Clocks: the mddriver node lists DPMAIF clocks that the mainline
 	 * clock driver does not provide.  Claim only the CCIF variants that
@@ -181,6 +269,11 @@ static int mtk_modem_probe(struct platform_device *pdev)
 	if (error)
 		goto err_clks;
 
+	/* Release the modem from BROM, then set up CCIF now that the shared
+	 * SRAM is accessible.  If the SMCs fail we leave CCIF stopped. */
+	if (!md_power_on(dev))
+		ccif_hw_start(&modem->ccif, md1_rx_sizes, md1_tx_sizes);
+
 	/* IRQ 0 is the MD watchdog; CCIF RX events arrive on IRQ 1 (AP CCIF). */
 	modem->irq = platform_get_irq(pdev, 1);
 	if (modem->irq < 0)
@@ -195,6 +288,7 @@ static int mtk_modem_probe(struct platform_device *pdev)
 	if (error)
 		goto err_ccif;
 
+	dev_info(dev, "requesting CCIF IRQ %d\n", modem->irq);
 	error = request_irq(modem->irq, mtk_modem_irq, IRQF_SHARED,
 			    "mtk-modem", modem);
 	if (error)

@@ -76,8 +76,70 @@ static void ring_read(struct ccci_ring_ctl *ctl, u8 *base,
 	WRITE_ONCE(ctl->read, (r + len) % ctl->length);
 }
 
-/* Hardware/SRAM ring setup will be added in ccif_hw_start() once modem
- * power sequencing is implemented; this phase only creates the ports. */
+/* Set up a CCCI ring buffer: guard words, control blocks, zeroed data. */
+static void ccif_create_ring(struct ccci_ringbuf *rb, u32 rx_size, u32 tx_size)
+{
+	u32 total = RB_CTL_LEN + rx_size + tx_size;
+	u8 *p = (u8 *)rb;
+
+	memset(p, 0, total);
+	rb->head[0] = CCCI_RBF_HEADER;
+	rb->head[1] = CCCI_RBF_HEADER;
+	*(u32 *)(p + total - sizeof(u32)) = CCCI_RBF_FOOTER;
+	*(u32 *)(p + total - 2 * sizeof(u32)) = CCCI_RBF_FOOTER;
+
+	rb->rx_control.length = rx_size;
+	rb->tx_control.length = tx_size;
+}
+
+/* Called after the modem has been released from BROM, when the shared SRAM
+ * is accessible.  Sets up the ring buffers and brings CCIF out of reset. */
+/* The CCISM_MCU region (where the modem expects CCCI ring buffers) starts
+ * at 164KB into the non-cacheable AP/MD shared memory on MD1 generation
+ * (vendor: md1_6297_noncacheable_fat[].offset for SMEM_USER_CCISM_MCU). */
+#define CCISM_MCU_OFFSET (164 * 1024)
+
+int ccif_hw_start(struct ccif *ccif, const u32 *rx_sizes, const u32 *tx_sizes)
+{
+	u8 *p = (u8 *)ccif->sram + CCISM_MCU_OFFSET;
+	u32 i;
+
+	if (ccif->started)
+		return 0;
+
+	dev_info(ccif->dev, "CCIF regs: CON=%#x BUSY=%#x RCHNUM=%#x\n",
+		 ccif_readl(ccif->ap_base, APCCIF_CON),
+		 ccif_readl(ccif->ap_base, APCCIF_BUSY),
+		 ccif_readl(ccif->ap_base, APCCIF_RCHNUM));
+
+	for (i = 0; i < ccif->nr_queues; i++) {
+		u32 size = RB_CTL_LEN + rx_sizes[i] + tx_sizes[i];
+
+		if ((size_t)(p - (u8 *)ccif->sram) + size > ccif->sram_size) {
+			dev_err(ccif->dev, "CCIF SRAM too small for queue %u\n", i);
+			return -ENOMEM;
+		}
+
+		ccif_create_ring((struct ccci_ringbuf *)p,
+				 rx_sizes[i], tx_sizes[i]);
+
+		ccif->rxq[i].rb = (struct ccci_ringbuf *)p;
+		ccif->rxq[i].ccif_ch = i; /* RINGQ_BASE = 0 for MD1 */
+		ccif->txq[i].rb = (struct ccci_ringbuf *)p;
+		ccif->txq[i].ccif_ch = i;
+
+		p += size;
+	}
+
+	ccif_writel(ccif->ap_base, APCCIF_BUSY, 0);
+	ccif_writel(ccif->ap_base, APCCIF_ACK, 0xFFFFFFFF);
+	atomic_set(&ccif->pending_rx, 0);
+	ccif->started = true;
+
+	dev_info(ccif->dev, "CCIF hardware started (%u queues)\n",
+		 ccif->nr_queues);
+	return 0;
+}
 
 int ccif_init(struct ccif *ccif, struct device *dev,
 	      void __iomem *ap_base, void __iomem *md_base,
@@ -162,18 +224,21 @@ void ccif_send_skb(struct ccif *ccif, u8 queue, struct sk_buff *skb)
 		   skb->data, skb->len);
 	spin_unlock_irqrestore(&q->lock, flags);
 
+	dev_info_ratelimited(ccif->dev, "CCIF TX: queue=%u ch=%u len=%u\n",
+			     queue, q->ccif_ch, skb->len);
 	ccif_trigger(ccif, q->ccif_ch);
 }
 
 void ccif_handle_irq(struct ccif *ccif)
 {
 	u32 rchnum;
+	u32 i;
 
 	if (!ccif->started)
 		return;
 
 	rchnum = ccif_readl(ccif->ap_base, APCCIF_RCHNUM);
-	u32 i;
+	dev_info_ratelimited(ccif->dev, "CCIF IRQ: RCHNUM=0x%08x\n", rchnum);
 
 	for (i = 0; i < ccif->nr_queues; i++)
 		if (rchnum & BIT(i))
@@ -247,6 +312,8 @@ struct sk_buff *ccif_poll(struct ccif *ccif, u8 *out_queue)
 		spin_unlock_irqrestore(&rxq->lock, flags);
 
 		atomic_andnot(BIT(q), &ccif->pending_rx);
+		dev_info_ratelimited(ccif->dev,
+				     "CCIF RX: queue=%u len=%u\n", q, len);
 		*out_queue = q;
 		return skb;
 	}

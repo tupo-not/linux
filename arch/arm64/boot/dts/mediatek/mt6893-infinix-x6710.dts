@@ -118,7 +118,7 @@
 			no-map;
 		};
 
-		memory@8e000000 {
+		ap_md_nc_smem: memory@8e000000 {
 			reg = <0 0x8e000000 0 0x910000>;
 			no-map;
 		};
@@ -1180,8 +1180,8 @@
 	md_vsram-supply = <&mt6315_3_vbuck4>;
 	md_vnr-supply = <&mt6315_3_vbuck3>;
 	md_vdigrf-supply = <&mt_pmic_vpu_buck_reg>;
-	memory-region = <&ap_md_c_smem>;
-	memory-region-names = "ap_md_c_smem";
+	memory-region = <&ap_md_nc_smem>;
+	memory-region-names = "ap_md_nc_smem";
 	status = "okay";
 };
 

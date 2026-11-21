@@ -62,6 +62,7 @@ int ccif_init(struct ccif *ccif, struct device *dev,
 	      void __iomem *ap_base, void __iomem *md_base,
 	      void __iomem *sram, size_t sram_size, u32 nr_queues,
 	      const u32 *rx_sizes, const u32 *tx_sizes);
+int ccif_hw_start(struct ccif *ccif, const u32 *rx_sizes, const u32 *tx_sizes);
 void ccif_deinit(struct ccif *ccif);
 void ccif_handle_irq(struct ccif *ccif);
 void ccif_send_skb(struct ccif *ccif, u8 queue, struct sk_buff *skb);
