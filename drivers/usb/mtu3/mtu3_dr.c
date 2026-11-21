@@ -185,14 +185,24 @@ static void ssusb_mode_sw_work(struct work_struct *work)
 			spin_unlock_irqrestore(&mtu->lock, flags);
 			ssusb_set_force_mode(ssusb, MTU3_DR_FORCE_HOST);
 			mtu3_stop(mtu);
-			switch_port_to_host(ssusb);
-			if (!otg_sx->role_sw_used)
-				ssusb_set_vbus(otg_sx, 1);
-			ssusb->is_host = true;
+
+			/*
+			 * Bring xHCI up before muxing port0 to it.  Re-adding
+			 * the HCD resets the controller and swallows any
+			 * already-present connect edge, which leaves the root
+			 * hub stuck at "1 port detected" until a replug.  With
+			 * xHCI running first, switch_port_to_host()'s power
+			 * cycle of port0 generates a fresh connect event that
+			 * the host controller can see.
+			 */
 			ret = ssusb_host_role_switch(ssusb, true);
 			if (ret)
 				dev_warn(ssusb->dev,
 					 "failed to start xHCI: %d\n", ret);
+			switch_port_to_host(ssusb);
+			if (!otg_sx->role_sw_used)
+				ssusb_set_vbus(otg_sx, 1);
+			ssusb->is_host = true;
 			break;
 		case USB_ROLE_DEVICE:
 			ret = ssusb_host_role_switch(ssusb, false);
