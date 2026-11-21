@@ -5867,21 +5867,21 @@
 		phandle = <0x1ba>;
 
 		mt6315_6: mt6315@6 {
-			compatible = "mediatek,mt6315", "mtk,spmi-pmic";
+			compatible = "mediatek,mt6315-regulator", "mediatek,mt6315";
 			reg = <0x06 0x00 0x0b 0x01>;
 			#address-cells = <0x01>;
 			#size-cells = <0x00>;
 			phandle = <0x1bb>;
 
-			mt6315_6_regulator: mt6315_6_regulator {
-				compatible = "mediatek,mt6315_6-regulator";
+			mt6315_6_regulator: regulators {
 				interrupt-parent = <&pio>;
 				interrupts = <0x01 0x04 0x01 0x00>;
 				interrupt-controller;
 				#interrupt-cells = <0x02>;
 				phandle = <0x98>;
 
-				mt6315_6_vbuck1: 6_vbuck1 {
+				mt6315_6_vbuck1: vbuck1 {
+					regulator-compatible = "vbuck1";
 					regulator-name = "6_vbuck1";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;
@@ -5889,7 +5889,8 @@
 					phandle = <0x6e>;
 				};
 
-				mt6315_6_vbuck3: 6_vbuck3 {
+				mt6315_6_vbuck3: vbuck3 {
+					regulator-compatible = "vbuck3";
 					regulator-name = "6_vbuck3";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;
@@ -5897,7 +5898,8 @@
 					phandle = <0x1bc>;
 				};
 
-				mt6315_6_vbuck4: 6_vbuck4 {
+				mt6315_6_vbuck4: vbuck4 {
+					regulator-compatible = "vbuck4";
 					regulator-name = "6_vbuck4";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;
@@ -5908,21 +5910,21 @@
 		};
 
 		mt6315_7: mt6315@7 {
-			compatible = "mediatek,mt6315", "mtk,spmi-pmic";
+			compatible = "mediatek,mt6315-regulator", "mediatek,mt6315";
 			reg = <0x07 0x00 0x0b 0x01>;
 			#address-cells = <0x01>;
 			#size-cells = <0x00>;
 			phandle = <0x1be>;
 
-			mt6315_7_regulator: mt6315_7_regulator {
-				compatible = "mediatek,mt6315_7-regulator";
+			mt6315_7_regulator: regulators {
 				interrupt-parent = <&pio>;
 				interrupts = <0xa7 0x04 0xa7 0x00>;
 				interrupt-controller;
 				#interrupt-cells = <0x02>;
 				phandle = <0x99>;
 
-				mt6315_7_vbuck1: 7_vbuck1 {
+				mt6315_7_vbuck1: vbuck1 {
+					regulator-compatible = "vbuck1";
 					regulator-name = "7_vbuck1";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;
@@ -5930,7 +5932,8 @@
 					phandle = <0x9b>;
 				};
 
-				mt6315_7_vbuck3: 7_vbuck3 {
+				mt6315_7_vbuck3: vbuck3 {
+					regulator-compatible = "vbuck3";
 					regulator-name = "7_vbuck3";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;
@@ -5938,7 +5941,8 @@
 					phandle = <0x6f>;
 				};
 
-				mt6315_7_vbuck4: 7_vbuck4 {
+				mt6315_7_vbuck4: vbuck4 {
+					regulator-compatible = "vbuck4";
 					regulator-name = "7_vbuck4";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;
@@ -5949,21 +5953,21 @@
 		};
 
 		mt6315_3: mt6315@3 {
-			compatible = "mediatek,mt6315", "mtk,spmi-pmic";
+			compatible = "mediatek,mt6315-regulator", "mediatek,mt6315";
 			reg = <0x03 0x00 0x0b 0x01>;
 			#address-cells = <0x01>;
 			#size-cells = <0x00>;
 			phandle = <0x1c0>;
 
-			mt6315_3_regulator: mt6315_3_regulator {
-				compatible = "mediatek,mt6315_3-regulator";
+			mt6315_3_regulator: regulators {
 				interrupt-parent = <&pio>;
 				interrupts = <0x02 0x04 0x02 0x00>;
 				interrupt-controller;
 				#interrupt-cells = <0x02>;
 				phandle = <0x1c1>;
 
-				mt6315_3_vbuck1: 3_vbuck1 {
+				mt6315_3_vbuck1: vbuck1 {
+					regulator-compatible = "vbuck1";
 					regulator-name = "3_vbuck1";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;
@@ -5971,7 +5975,8 @@
 					phandle = <0x1c2>;
 				};
 
-				mt6315_3_vbuck3: 3_vbuck3 {
+				mt6315_3_vbuck3: vbuck3 {
+					regulator-compatible = "vbuck3";
 					regulator-name = "3_vbuck3";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;
@@ -5979,7 +5984,8 @@
 					phandle = <0x1c3>;
 				};
 
-				mt6315_3_vbuck4: 3_vbuck4 {
+				mt6315_3_vbuck4: vbuck4 {
+					regulator-compatible = "vbuck4";
 					regulator-name = "3_vbuck4";
 					regulator-min-microvolt = <0x493e0>;
 					regulator-max-microvolt = <0x123716>;

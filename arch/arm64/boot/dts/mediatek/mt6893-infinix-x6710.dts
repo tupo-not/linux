@@ -1145,6 +1145,45 @@
 };
 
 /* ------------------------------------------------------------------ */
+/* MD1 modem (CCCI/CCIF) - Phase 1: hardware description               */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The vendor PMIF compatible is not bound by mainline's SPMI controller
+ * driver; use the MT6893 string it does understand.
+ */
+&spmi_bus {
+	compatible = "mediatek,mt6893-spmi";
+	status = "okay";
+};
+
+/* MT6315 #3 supplies the modem's vmodem/vsram/vnr rails.  The mainline
+ * regulator binding (compatible + "regulators" container + vbuck names) is
+ * now set up in mt6893.dtsi. */
+&mt6315_3 {
+	status = "okay";
+};
+
+/* Complete the modem node from the vendor FDT: platform info, power flow,
+ * SPM sleep control and the MT6315 / mt6359p supplies.  Reserved memory for
+ * the modem is already described in /reserved-memory above. */
+&mddriver {
+	mediatek,ap_plat_info = <0x1aed>;
+	mediatek,md_generation = <0x1899>;
+	mediatek,offset_epon_md1 = <0x2844>;
+	mediatek,power_flow_config = <0x13>;
+	mediatek,srclken_o1 = <0x200000>;
+	ccci-infracfg = <&infracfg_ao>;
+	ccci-topckgen = <&topckgen>;
+	ccci_spmsleep = <&{/sleep@10006000}>;
+	md_vmodem-supply = <&mt6315_3_vbuck1>;
+	md_vsram-supply = <&mt6315_3_vbuck4>;
+	md_vnr-supply = <&mt6315_3_vbuck3>;
+	md_vdigrf-supply = <&mt_pmic_vpu_buck_reg>;
+	status = "okay";
+};
+
+/* ------------------------------------------------------------------ */
 /* Audio                                                               */
 /* ------------------------------------------------------------------ */
 
