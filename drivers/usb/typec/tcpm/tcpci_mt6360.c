@@ -70,8 +70,25 @@ static int mt6360_tcpc_init(struct tcpci *tcpci, struct tcpci_data *tdata)
 	if (ret)
 		return ret;
 
-	/* config I2C timeout reset enable , and timeout to 200ms */
-	ret = regmap_write(regmap, MT6360_REG_I2CTORST, 0x8F);
+	/*
+	 * Keep the PMIC's "I2C timeout reset" disabled (bit 7 of 0xBF).
+	 *
+	 * With I2C_TO_RST_EN set, the MT6360 soft-resets its PD block
+	 * whenever SCL/SDA stay low for (I2C_TO_RST_SEL + 1) * 12.5ms
+	 * (200ms with 0x8F).  Swapping a Type-C cable makes the charger /
+	 * TCPC busy on I2C for longer than that, so the reset fires and
+	 * the PD block drops off the bus while re-initialising.  TCPM
+	 * then sees a detach, re-attaches, and drives VBUS again, which
+	 * stalls I2C once more: the role hops endlessly and the bus never
+	 * recovers (the touch panel and the PMIC regulators behind it
+	 * then time out with -ETIMEDOUT).
+	 *
+	 * Leaving bit 7 clear prevents the PMIC from tearing down its own
+	 * PD state because of a slow I2C transfer, so a cable swap results
+	 * in a single clean role change.  Keep the timeout selector at its
+	 * previous value in case the feature is ever re-enabled.
+	 */
+	ret = regmap_write(regmap, MT6360_REG_I2CTORST, 0x0F);
 	if (ret)
 		return ret;
 
