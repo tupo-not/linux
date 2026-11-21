@@ -350,6 +350,10 @@ static const struct {
 		.name = "MIPC",
 		.devsuf = "mipc",
 	},
+	[WWAN_PORT_MTKFS] = {
+		.name = "MTKFS",
+		.devsuf = "mtkfs",
+	},
 	/* WWAN_PORT_NMEA is exported via the GNSS subsystem */
 };
 

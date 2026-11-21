@@ -1,0 +1,12 @@
+config MTK_SOC_MODEM
+	tristate "MediaTek SoC integrated modem (CCIF control path)"
+	depends on WWAN
+	help
+	  Enables the CCIF control-path driver for MediaTek's integrated
+	  LTE modem (MD1), as found in the MT6893. This exposes the AT and
+	  remote-filesystem channels as WWAN ports.
+
+	  This is bring-up code: firmware loading, boot handshake and the
+	  DPMAIF data path are not implemented yet.
+
+	  If unsure, say N.
