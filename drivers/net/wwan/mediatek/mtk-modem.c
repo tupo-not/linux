@@ -28,10 +28,36 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
+#include <linux/mfd/syscon.h>
+#include <linux/regmap.h>
 
 #include "ccif.h"
 #include "port_proxy.h"
 #include "mtk_modem.h"
+
+/* Only the CCIF clocks we need; DPMAIF clocks are intentionally skipped. */
+static const char *const ccif_clocks[] = {
+	"scp-sys-md1-main",
+	"infra-ccif-ap", "infra-ccif-md",
+	"infra-ccif1-ap", "infra-ccif1-md",
+	"infra-ccif2-ap", "infra-ccif2-md",
+	"infra-ccif4-md", "infra-ccif5-md",
+};
+
+struct mtk_modem {
+	struct device *dev;
+	const struct mtk_modem_soc_data *data;
+	struct ccif ccif;
+	struct port_proxy proxy;
+	struct clk *clks[ARRAY_SIZE(ccif_clocks)];
+	int nclks;
+	int irq;
+	int irq1;
+	struct regmap *infracfg;
+	void __iomem *ccif_ap;
+	void __iomem *ccif_md;
+	void __iomem *sram;
+};
 
 /* TF-A SMC sub-commands for MTK_SIP_KERNEL_CCCI_CONTROL.
  * Values from the vendor's modem_secure_base.h. */
@@ -41,6 +67,24 @@ enum {
 	MD_CHECK_DONE = 3,
 	MD_BOOT_STATUS = 4,
 };
+
+/* CCCI_SECURE_REQ_ID from vendor modem_secure_base.h: MD_CLOCK_REQUEST = 4
+ * and MD_CLOCK_REG_ID: AP_MDSRC_REQ=0, AP_MDSRC_ACK=1, AP_MDSRC_SETTLE=2.
+ * These map to spm_ap_mdsrc_req() which powers the MD subsystem. */
+enum {
+	MD_CLOCK_REQUEST = 4,
+	MD_REG_AP_MDSRC_REQ = 0,
+	MD_REG_AP_MDSRC_ACK = 1,
+	MD_REG_AP_MDSRC_SETTLE = 2,
+};
+
+static unsigned long md_clock_req(u32 reg, u32 arg)
+{
+	struct arm_smccc_res res;
+	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, MD_CLOCK_REQUEST, reg, arg,
+		      0, 0, 0, 0, &res);
+	return res.a0;
+}
 
 /* Map reserved DRAM into vmalloc space with write-combine attributes.
  * Mirrors the vendor's vmap_reserved_mem(); ioremap_wc() on this region
@@ -96,7 +140,29 @@ static int md_power_on(struct device *dev)
 		return -ETIMEDOUT;
 	}
 
-	dev_info(dev, "MD BROM ready, releasing boot vector\n");
+	/* Request MD clock/power from SPM (vendor md_cd_lock_modem_clock_src).
+	 * Without this the MD subsystem memory is powered down and the modem
+	 * cannot complete its handshake. */
+	{
+		int settle = md_clock_req(MD_REG_AP_MDSRC_REQ, 1);
+		dev_dbg(dev, "MD clock request: settle=%d\n", settle);
+		if (settle > 0) {
+			mdelay(settle);
+			dev_dbg(dev, "MD clock ACK: %lu\n",
+				md_clock_req(MD_REG_AP_MDSRC_ACK, 0));
+		}
+	}
+
+	/* Check MD flags (vendor md_start_platform) for diagnostics. */
+	{
+		struct arm_smccc_res res;
+		arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, 6, MD_CHECK_FLAG,
+			      0, 0, 0, 0, 0, &res);
+		dev_dbg(dev, "MD flags: %#lx %#lx %#lx %#lx\n",
+			res.a0, res.a1, res.a2, res.a3);
+	}
+
+	dev_dbg(dev, "MD BROM ready, releasing boot vector\n");
 
 	/* Issue the boot-up release. */
 	md_smc(MD_KERNEL_BOOT_UP, 0, 0);
@@ -107,8 +173,8 @@ static int md_power_on(struct device *dev)
 		struct arm_smccc_res res;
 		arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, 6, MD_BOOT_STATUS,
 			      0, 0, 0, 0, 0, &res);
-		dev_info(dev, "MD boot status: ret=%lu status0=%#lx status1=%#lx\n",
-			 res.a0, res.a1, res.a2);
+		dev_dbg(dev, "MD boot status: ret=%lu status0=%#lx status1=%#lx\n",
+			res.a0, res.a1, res.a2);
 	}
 	return 0;
 }
@@ -154,26 +220,49 @@ static const struct mtk_modem_soc_data md1_data = {
 	.sram_size = 0x910000, /* ap_md_nc_smem reserved region */
 };
 
-/* Only the CCIF clocks we need; DPMAIF clocks are intentionally skipped. */
-static const char *const ccif_clocks[] = {
-	"infra-ccif-ap", "infra-ccif-md",
-	"infra-ccif1-ap", "infra-ccif1-md",
-	"infra-ccif2-ap", "infra-ccif2-md",
-	"infra-ccif4-md", "infra-ccif5-md",
-};
+/* CCIF reset bits in infracfg_ao (vendor ccci_platform.c for MT6885/6893). */
+#define INFRA_CCIF_RST_SET	0x150
+#define INFRA_CCIF_RST_CLR	0x154
+#define INFRA_MD_SRCCLKENA	0xF0C
+#define CCIF_SRAM_SIZE		0x200
+#define CCIF0_RESET_BIT		8
+#define CCIF1_RESET_BIT		7
 
-struct mtk_modem {
-	struct device *dev;
-	const struct mtk_modem_soc_data *data;
-	struct ccif ccif;
-	struct port_proxy proxy;
-	struct clk *clks[ARRAY_SIZE(ccif_clocks)];
-	int nclks;
-	int irq;
-	void __iomem *ccif_ap;
-	void __iomem *ccif_md;
-	void __iomem *sram;
-};
+/* Take CCIF out of reset and clear the SRAM window, mirroring the vendor's
+ * ccci_reset_ccif_hw().  Without this the CCIF block stays in reset (CON=0,
+ * no interrupts). */
+static void mt6893_ccif_reset(struct mtk_modem *modem)
+{
+	u32 mask = BIT(CCIF0_RESET_BIT) | BIT(CCIF1_RESET_BIT);
+	void __iomem *sram = modem->ccif_ap + APCCIF_CHDATA;
+	int i;
+
+	if (!IS_ERR_OR_NULL(modem->infracfg)) {
+		regmap_write(modem->infracfg, INFRA_CCIF_RST_SET, mask);
+		regmap_write(modem->infracfg, INFRA_CCIF_RST_CLR, mask);
+		/* Enable MD source clock (vendor md_cd_power_on step 2). */
+		regmap_write(modem->infracfg, INFRA_MD_SRCCLKENA, 0x21);
+	} else {
+		dev_warn(modem->dev, "no infracfg regmap, skipping CCIF reset\n");
+	}
+
+	/* Clear the full CCIF SRAM window (0x200 bytes, AP and MD sides). */
+	for (i = 0; i < CCIF_SRAM_SIZE / 4; i++) {
+		if (modem->ccif_ap)
+			writel(0, sram + i * 4);
+		if (modem->ccif_md)
+			writel(0, modem->ccif_md + APCCIF_CHDATA + i * 4);
+	}
+
+	/* The modem checks a magic tag + MDSS debug region at the end of the
+	 * CCIF SRAM before it starts using CCIF (vendor ccci_reset_ccif_hw).
+	 * Write the magic so the modem recognises the AP is ready. */
+	if (modem->ccif_ap) {
+		writel(0x7274626E, sram + CCIF_SRAM_SIZE - 3 * 4);
+		writel(0, sram + CCIF_SRAM_SIZE - 2 * 4); /* md view phys */
+		writel(0, sram + CCIF_SRAM_SIZE - 1 * 4); /* region size */
+	}
+}
 
 static irqreturn_t mtk_modem_irq(int irq, void *arg)
 {
@@ -183,17 +272,6 @@ static irqreturn_t mtk_modem_irq(int irq, void *arg)
 	ccif_handle_irq(&modem->ccif);
 	port_proxy_poll(&modem->proxy, &queue);
 	return IRQ_HANDLED;
-}
-
-/* Read the modem boot status words from the MD PLL/status registers.
- * Returns 0 if the modem looks alive, -ENODATA otherwise. */
-static int mtk_modem_check_alive(struct mtk_modem *modem)
-{
-	/* Placeholder: the vendor driver reads md_boot_stats via the MD PLL
-	 * register window.  We do not map that window yet, so we report
-	 * "unknown" and rely on firmware loading later. */
-	dev_info(modem->dev, "modem boot status check not implemented yet\n");
-	return -ENODATA;
 }
 
 static int mtk_modem_probe(struct platform_device *pdev)
@@ -237,8 +315,8 @@ static int mtk_modem_probe(struct platform_device *pdev)
 					  resource_size(&sram_res));
 	if (!modem->sram)
 		return -ENOMEM;
-	dev_info(dev, "mapped MD shared memory: %pap .. %pap\n",
-		 &sram_res.start, &sram_res.end);
+	dev_dbg(dev, "mapped MD shared memory: %pap .. %pap\n",
+		&sram_res.start, &sram_res.end);
 
 	/* Clocks: the mddriver node lists DPMAIF clocks that the mainline
 	 * clock driver does not provide.  Claim only the CCIF variants that
@@ -248,8 +326,8 @@ static int mtk_modem_probe(struct platform_device *pdev)
 		struct clk *clk = devm_clk_get_optional(dev, ccif_clocks[i]);
 
 		if (IS_ERR(clk)) {
-			dev_info(dev, "clock %s unavailable: %ld\n",
-				 ccif_clocks[i], PTR_ERR(clk));
+			dev_dbg(dev, "clock %s unavailable: %ld\n",
+				ccif_clocks[i], PTR_ERR(clk));
 			continue;
 		}
 		if (clk) {
@@ -263,11 +341,17 @@ static int mtk_modem_probe(struct platform_device *pdev)
 		}
 	}
 
+	modem->infracfg = syscon_regmap_lookup_by_phandle(dev->of_node,
+							"mediatek,infracfg");
+
 	error = ccif_init(&modem->ccif, dev, modem->ccif_ap, modem->ccif_md,
 			  modem->sram, modem->data->sram_size,
 			  modem->data->nr_queues, md1_rx_sizes, md1_tx_sizes);
 	if (error)
 		goto err_clks;
+
+	/* Take CCIF out of reset (vendor ccci_reset_ccif_hw). */
+	mt6893_ccif_reset(modem);
 
 	/* Release the modem from BROM, then set up CCIF now that the shared
 	 * SRAM is accessible.  If the SMCs fail we leave CCIF stopped. */
@@ -288,14 +372,23 @@ static int mtk_modem_probe(struct platform_device *pdev)
 	if (error)
 		goto err_ccif;
 
-	dev_info(dev, "requesting CCIF IRQ %d\n", modem->irq);
 	error = request_irq(modem->irq, mtk_modem_irq, IRQF_SHARED,
 			    "mtk-modem", modem);
 	if (error)
 		goto err_proxy;
 
+	/* The vendor driver also registers a second CCIF IRQ (ap_ccif_irq1).
+	 * Request it too so we don't miss modem signalling on either line. */
+	modem->irq1 = platform_get_irq(pdev, 2);
+	if (modem->irq1 > 0 && modem->irq1 != modem->irq) {
+		error = request_irq(modem->irq1, mtk_modem_irq, IRQF_SHARED,
+				    "mtk-modem1", modem);
+		if (error)
+			dev_warn(dev, "failed to request CCIF IRQ1 %d: %d\n",
+				 modem->irq1, error);
+	}
+
 	platform_set_drvdata(pdev, modem);
-	mtk_modem_check_alive(modem);
 
 	dev_info(dev, "MT6893 modem CCIF control path up\n");
 	return 0;
@@ -314,6 +407,8 @@ static void mtk_modem_remove(struct platform_device *pdev)
 {
 	struct mtk_modem *modem = platform_get_drvdata(pdev);
 
+	if (modem->irq1 > 0 && modem->irq1 != modem->irq)
+		free_irq(modem->irq1, modem);
 	free_irq(modem->irq, modem);
 	port_proxy_deinit(&modem->proxy);
 	ccif_deinit(&modem->ccif);

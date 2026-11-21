@@ -107,10 +107,6 @@ int ccif_hw_start(struct ccif *ccif, const u32 *rx_sizes, const u32 *tx_sizes)
 	if (ccif->started)
 		return 0;
 
-	dev_info(ccif->dev, "CCIF regs: CON=%#x BUSY=%#x RCHNUM=%#x\n",
-		 ccif_readl(ccif->ap_base, APCCIF_CON),
-		 ccif_readl(ccif->ap_base, APCCIF_BUSY),
-		 ccif_readl(ccif->ap_base, APCCIF_RCHNUM));
 
 	for (i = 0; i < ccif->nr_queues; i++) {
 		u32 size = RB_CTL_LEN + rx_sizes[i] + tx_sizes[i];
@@ -136,8 +132,6 @@ int ccif_hw_start(struct ccif *ccif, const u32 *rx_sizes, const u32 *tx_sizes)
 	atomic_set(&ccif->pending_rx, 0);
 	ccif->started = true;
 
-	dev_info(ccif->dev, "CCIF hardware started (%u queues)\n",
-		 ccif->nr_queues);
 	return 0;
 }
 
@@ -224,8 +218,6 @@ void ccif_send_skb(struct ccif *ccif, u8 queue, struct sk_buff *skb)
 		   skb->data, skb->len);
 	spin_unlock_irqrestore(&q->lock, flags);
 
-	dev_info_ratelimited(ccif->dev, "CCIF TX: queue=%u ch=%u len=%u\n",
-			     queue, q->ccif_ch, skb->len);
 	ccif_trigger(ccif, q->ccif_ch);
 }
 
@@ -238,7 +230,6 @@ void ccif_handle_irq(struct ccif *ccif)
 		return;
 
 	rchnum = ccif_readl(ccif->ap_base, APCCIF_RCHNUM);
-	dev_info_ratelimited(ccif->dev, "CCIF IRQ: RCHNUM=0x%08x\n", rchnum);
 
 	for (i = 0; i < ccif->nr_queues; i++)
 		if (rchnum & BIT(i))
@@ -312,8 +303,6 @@ struct sk_buff *ccif_poll(struct ccif *ccif, u8 *out_queue)
 		spin_unlock_irqrestore(&rxq->lock, flags);
 
 		atomic_andnot(BIT(q), &ccif->pending_rx);
-		dev_info_ratelimited(ccif->dev,
-				     "CCIF RX: queue=%u len=%u\n", q, len);
 		*out_queue = q;
 		return skb;
 	}

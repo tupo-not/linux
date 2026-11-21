@@ -1182,6 +1182,7 @@
 	md_vdigrf-supply = <&mt_pmic_vpu_buck_reg>;
 	memory-region = <&ap_md_nc_smem>;
 	memory-region-names = "ap_md_nc_smem";
+	mediatek,infracfg = <&infracfg_ao>;
 	status = "okay";
 };
 
