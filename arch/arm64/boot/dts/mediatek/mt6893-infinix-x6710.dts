@@ -11,6 +11,7 @@
 /dts-v1/;
 
 #include <dt-bindings/clock/mediatek,mt6893-clk.h>
+#include <dt-bindings/power/mediatek,mt6893-power.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/leds/common.h>
@@ -70,6 +71,13 @@
 		ranges;
 
 		stdout-path = "serial0:921600n8";
+
+		/* 48-byte LK handoff header from the stock X6710 FDT:
+		 * base=0xbff70000 size=0xa68 error=0 version=3 count=20
+		 * load_flag=1, md_errors=0, tail padding=0. */
+		ccci,modem_info_v2 = <0xf7bf 0x00 0x680a0000 0x00
+				      0x3000000 0x14000000 0x1000000 0x00
+				      0x00 0x00 0x00 0x00>;
 
 		bootargs = "console=tty0 console=ttyS0,921600n8 clk_ignore_unused regulator_ignore_unused pd_ignore_unused loglevel=7 debug";
 
@@ -143,7 +151,7 @@
 			no-map;
 		};
 
-		memory@bff70000 {
+		ccci_tag: memory@bff70000 {
 			reg = <0 0xbff70000 0 0x10000>;
 			no-map;
 		};
@@ -1167,23 +1175,94 @@
 /* Complete the modem node from the vendor FDT: platform info, power flow,
  * SPM sleep control and the MT6315 / mt6359p supplies.  Reserved memory for
  * the modem is already described in /reserved-memory above. */
-&mddriver {
-	mediatek,ap_plat_info = <0x1aed>;
-	mediatek,md_generation = <0x1899>;
-	mediatek,offset_epon_md1 = <0x2844>;
-	mediatek,power_flow_config = <0x13>;
-	mediatek,srclken_o1 = <0x200000>;
-	ccci-infracfg = <&infracfg_ao>;
-	ccci-topckgen = <&topckgen>;
-	ccci_spmsleep = <&{/sleep@10006000}>;
-	md_vmodem-supply = <&mt6315_3_vbuck1>;
-	md_vsram-supply = <&mt6315_3_vbuck4>;
-	md_vnr-supply = <&mt6315_3_vbuck3>;
-	md_vdigrf-supply = <&mt_pmic_vpu_buck_reg>;
-	memory-region = <&ap_md_nc_smem>;
-	memory-region-names = "ap_md_nc_smem";
-	mediatek,infracfg = <&infracfg_ao>;
-	status = "okay";
+/* ------------------------------------------------------------------ */
+/* MD1 modem — mainline CCCI driver (ported from op6893)               */
+/* ------------------------------------------------------------------ */
+
+/* SCP resource-hold provider: required by the CCISM bridge for the
+ * generation-bound SCP lease. Register/mbox layout matches the MT6893
+ * vendor SCP node; only the three CCIF mbox interrupts are wired. */
+&{/} {
+	ccci_scp: scp-resource-hold@10724000 {
+		compatible = "realme,op6893-scp-resource-hold";
+		reg = <0 0x10724000 0 0x1000>,
+		      <0 0x107fb000 0 0x1000>,
+		      <0 0x107fc000 0 0x1000>,
+		      <0 0x107fd000 0 0x1000>,
+		      <0 0x107fe000 0 0x1000>,
+		      <0 0x107ff000 0 0x1000>,
+		      <0 0x10730000 0 0x1000>,
+		      <0 0x10740000 0 0x1000>,
+		      <0 0x10500000 0 0x180000>;
+		reg-names = "scp-cfg", "mbox0", "mbox1", "mbox2", "mbox3", "mbox4",
+			    "core0", "core1", "tcm";
+		interrupts = <GIC_SPI 436 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 437 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 438 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 439 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 440 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "mbox0", "mbox1", "mbox2", "mbox3", "mbox4";
+		clocks = <&topckgen CLK_TOP_SCP_SEL>;
+		clock-names = "scp";
+		mediatek,send-table = <0 0 9
+			3 1 2
+			4 1 1
+			5 1 2
+			6 1 1
+			26 1 9
+			33 1 10
+			11 2 34
+			14 3 1
+			15 3 2
+			16 3 1
+			17 3 6
+			18 3 2
+			24 4 34>;
+		mediatek,recv-table = <1 0 2 0
+			2 0 26 0
+			7 1 2 0
+			8 1 10 0
+			9 1 1 0
+			10 1 2 0
+			27 1 2 0
+			28 1 5 0>;
+		status = "okay";
+	};
+
+	modem-platform@10209000 {
+		compatible = "infinix,x6710-modem-platform";
+		mediatek,dpmaif = <&dpmaif>;
+		reg = <0 0x10209000 0 0x1000>, <0 0x1020a000 0 0x1000>,
+		      <0 0x1023c000 0 0x1000>, <0 0x1023d000 0 0x1000>;
+		reg-names = "ccif-ap", "ccif-md", "ccif2-ap", "ccif2-md";
+		interrupts = <GIC_SPI 194 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 195 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "data", "exception";
+		memory-region = <&ccci_tag>, <&ap_md_nc_smem>, <&ap_md_c_smem>;
+		memory-region-names = "tags", "noncached", "cached";
+		md-vmodem-supply = <&mt6315_3_vbuck1>;
+		md-vnr-supply = <&mt6315_3_vbuck3>;
+		md-vsram-supply = <&mt6315_3_vbuck4>;
+		md-vdigrf-supply = <&mt_pmic_vpu_buck_reg>;
+		clocks = <&infracfg_ao CLK_INFRA_AO_CCIF_AP>,
+			 <&infracfg_ao CLK_INFRA_AO_CCIF_MD>,
+			 <&infracfg_ao CLK_INFRA_AO_CCIF1_AP>,
+			 <&infracfg_ao CLK_INFRA_AO_CCIF1_MD>;
+		clock-names = "ccif-ap", "ccif-md", "ccif1-ap", "ccif1-md";
+		mediatek,scp = <&ccci_scp>;
+		mediatek,spm = <&scpsys>;
+		mediatek,infracfg = <&infracfg_ao>;
+		mediatek,no-external-32k;
+		/* Board scalars from this device's stock Android dmesg:
+		 * "sbp=0x0,wmid[0x79]" and "c2k_flags 0x0; MD_GENERATION: 6297". */
+		mediatek,wmid = <0x79>;
+		mediatek,c2k-flags = <0x0>;
+		status = "okay";
+
+		power {
+			power-domains = <&scpsys MT6893_POWER_DOMAIN_MD1>;
+		};
+	};
 };
 
 /* ------------------------------------------------------------------ */

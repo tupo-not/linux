@@ -2,6 +2,7 @@
 obj-$(CONFIG_MTK_MFG_PM_DOMAIN)		+= mtk-mfg-pmdomain.o
 obj-$(CONFIG_MTK_SCPSYS)		+= mtk-scpsys.o
 obj-$(CONFIG_MTK_SCPSYS_PM_DOMAINS) 	+= mtk-pm-domains.o
+obj-$(CONFIG_MTK_SCPSYS_PM_DOMAINS)	+= mt6893-md-power.o
 obj-$(CONFIG_AIROHA_CPU_PM_DOMAIN) 	+= airoha-cpu-pmdomain.o
 
 ifeq ($(CONFIG_THUMB2_KERNEL)$(CONFIG_CC_IS_CLANG),yy)

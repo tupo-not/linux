@@ -575,6 +575,14 @@ static const struct scpsys_domain_data scpsys_domain_data_mt6893[] = {
 		.sram_pdn_ack_bits = BIT(12),
 		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
 	},
+	[MT6893_POWER_DOMAIN_MD1] = {
+		.name = "md1",
+		.sta_mask = BIT(0),
+		.ctl_offs = 0x300,
+		.pwr_sta_offs = 0x16c,
+		.pwr_sta2nd_offs = 0x16c,
+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF | MTK_SCPD_MT6893_MD_PWRSEQ,
+	},
 };
 
 static const struct scpsys_soc_data mt6893_scpsys_data = {

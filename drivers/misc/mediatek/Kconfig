@@ -37,3 +37,4 @@ config MTK_SCP_CHOPIN
 # MT6895-Mainline tree (drivers/misc/mediatek/{scp,sensor}).
 source "drivers/misc/mediatek/scp/Kconfig"
 source "drivers/misc/mediatek/sensor/2.0/Kconfig"
+source "drivers/misc/mediatek/ccci/Kconfig"

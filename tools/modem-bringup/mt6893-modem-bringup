@@ -1,0 +1,184 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Staged, explicit MD1 bring-up for the MT6893 CCCI port (Infinix X6710).
+# Nothing here starts MD automatically: every transition is one operator step.
+#
+#   mt6893-modem-bringup fs-init                 # private, marked, empty FS copy
+#   mt6893-modem-bringup up [<gen>]              # runner + MD power + prepare
+#   mt6893-modem-bringup release                 # issue MD_KERNEL_BOOT_UP SMC
+#   mt6893-modem-bringup release-with-dl         # same, after DPMAIF DL setup
+#   mt6893-modem-bringup status                  # all read-only state
+#   mt6893-modem-bringup down                    # MD power off + runner stop
+#   mt6893-modem-bringup runner ...              # raw backend (foreground)
+#   mt6893-modem-bringup at|slot|data ...         # pass-through to AT/data tools
+#
+# The generation passed to "up" must equal the runner's --generation; it is
+# stored in $STATE/generation and reused by the other commands.
+set -eu
+
+SYS=/sys/devices/platform/10209000.modem-platform
+DEV=/dev/ccci-service-10209000.modem-platform
+FSROOT=/tmp/mt6893-fs
+STATE=/run/mt6893-modem
+RUNNER=/usr/local/sbin/mt6893-modem-fs-runner
+ATTRS='md_power md_boot ccif ccif_fs_tx handshake ccism services dispatch
+       md_ee md_ee_raw lk_regions smem_users smem_cache smem_clear
+       runtime_mask md_at md_net md_dbg md_dfd_info'
+
+die() { echo "error: $*" >&2; exit 1; }
+
+need_root() {
+	[ "$(id -u)" -eq 0 ] || die 'run as root'
+}
+
+check_sys() {
+	[ -d "$SYS" ] || die "no $SYS (kernel driver did not probe)"
+}
+
+read_gen() {
+	[ -r "$STATE/generation" ] || die 'no saved generation; run "up <gen>" first'
+	cat "$STATE/generation"
+}
+
+fs_init() {
+	# Disposable working copy only. Never a real NVRAM partition or backup.
+	if [ -e "$FSROOT" ] && [ ! -f "$FSROOT/.mt6893-fs-working-copy" ]; then
+		die "$FSROOT exists and is not a marked private working copy"
+	fi
+	install -d -m 0700 "$FSROOT"
+	printf 'PRIVATE DISPOSABLE MODEM FS WORKING COPY\n' \
+		> "$FSROOT/.mt6893-fs-working-copy"
+	chmod 0600 "$FSROOT/.mt6893-fs-working-copy"
+	echo "private FS working copy: $FSROOT"
+}
+
+start_runner() {
+	gen=$1
+	[ -e "$DEV" ] || die "no $DEV (check CONFIG_OP6893_CCCI_SERVICES and the DT node)"
+	if [ -f "$STATE/runner.pid" ] && kill -0 "$(cat "$STATE/runner.pid")" 2>/dev/null; then
+		die "runner already active (pid $(cat "$STATE/runner.pid"))"
+	fi
+	need_root
+	install -d -m 0700 "$STATE"
+	extra=''
+	if [ -r "$STATE/rpc-policy.json" ]; then
+		extra="--rpc-policy $STATE/rpc-policy.json"
+	fi
+	if [ -f "$STATE/trace-rpc" ]; then
+		extra="$extra --trace-rpc-names"
+	fi
+	if [ -f "$STATE/trace-fs" ]; then
+		extra="$extra --trace-fs"
+	fi
+	# shellcheck disable=SC2086
+	"$RUNNER" --endpoint "$DEV" --root "$FSROOT" --generation "$gen" $extra \
+		>"$STATE/runner.log" 2>&1 &
+	echo $! > "$STATE/runner.pid"
+	# The endpoint must be connected before md_boot prepare; wait briefly.
+	i=0
+	while [ $i -lt 20 ]; do
+		if grep -q 'connected=1' "$SYS/services" 2>/dev/null; then
+			break
+		fi
+		i=$((i + 1))
+		sleep 0.1
+	done
+	if ! kill -0 "$(cat "$STATE/runner.pid")" 2>/dev/null; then
+		cat "$STATE/runner.log" >&2
+		die 'runner exited before connecting to the endpoint'
+	fi
+	echo "runner pid $(cat "$STATE/runner.pid"), generation $gen"
+}
+
+stop_runner() {
+	if [ -f "$STATE/runner.pid" ]; then
+		pid=$(cat "$STATE/runner.pid")
+		if kill -0 "$pid" 2>/dev/null; then
+			kill "$pid"
+			i=0
+			while kill -0 "$pid" 2>/dev/null && [ $i -lt 20 ]; do
+				i=$((i + 1)); sleep 0.1
+			done
+		fi
+		rm -f "$STATE/runner.pid"
+	fi
+}
+
+cmd_up() {
+	need_root; check_sys
+	gen=${1:-$(date +%s)}
+	case "$gen" in ''|*[!0-9a-fA-FxX]*) die 'generation must be a positive integer';; esac
+	fs_init
+	install -d -m 0700 "$STATE"
+	printf '%s\n' "$gen" > "$STATE/generation"
+	start_runner "$gen"
+	echo "on > $SYS/md_power"
+	printf 'on' > "$SYS/md_power"
+	echo "prepare $gen > $SYS/md_boot"
+	printf 'prepare %s' "$gen" > "$SYS/md_boot"
+	echo 'prepared. Inspect status, then run: mt6893-modem-bringup release'
+}
+
+cmd_release() {
+	need_root; check_sys
+	gen=$(read_gen)
+	grep -q 'connected=1' "$SYS/services" 2>/dev/null || die 'runner is not connected; run "up" again'
+	printf 'release' > "$SYS/md_boot"
+	echo 'CPU release issued. Inspect handshake / dispatch / ccism.'
+}
+
+cmd_release_dl() {
+	need_root; check_sys
+	gen=$(read_gen)
+	grep -q 'connected=1' "$SYS/services" 2>/dev/null || die 'runner is not connected; run "up" again'
+	printf 'release-with-dl' > "$SYS/md_boot"
+	echo 'DPMAIF DL setup + CPU release issued.'
+}
+
+cmd_down() {
+	need_root; check_sys
+	printf 'off' > "$SYS/md_power" || true
+	stop_runner
+	echo 'MD power off, runner stopped.'
+}
+
+cmd_status() {
+	check_sys
+	for a in $ATTRS; do
+		if [ -r "$SYS/$a" ]; then
+			printf '%s: ' "$a"
+			cat "$SYS/$a"
+		else
+			printf '%s: (unavailable)\n' "$a"
+		fi
+	done
+	printf 'endpoint: '; grep -q 'connected=1' "$SYS/services" 2>/dev/null && echo connected || echo disconnected
+	if [ -f "$STATE/runner.log" ]; then
+		echo '--- runner.log ---'
+		tail -20 "$STATE/runner.log"
+	fi
+}
+
+cmd_runner() {
+	need_root
+	shift
+	exec "$RUNNER" "$@"
+}
+
+case "${1:-}" in
+	fs-init)         fs_init ;;
+	up)              shift; cmd_up "$@" ;;
+	release)         cmd_release ;;
+	release-with-dl) cmd_release_dl ;;
+	down)            cmd_down ;;
+	status)          cmd_status ;;
+	runner)          cmd_runner "$@" ;;
+	at)              shift; exec /usr/local/lib/mt6893-modem/modem_at_probe.py "$@" ;;
+	slot)            shift; exec /usr/local/lib/mt6893-modem/modem_slot_probe.py "$@" ;;
+	data)            shift; exec /usr/local/lib/mt6893-modem/modem_data_session.py "$@" ;;
+	*)
+		sed -n '2,17p' "$0"
+		exit 2
+		;;
+esac

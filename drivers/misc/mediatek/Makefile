@@ -9,3 +9,4 @@ obj-$(CONFIG_MTK_BTIF) += btif/
 obj-$(CONFIG_MTK_SCP_CHOPIN) += scp-chopin.o
 obj-$(CONFIG_MTK_TINYSYS_SCP_SUPPORT) += scp/
 obj-$(CONFIG_MTK_SENSORHUB) += sensor/2.0/
+obj-y += ccci/

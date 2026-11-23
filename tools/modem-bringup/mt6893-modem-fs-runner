@@ -1,0 +1,5 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-only
+# Explicit, caller-driven MD service runner. It never starts the modem, never
+# provisions data, and never reads Android properties.
+exec /usr/bin/python3 /usr/local/lib/mt6893-modem/modem_service_backend.py "$@"

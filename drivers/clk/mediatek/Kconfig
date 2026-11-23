@@ -382,6 +382,12 @@ config COMMON_CLK_MT6893
 	help
 	  This driver supports MediaTek Dimensity 1200 MT6893 basic clocks.
 
+config COMMON_CLK_MT6893_PMIF
+	bool "MT6893 PMIF clocks (modem bring-up)"
+	depends on COMMON_CLK_MT6893
+	help
+	  Register the PMIF selector/factor/gate clocks used by the CCCI modem stack.
+
 config COMMON_CLK_MT6893_IMP_IIC_WRAP
 	tristate "Clock driver for MediaTek MT6893 imp_iic_wrap"
 	depends on COMMON_CLK_MT6893
