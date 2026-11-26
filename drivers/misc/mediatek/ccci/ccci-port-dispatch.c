@@ -181,6 +181,12 @@ static int dispatch_port(void *context, const struct ccci_ccif_event *event)
 			goto out;
 		}
 		/* The RX scanner already acknowledged these RCHNUM bits; no payload. */
+		if (event->notifications & CCCI_CCIF_NOTIFY_CCB) {
+			int ret = ccci_ccif_ccb_wakeup(dispatch->ccif);
+
+			dev_info_ratelimited(dispatch->dev,
+					     "CCB wakeup notification: reply=%d\n", ret);
+		}
 		if (event->notifications & CCCI_CCIF_NOTIFY_MD_EXCEPTION) {
 			if (!dispatch->ex_ack_logged) {
 				dispatch->ex_ack_logged = true;

@@ -142,11 +142,29 @@ static int profile_aux(const struct ccci_smem_layout *smem,
 		profile_offer(&offers[regions[i].feature], 8, region->md, region->size);
 	}
 	/*
-	 * CCB_SHARE_MEMORY is deliberately not offered: the MD asserts in
-	 * ccci_shm_bm during boot when it is told about the CCB window while no
-	 * CCB control/port subsystem exists on the AP side. It is only needed
-	 * once real data channels are implemented.
+	 * CCB_SHARE_MEMORY (feature 15) is MUST_SUPPORT for MT6893 (MD
+	 * generation 6297): withholding it makes the MD assert in nvram_main
+	 * during NVRAM init. Vendor payload is four u32 words: CCB_CTRL md-view
+	 * base + size (user 4), then the first CCB data region md-view base and
+	 * the summed size of all CCB data users (1..3). Only report geometry
+	 * that passes the same bounded checks as every other region.
 	 */
+	{
+		const struct ccci_smem_region *ctrl = &smem->users[4];
+		const struct ccci_smem_region *data = &smem->users[CCCI_SMEM_CCB];
+		u32 total = 0;
+
+		for (u32 i = 1; i <= 3; i++)
+			if (!profile_reportable(smem, i, i == CCCI_SMEM_CCB))
+				total += smem->users[i].size;
+		if (!profile_reportable(smem, 4, false) && total) {
+			words[0] = ctrl->md;
+			words[1] = ctrl->size;
+			words[2] = data->md;
+			words[3] = total;
+			profile_words(&offers[15], 16, words, 4);
+		}
+	}
 	/* DHL_RAW_SHARE_MEMORY: the CCB aggregate past the 2 MiB CCB window. */
 	if (!profile_reportable(smem, CCCI_SMEM_CCB, true) &&
 	    ccb->size > CCCI_CCB_MIN_SIZE &&

@@ -7,6 +7,9 @@
 #define CCCI_SCP_REGION_OFFSET	4
 #define CCCI_SCP_REGION_LEGACY_BYTES	68
 #define CCCI_SCP_REGION_BYTES		72
+/* Infinix X6710 LK writes a shorter SCP region header; the fields this
+ * decoder consumes (through offset 52) are all present. */
+#define CCCI_SCP_REGION_X6710_BYTES	56
 
 struct ccci_scp_span {
 	u64 base;

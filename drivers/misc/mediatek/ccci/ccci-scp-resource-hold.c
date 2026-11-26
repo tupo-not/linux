@@ -568,7 +568,8 @@ static int ccci_scp_resource_probe(struct platform_device *pdev)
 	struct ccci_scp_resource_owner *owner;
 	int ret;
 
-	if (!of_machine_is_compatible("realme,op6893"))
+	if (!of_machine_is_compatible("realme,op6893") &&
+	    !of_machine_is_compatible("infinix,x6710"))
 		return -ENODEV;
 	owner = devm_kzalloc(dev, sizeof(*owner), GFP_KERNEL);
 	if (!owner)

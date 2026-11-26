@@ -716,6 +716,9 @@ class WorkingCopy:
             if op == 0x1010:
                 path, = args
                 return (self._attributes(path),)
+            if op == 0x100f:
+                path, = args
+                return (self._attributes(path),)
             if op == 0x1021:
                 return (self._restore(*args),)
             if op == 0x1007:

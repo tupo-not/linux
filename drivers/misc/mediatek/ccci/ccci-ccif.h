@@ -42,6 +42,8 @@ int ccci_ccif_system_send(struct ccci_ccif *ccif, u32 message, u32 reserved);
  */
 int ccci_ccif_service_send(struct ccci_ccif *ccif, const void *packet, u32 size,
 			   bool hs2_seen);
+/* Bare CCB TX wakeup doorbell (channel 7) after AP drains MD CCB writes. */
+int ccci_ccif_ccb_wakeup(struct ccci_ccif *ccif);
 /*
  * AT/MUX payload only; builds the same-board char-port header for channel 12
  * on queue 5. Userspace owns the 0710 stream, never the CCCI header. Same
@@ -111,6 +113,11 @@ static inline int ccci_ccif_system_send(struct ccci_ccif *ccif, u32 message, u32
 
 static inline int ccci_ccif_service_send(struct ccci_ccif *ccif, const void *packet,
 					 u32 size, bool hs2_seen)
+{
+	return -EOPNOTSUPP;
+}
+
+static inline int ccci_ccif_ccb_wakeup(struct ccci_ccif *ccif)
 {
 	return -EOPNOTSUPP;
 }

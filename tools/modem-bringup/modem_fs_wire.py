@@ -144,6 +144,9 @@ def _operation(request):
         if len(args[1]) > 16:
             raise MalformedRequest('GetDiskInfo scalar too long')
         return op, (_path(args[0]), args[1])
+    if op == 0x100f:
+        _count(args, 1)
+        return op, (_path(args[0]),)
     if op == 0x1018:
         _count(args, 2)
         return op, (_path(args[0]), _u32(args[1]))
@@ -188,6 +191,10 @@ def _operation(request):
         if words[0] & 8 and words[8] > MAX_IO:
             raise MalformedRequest('invalid CMPT_Read size')
         return op, (name, args[1])
+    import sys as _sys
+    print('ccci fs: unsupported op=%#06x argc=%u arglen0=%u arg0=%r' %
+          (op, len(args), len(args[0]) if args else 0,
+           args[0][:48] if args else b''), file=_sys.stderr, flush=True)
     raise UnsupportedOperation('operation reply schema unresolved')
 
 
@@ -199,7 +206,7 @@ def _word(value):
 
 # Argument positions that carry a path, used only by the opt-in trace so a
 # write payload is never mistaken for text.
-_PATH_ARG = {0x1001: (0,), 0x1007: (0,), 0x100c: (0, 1), 0x1010: (0,),
+_PATH_ARG = {0x1001: (0,), 0x1007: (0,), 0x100c: (0, 1), 0x100f: (0,), 0x1010: (0,),
              0x100e: (0,), 0x1018: (0,), 0x1012: (0,), 0x1025: (0,),
              0x1022: (0,)}
 
@@ -229,8 +236,8 @@ def request_summary(op, args):
 def _reply_args(op, result):
     if not isinstance(result, tuple):
         raise ValueError('backend response must be a tuple')
-    if op in (0x1001, 0x1002, 0x1005, 0x1007, 0x100c, 0x1010, 0x1014, 0x1018,
-              0x101a, 0x101c, 0x1021):
+    if op in (0x1001, 0x1002, 0x1005, 0x1007, 0x100c, 0x100f, 0x1010, 0x1014,
+              0x1018, 0x101a, 0x101c, 0x1021):
         if len(result) != 1:
             raise ValueError('invalid backend scalar response')
         return (_word(result[0]),)
@@ -296,6 +303,9 @@ def respond(backend, generation, packet, trace=None):
     result = backend.operate(generation, op, *args)
     if trace is not None:
         status = result[0] if isinstance(result, tuple) else result
+        if op == 0x1022 and isinstance(status, bytes) and len(status) == 8:
+            completed, error = struct.unpack('<Ii', status)
+            status = 'cmpt(completed=%#x,error=%d)' % (completed, error)
         trace(request_summary(op, args), status)
     values = _reply_args(op, result)
     # The MD strips the response prefix on TX but requires it on every reply.

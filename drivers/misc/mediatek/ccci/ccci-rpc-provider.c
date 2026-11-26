@@ -135,7 +135,7 @@ int ccci_rpc_provider_reply(const struct ccci_rpc_provider *provider,
 	const struct ccci_rpc_named_fact *fact;
 	const struct ccci_rpc_eint_fact *eint;
 	struct ccci_rpc_arg name;
-	u8 scalar[4], value[68];
+	u8 scalar[4], value[88];
 	size_t name_length;
 	u32 operation, type;
 	int ret, result;
@@ -180,6 +180,24 @@ int ccci_rpc_provider_reply(const struct ccci_rpc_provider *provider,
 		put_unaligned_le32(0, scalar);
 		args[0] = (struct ccci_rpc_arg){scalar, sizeof(scalar)};
 		args[1] = args[0];
+		return ccci_rpc_encode_reply(&request, args, 2, reply, capacity);
+	}
+	if (operation == 0x4009) {
+		/* Vendor IPC_RPC_GET_GPIO_ADC_OP (v1 271B / v2 425B packed input).
+		 * Reply is a 4-byte status plus a 56B/88B output the vendor
+		 * pre-fills with 0xF for unavailable lookups. No audited ADC
+		 * facts exist on this board, so emit that exact negative reply
+		 * rather than -EOPNOTSUPP, which aborts the whole RPC session. */
+		size_t out_size;
+
+		if (request.argc != 1 ||
+		    (request.args[0].size != 271 && request.args[0].size != 425))
+			goto scalar_reply;
+		out_size = request.args[0].size == 425 ? 88 : 56;
+		put_unaligned_le32(0, scalar);
+		memset(value, 0xf, out_size);
+		args[0] = (struct ccci_rpc_arg){scalar, sizeof(scalar)};
+		args[1] = (struct ccci_rpc_arg){value, out_size};
 		return ccci_rpc_encode_reply(&request, args, 2, reply, capacity);
 	}
 	if (!ret) {

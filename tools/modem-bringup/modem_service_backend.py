@@ -248,7 +248,8 @@ def main(argv=None):
         def fs_trace(summary, status):
             # Only a scalar status is printed; anything else is reduced to its
             # type name so no backend payload can leak into the trace.
-            text = '%d' % status if type(status) is int else '<%s>' % type(status).__name__
+            text = status if isinstance(status, str) else (
+                '%d' % status if type(status) is int else '<%s>' % type(status).__name__)
             sys.stderr.write('fs %s status=%s\n' % (summary, text))
             sys.stderr.flush()
     try:

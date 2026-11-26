@@ -156,9 +156,19 @@
 			no-map;
 		};
 
-		memory@9fb00000 {
+		/* Stock X6710 mblock-23-SCP-reserved: SCP firmware/TCM handoff. */
+		scp_firmware_mem: memory@9fb00000 {
 			reg = <0 0x9fb00000 0 0x400000>;
 			no-map;
+		};
+
+		/* Stock X6710 reserve-memory-scp_share geometry. */
+		scp_share_mem: reserve-memory-scp_share {
+			compatible = "mediatek,reserve-memory-scp_share";
+			no-map;
+			size = <0 0x320000>;
+			alignment = <0 0x1000000>;
+			alloc-ranges = <0 0x50000000 0 0x40000000>;
 		};
 
 		memory@75000000 {
@@ -1179,6 +1189,35 @@
 /* MD1 modem — mainline CCCI driver (ported from op6893)               */
 /* ------------------------------------------------------------------ */
 
+/* CCCI DPMAIF binds only to "mediatek,mt6893-dpmaif" and expects five
+ * named regions + two clocks; the SoC dtsi node uses the older binding. */
+&dpmaif {
+	compatible = "mediatek,mt6893-dpmaif";
+	reg = <0 0x10014000 0 0x1000>,
+	      <0 0x1022d000 0 0x1000>,
+	      <0 0x1022c000 0 0x1000>,
+	      <0 0x1022e000 0 0x1000>,
+	      <0 0x10002000 0 0x1000>;
+	reg-names = "ao-ul", "pd-ul", "pd-md-misc", "sram", "infra-ao-mem";
+	clocks = <&infracfg_ao CLK_INFRA_AO_DPMAIF_MAIN>,
+		 <&infracfg_ao CLK_INFRA_AO_DPMAIF>;
+	clock-names = "dpmaif-main", "dpmaif";
+	mediatek,infracfg = <&infracfg_ao>;
+	status = "okay";
+};
+
+/* MD1 MTCMOS genpd: the SoC dtsi describes only the audio domain, so the
+ * modem platform's lookup device has no supplier. Register MD1 (id 24) with
+ * its real infracfg so dev_pm_domain_attach_by_id() can succeed. */
+&spm {
+	md1: power-domain@18 {
+		reg = <MT6893_POWER_DOMAIN_MD1>;
+		#power-domain-cells = <0>;
+		mediatek,infracfg = <&infracfg_ao>;
+		status = "okay";
+	};
+};
+
 /* SCP resource-hold provider: required by the CCISM bridge for the
  * generation-bound SCP lease. Register/mbox layout matches the MT6893
  * vendor SCP node; only the three CCIF mbox interrupts are wired. */
@@ -1225,8 +1264,42 @@
 			9 1 1 0
 			10 1 2 0
 			27 1 2 0
-			28 1 5 0>;
+			28 1 5 0
+			5 1 1 1
+			34 1 10 0
+			12 2 30 0
+			20 3 10 0
+			21 3 6 0
+			22 3 1 0
+			23 3 2 0
+			15 3 1 1
+			25 4 30 0>;
+		mediatek,topckgen = <&topckgen>;
+		mediatek,infracfg = <&infracfg_ao>;
+		memory-region = <&scp_firmware_mem>, <&scp_share_mem>;
+		memory-region-names = "firmware", "share";
 		status = "okay";
+	};
+
+	/* CCIF2 clocks: logical aliases only. LK leaves the bank4 hardware gate
+	 * set, so these mirror the proven op6893 dummy factors, which never read
+	 * or write that gate. They give the CCISM bridge lifecycle references. */
+	ccif2_ap_clk: ccif2-ap-clk {
+		compatible = "fixed-factor-clock";
+		#clock-cells = <0>;
+		clocks = <&infracfg_ao CLK_INFRA_AO_CCIF_AP>;
+		clock-mult = <1>;
+		clock-div = <1>;
+		clock-output-names = "ccif2-ap";
+	};
+
+	ccif2_md_clk: ccif2-md-clk {
+		compatible = "fixed-factor-clock";
+		#clock-cells = <0>;
+		clocks = <&infracfg_ao CLK_INFRA_AO_CCIF_MD>;
+		clock-mult = <1>;
+		clock-div = <1>;
+		clock-output-names = "ccif2-md";
 	};
 
 	modem-platform@10209000 {
@@ -1247,10 +1320,12 @@
 		clocks = <&infracfg_ao CLK_INFRA_AO_CCIF_AP>,
 			 <&infracfg_ao CLK_INFRA_AO_CCIF_MD>,
 			 <&infracfg_ao CLK_INFRA_AO_CCIF1_AP>,
-			 <&infracfg_ao CLK_INFRA_AO_CCIF1_MD>;
-		clock-names = "ccif-ap", "ccif-md", "ccif1-ap", "ccif1-md";
+			 <&infracfg_ao CLK_INFRA_AO_CCIF1_MD>,
+			 <&ccif2_ap_clk>, <&ccif2_md_clk>;
+		clock-names = "ccif-ap", "ccif-md", "ccif1-ap", "ccif1-md",
+			      "ccif2-ap", "ccif2-md";
 		mediatek,scp = <&ccci_scp>;
-		mediatek,spm = <&scpsys>;
+		mediatek,spm = <&spm_syscon>;
 		mediatek,infracfg = <&infracfg_ao>;
 		mediatek,no-external-32k;
 		/* Board scalars from this device's stock Android dmesg:
@@ -1260,7 +1335,7 @@
 		status = "okay";
 
 		power {
-			power-domains = <&scpsys MT6893_POWER_DOMAIN_MD1>;
+			power-domains = <&spm MT6893_POWER_DOMAIN_MD1>;
 		};
 	};
 };

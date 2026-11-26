@@ -1166,10 +1166,10 @@ int ccci_md_platform_create(struct platform_device *pdev, const struct ccci_smem
 	md->smem = *layout;
 	md->spm = syscon_regmap_lookup_by_phandle(dev->of_node, "mediatek,spm");
 	if (IS_ERR(md->spm))
-		return PTR_ERR(md->spm);
+		return dev_err_probe(dev, PTR_ERR(md->spm), "SPM regmap unavailable\n");
 	md->infra = syscon_regmap_lookup_by_phandle(dev->of_node, "mediatek,infracfg");
 	if (IS_ERR(md->infra))
-		return PTR_ERR(md->infra);
+		return dev_err_probe(dev, PTR_ERR(md->infra), "infracfg regmap unavailable\n");
 	for (unsigned int i = 0; i < ARRAY_SIZE(md->rails); i++) {
 		md->rails[i] = devm_regulator_get_optional(dev, supplies[i]);
 		if (IS_ERR(md->rails[i]))

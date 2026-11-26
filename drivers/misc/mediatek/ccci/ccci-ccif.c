@@ -569,6 +569,32 @@ int ccci_ccif_service_send(struct ccci_ccif *ccif, const void *packet, u32 size,
 	return ret;
 }
 
+/* AP_MD_CCB_WAKEUP doorbell: bare H2D_RINGQ7 notification, no ring payload.
+ * The vendor sends this after draining CCB so the MD can reclaim its buffers. */
+#define CCCI_CCIF_CCB_CHANNEL	7
+
+int ccci_ccif_ccb_wakeup(struct ccci_ccif *ccif)
+{
+	u32 busy;
+
+	if (!ccif)
+		return -EINVAL;
+	mutex_lock(&ccif->tx_lock);
+	if (ccif->tx_error || !ccif->tx_active) {
+		mutex_unlock(&ccif->tx_lock);
+		return -ESHUTDOWN;
+	}
+	busy = readl(ccif->ap + 4);
+	if (busy & BIT(CCCI_CCIF_CCB_CHANNEL)) {
+		mutex_unlock(&ccif->tx_lock);
+		return -EBUSY;
+	}
+	writel(BIT(CCCI_CCIF_CCB_CHANNEL), ccif->ap + 4);
+	writel(CCCI_CCIF_CCB_CHANNEL, ccif->ap + 0xc);
+	mutex_unlock(&ccif->tx_lock);
+	return 0;
+}
+
 /*
  * AT/MUX payload on CCCI_UART2_TX (channel 12, queue 5). The header is built
  * here exactly as the same-board char port does for a raw byte write, so

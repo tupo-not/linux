@@ -119,8 +119,12 @@ static int ccci_scp_inspect_copy(struct ccci_scp_inspect *inspect, u8 *buffer,
 	memset(buffer, 0, CCCI_SCP_REGION_BYTES);
 	bytes = readl(inspect->header + 28);
 	inspect->header_reads++;
-	if (bytes != CCCI_SCP_REGION_LEGACY_BYTES && bytes != CCCI_SCP_REGION_BYTES)
+	if (bytes != CCCI_SCP_REGION_LEGACY_BYTES &&
+	    bytes != CCCI_SCP_REGION_BYTES &&
+	    bytes != CCCI_SCP_REGION_X6710_BYTES) {
+		pr_info("ccci scp: unexpected region header size %u\n", bytes);
 		return -EPROTONOSUPPORT;
+	}
 	for (offset = 0; offset < bytes; offset += sizeof(u32)) {
 		put_unaligned_le32(readl(inspect->header + offset), buffer + offset);
 		inspect->header_reads++;

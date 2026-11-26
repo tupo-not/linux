@@ -174,7 +174,9 @@ static int ccci_scp_header_copy(void __iomem *header, u8 *buffer, size_t *length
 	*length = 0;
 	memset(buffer, 0, CCCI_SCP_REGION_BYTES);
 	bytes = readl(header + 28);
-	if (bytes != CCCI_SCP_REGION_LEGACY_BYTES && bytes != CCCI_SCP_REGION_BYTES)
+	if (bytes != CCCI_SCP_REGION_LEGACY_BYTES &&
+	    bytes != CCCI_SCP_REGION_BYTES &&
+	    bytes != CCCI_SCP_REGION_X6710_BYTES)
 		return -EPROTONOSUPPORT;
 	for (offset = 0; offset < bytes; offset += sizeof(u32))
 		put_unaligned_le32(readl(header + offset), first + offset);
@@ -429,7 +431,8 @@ static int ccci_scp_observer_probe(struct platform_device *pdev)
 	struct resource *res, header;
 	int ret;
 
-	if (!of_machine_is_compatible("realme,op6893"))
+	if (!of_machine_is_compatible("realme,op6893") &&
+	    !of_machine_is_compatible("infinix,x6710"))
 		return -ENODEV;
 	observer = devm_kzalloc(dev, sizeof(*observer), GFP_KERNEL);
 	if (!observer)

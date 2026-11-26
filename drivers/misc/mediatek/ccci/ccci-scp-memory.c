@@ -27,7 +27,8 @@ int ccci_scp_decode_region(const void *buffer, size_t length,
 		return -EINVAL;
 	memset(region, 0, sizeof(*region));
 	if (!buffer || (length != CCCI_SCP_REGION_LEGACY_BYTES &&
-			length != CCCI_SCP_REGION_BYTES))
+			length != CCCI_SCP_REGION_BYTES &&
+			length != CCCI_SCP_REGION_X6710_BYTES))
 		return -EMSGSIZE;
 	/* struct_size is the eighth u32, not the first member. */
 	if (get_unaligned_le32(raw + 28) != length)
